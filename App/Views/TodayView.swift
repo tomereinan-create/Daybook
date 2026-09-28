@@ -15,12 +15,17 @@ struct TodayView: View {
     private let sectionOrder: [DaySection] = [.now, .upcoming, .undated, .done, .missed]
 
     var body: some View {
-        NavigationStack {
+        // Resolved once per render and handed down. Reading `currentPlan` in
+        // each branch would run the engine over the whole lookback window six
+        // times for one pass of the screen.
+        let plan = currentPlan
+
+        return NavigationStack {
             Group {
                 if plan.isEmpty {
                     emptyState
                 } else {
-                    list
+                    list(plan)
                 }
             }
             .navigationTitle("today.title")
@@ -46,7 +51,7 @@ struct TodayView: View {
         }
     }
 
-    private var plan: DayPlan {
+    private var currentPlan: DayPlan {
         // `items` and `records` are read so SwiftUI tracks them; the engine
         // reads the store itself, which is the single source of truth.
         _ = items.count
@@ -55,7 +60,7 @@ struct TodayView: View {
         return model.dayPlan(for: now, now: now)
     }
 
-    private var list: some View {
+    private func list(_ plan: DayPlan) -> some View {
         List {
             ForEach(sectionOrder, id: \.self) { section in
                 let entries = plan[section]

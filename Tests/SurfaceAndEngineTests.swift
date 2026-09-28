@@ -177,6 +177,36 @@ struct ScheduleEngineTests {
         #expect(plan[.now].map(\.title) == ["Call back"])
     }
 
+    @Test("Someday and waiting-for stay out of today, but a plain task does not")
+    func outOfSightItemsAreNotInTheDayPlan() {
+        let someday = Fixture.item(
+            title: "Learn to sail",
+            preset: .someday,
+            settings: PresetKind.someday.defaultSettings(reference: now, calendar: calendar),
+            createdAt: anchor
+        )
+        let waiting = Fixture.item(
+            title: "Hear back from the bank",
+            preset: .waitingFor,
+            settings: PresetKind.waitingFor.defaultSettings(reference: now, calendar: calendar),
+            createdAt: anchor
+        )
+        let task = Fixture.item(
+            title: "Passport",
+            preset: .task,
+            settings: PresetKind.task.defaultSettings(reference: now, calendar: calendar),
+            createdAt: anchor
+        )
+
+        let plan = engine.dayPlan(items: [someday, waiting, task], records: [:], on: now, now: now)
+        #expect(plan[.undated].map(\.title) == ["Passport"])
+        #expect(plan.outstandingCount == 1)
+
+        // They are still items, and the app still lists them.
+        let inApp = engine.entries(for: .app, items: [someday, waiting, task], records: [:], now: now)
+        #expect(inApp.count == 3)
+    }
+
     @Test("A completed occurrence moves to the Done section")
     func doneMovesSection() {
         var settings = ItemSettings.default

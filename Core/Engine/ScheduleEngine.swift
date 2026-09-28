@@ -132,6 +132,11 @@ struct ScheduleEngine: Sendable {
 
         var sections: [DaySection: [ResolvedOccurrence]] = [:]
         for occurrence in all {
+            // An item that asks for no surfaces at all is one the user has put
+            // out of sight: Someday, and Waiting-for until it is chased. Those
+            // belong in their lists and in the weekly review, not in today.
+            guard !occurrence.item.settings.visibility.surfaces.isEmpty else { continue }
+
             let anchor = occurrence.effectiveTrigger ?? occurrence.generated.slot
             let landsToday = anchor >= dayStart && anchor < dayEnd
             let isCarriedOver = anchor < dayStart && occurrence.state.isOutstanding
