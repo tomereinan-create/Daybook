@@ -1,0 +1,77 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daybook"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daybook"
+          }
+        }
+      }
+    },
+    "NSAlarmKitUsageDescription" : {
+      "comment" : "Shown when the first wake-up item is created.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "So your wake-up rings properly — through silent mode and through a Focus — instead of arriving as a notification you sleep through."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "כדי שההשכמה תצלצל כמו שצריך — גם במצב שקט וגם במצב ריכוז — במקום להגיע כהתראה שתישנו דרכה."
+          }
+        }
+      }
+    },
+    "NSLocationAlwaysAndWhenInUseUsageDescription" : {
+      "comment" : "Shown when upgrading to Always, which place reminders require.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A place reminder can only notice you arriving or leaving if Daybook may check your location while it is closed. Your location is compared against your own places on this phone and never leaves it."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "תזכורת מקום יכולה לזהות שהגעתם או עזבתם רק אם Daybook רשאי לבדוק מיקום כשהוא סגור. המיקום מושווה למקומות שלכם על הטלפון הזה ולעולם לא עוזב אותו."
+          }
+        }
+      }
+    },
+    "NSLocationWhenInUseUsageDescription" : {
+      "comment" : "Shown when the first place is chosen on the map.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To show where you are on the map while you pick a place for a reminder."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "כדי להציג איפה אתם על המפה בזמן שאתם בוחרים מקום לתזכורת."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

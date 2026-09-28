@@ -2,7 +2,7 @@
 
 ## Status
 
-**Phases 1 and 2 complete and green.**
+**Phases 1 to 5 complete and green.**
 
 CI: macOS 26.6.2, Xcode 26.6, iOS 26 SDK. All twelve test suites pass.
 
@@ -164,6 +164,24 @@ Three real product bugs, none of which would have been found by reading:
 Two more found by reading rather than by running: Someday and Waiting-for items
 leaked into Today, and `TodayView` ran the engine six times per render.
 
+## Phases 4 and 5
+
+**Push updater** (`server/`) — a Cloudflare Worker that moves the card on while
+the app is closed and has never been told what any item is called. The day's
+items live in the activity's static attributes, which never travel; the push
+carries `{currentIndex, doneCount, totalCount}`. Tests on both sides assert no
+title appears in the wire format. Opt-in: with no endpoint configured the app
+makes no network calls at all.
+
+**Store readiness** (`docs/`) — privacy manifest on both targets declaring the
+one required-reason API actually used, localized usage strings, the privacy
+policy text, the App Store listing in both languages with a screenshot plan and
+review notes, and a pre-submission checklist split by what is verified, what
+needs a device, and what needs your Apple account.
+
+**The screens that were missing** — Settings, the weekly review and onboarding.
+The review's numbers are engine work with six tests of their own.
+
 ## Decisions made
 
 1. **Settings are stored as one JSON blob** on `Item`, not thirty SwiftData
@@ -202,10 +220,15 @@ leaked into Today, and `TodayView` ran the engine six times per render.
   overflow, but there is no `CLMonitor` wiring and no map picker, so the Place
   reminder preset is left out of the create flow and `.location` out of the
   editor. No control in the UI does nothing.
-- **Settings screen, weekly review, onboarding** — designed in the prototype,
-  built in phase 5.
-- **Widget extension target** — phase 3. The App Group and the value-type
-  engine are in place so it drops in without restructuring.
+Nothing is deferred any more. Location triggers landed in phase 3 and the
+Settings, review and onboarding screens in phase 5, so there is no control in
+the app that does nothing.
+
+The honest gap is different: **the surfaces have never been run.** The engine
+has 13 test suites; the widgets, the Live Activity, AlarmKit and CoreLocation
+have code that compiles against the right APIs and follows the documented
+contracts, which is a weaker claim. Only a physical device closes that, and
+`docs/CHECKLIST.md` lists exactly what to try.
 
 ## Open questions for you
 
