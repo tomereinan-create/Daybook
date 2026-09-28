@@ -207,7 +207,10 @@ struct StateResolverTests {
             now: Fixture.date(2026, 3, 10, 9, 30, calendar: calendar)
         )
         #expect(running.effectiveTrigger == Fixture.date(2026, 3, 10, 9, 45, calendar: calendar))
-        #expect(running.state == .visible)
+        // Running, not merely upcoming: a started timer stays on screen even
+        // though the item has no lead time at all.
+        #expect(running.state == .active)
+        #expect(running.state.appearsOnLiveSurfaces)
 
         let fired = resolver.resolve(
             item: item,

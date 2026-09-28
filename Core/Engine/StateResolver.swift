@@ -133,6 +133,14 @@ struct StateResolver: Sendable {
             return now < trigger.addingTimeInterval(configuration.dueGrace) ? .due : .overdue
         }
 
+        // A timer the user has started is running, whatever its lead time says.
+        // Lead time answers "how early should this appear"; a started timer is
+        // already here, and it should stay on screen counting down rather than
+        // vanish until it goes off.
+        if item.settings.trigger.kind == .relative, record.startedAt != nil {
+            return .active
+        }
+
         let leadTime = max(item.settings.visibility.leadTime, 0)
         if now >= trigger.addingTimeInterval(-leadTime) { return .visible }
         return .upcoming

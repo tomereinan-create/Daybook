@@ -169,7 +169,9 @@ struct OccurrenceRow: View {
                 }
             } else if let trigger = occurrence.effectiveTrigger {
                 Text(Formatting.dayAndTime(trigger, relativeTo: now))
-                if occurrence.state == .active, let end = occurrence.windowEnd {
+                // A time block counts down to the end of its window; a running
+                // timer counts down to the moment it goes off.
+                if occurrence.state == .active, let end = occurrence.windowEnd ?? occurrence.effectiveTrigger, end > now {
                     Text("label.endsIn \(Formatting.countdown(to: end, from: now))")
                 }
             } else if occurrence.canStart {
