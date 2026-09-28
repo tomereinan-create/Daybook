@@ -93,6 +93,53 @@ successor before doing any work**, so the chain survives being killed mid-run.
 Both schedulers sit behind protocols and the whole layer is tested against
 fakes.
 
+## Phase 3: the surfaces
+
+**Widget extension.** A second target compiling `Core`, which is what the
+`nonisolated` sweep was for: this process runs the engine off the main actor.
+Large and medium Today widgets, accessory rectangular for what is next,
+accessory circular for the day's progress. `AppIntentTimelineProvider` rather
+than `TimelineProvider`, because only the former has genuinely `async`
+requirements — the latter's async methods are wrappers over a completion
+handler that is not `Sendable` and so cannot reach the store.
+
+**Completion circles are real buttons.** `Button(intent:)` against the shared
+store, so a tick works with the app closed.
+
+**Live Activity.** Lock screen card and Dynamic Island. Current item with Done
+and Snooze, the next three below, the day's count in the corner.
+`LiveActivityController.refresh()` is the entire policy: it decides by itself
+whether to start, update, restart or end, so launch, a completion, foreground
+and the background task all just call it. It restarts at seven hours rather
+than waiting for the system to kill the activity at about eight, and replaces
+rather than updates a card whose day has rolled over. `ContentState` is built
+in exactly one place, which is what makes phase 4's push updater a drop-in:
+the server sends the same value.
+
+**Location triggers.** `CLMonitor` reconciled like the notifications are. A
+place reminder has no time, so nothing can be scheduled ahead — the region
+firing is the trigger, and it raises the alert through the same content builder
+as everything else. The 20-region cap is carried out to the app rather than
+computed and discarded.
+
+Both phase 1 deferrals are closed: the Place reminder preset is offered and
+the location editor exists, because there is now something behind them.
+
+### Motion, decided by frequency
+
+Applying the design skill's frequency table rather than taste:
+
+- A completion circle is tapped tens of times a day, so it gets no
+  celebration — a symbol swap, and `.invalidatableContent()` so the tap is
+  acknowledged while the timeline reloads. That latency is the only thing here
+  that genuinely needs covering.
+- No stagger on widget rows. Decorative, on a surface seen dozens of times a
+  day.
+- The Live Activity changes while the user is not looking at it, so the current
+  item crossfades on identity and nothing slides.
+- One free-running number animates: the done count.
+- The Dynamic Island's expansion spring belongs to the system.
+
 ## What the tests caught
 
 Three real product bugs, none of which would have been found by reading:

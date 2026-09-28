@@ -30,7 +30,7 @@ struct LocationField: View {
             Map(position: $camera) {
                 if hasPlace {
                     Marker(location.name, coordinate: coordinate)
-                        .tint(.accentColor)
+                        .tint(Color.accentColor)
                     MapCircle(center: coordinate, radius: location.radius)
                         .foregroundStyle(Color.accentColor.opacity(0.18))
                         .stroke(Color.accentColor, lineWidth: 1.5)
