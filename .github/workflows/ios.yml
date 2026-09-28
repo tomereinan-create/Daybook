@@ -36,17 +36,33 @@ jobs:
       - name: Generate the project
         run: xcodegen generate
 
+      # The image carries several iOS runtimes at once, and a given device name
+      # only exists on some of them, so "OS=latest plus a name" does not
+      # reliably resolve. Pick the newest iOS runtime, take an iPhone from it,
+      # and address it by UDID, which is never ambiguous.
       - name: Pick a simulator
         id: sim
         run: |
-          xcrun simctl list devices available
-          NAME=$(xcrun simctl list devices available --json | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone")) | .name] | last')
-          if [ -z "$NAME" ] || [ "$NAME" = "null" ]; then
-            echo "No iPhone simulator available on this runner."
+          PICK=$(xcrun simctl list devices available --json | jq -r '
+            [ .devices
+              | to_entries[]
+              | select(.key | test("SimRuntime\\.iOS-"))
+              | (.key | capture("iOS-(?<v>[0-9-]+)").v | gsub("-"; ".") | split(".") | map(tonumber)) as $ver
+              | .value[]
+              | select(.name | test("^iPhone"))
+              | { udid: .udid, name: .name, ver: $ver }
+            ]
+            | sort_by(.ver, .name)
+            | last
+            | "\(.udid)\t\(.name)\t\(.ver | map(tostring) | join("."))"')
+          if [ -z "$PICK" ] || [ "$PICK" = "null" ]; then
+            echo "No iPhone simulator available on this runner:"
+            xcrun simctl list devices available
             exit 1
           fi
-          echo "Using simulator: $NAME"
-          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          UDID=$(printf '%s' "$PICK" | cut -f1)
+          echo "Using $(printf '%s' "$PICK" | cut -f2) on iOS $(printf '%s' "$PICK" | cut -f3) ($UDID)"
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
 
       - name: Build and test
         run: |
@@ -54,6 +70,6 @@ jobs:
           xcodebuild test \
             -project Daybook.xcodeproj \
             -scheme Daybook \
-            -destination "platform=iOS Simulator,OS=latest,name=${{ steps.sim.outputs.name }}" \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
             CODE_SIGNING_ALLOWED=NO \
             | xcbeautify
