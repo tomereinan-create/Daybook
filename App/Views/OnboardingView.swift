@@ -122,10 +122,10 @@ struct WidgetSetupView: View {
                         .foregroundStyle(.secondary)
 
                     VStack(alignment: .leading, spacing: 14) {
-                        Step(number: 1, text: "widgetSetup.step1")
-                        Step(number: 2, text: "widgetSetup.step2")
-                        Step(number: 3, text: "widgetSetup.step3")
-                        Step(number: 4, text: "widgetSetup.step4")
+                        NumberedStep(number: 1, text: "widgetSetup.step1")
+                        NumberedStep(number: 2, text: "widgetSetup.step2")
+                        NumberedStep(number: 3, text: "widgetSetup.step3")
+                        NumberedStep(number: 4, text: "widgetSetup.step4")
                     }
 
                     GroupBox {
@@ -156,7 +156,7 @@ struct WidgetSetupView: View {
     }
 }
 
-private struct Step: View {
+private struct NumberedStep: View {
     let number: Int
     let text: LocalizedStringKey
 
