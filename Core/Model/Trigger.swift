@@ -1,6 +1,6 @@
 import Foundation
 
-enum TriggerKind: String, Codable, Sendable, Hashable, CaseIterable {
+nonisolated enum TriggerKind: String, Codable, Sendable, Hashable, CaseIterable {
     /// Fires at a date-time (one-off) or at `timeOfDay` on each recurrence day.
     case time
     /// Fires `relativeMinutes` after the user starts the occurrence.
@@ -13,12 +13,12 @@ enum TriggerKind: String, Codable, Sendable, Hashable, CaseIterable {
     case none
 }
 
-enum LocationEdge: String, Codable, Sendable, Hashable, CaseIterable {
+nonisolated enum LocationEdge: String, Codable, Sendable, Hashable, CaseIterable {
     case arrive
     case leave
 }
 
-struct LocationTrigger: Codable, Sendable, Hashable {
+nonisolated struct LocationTrigger: Codable, Sendable, Hashable {
     var name: String
     var latitude: Double
     var longitude: Double
@@ -27,7 +27,7 @@ struct LocationTrigger: Codable, Sendable, Hashable {
     var edge: LocationEdge
 }
 
-struct Trigger: Codable, Sendable, Hashable {
+nonisolated struct Trigger: Codable, Sendable, Hashable {
     var kind: TriggerKind
 
     /// Used when `kind == .time` and the recurrence is `.once`.

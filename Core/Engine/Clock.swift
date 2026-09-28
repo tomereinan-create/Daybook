@@ -2,24 +2,24 @@ import Foundation
 
 /// The engine never calls `Date()`. Every time-dependent answer comes from a
 /// clock handed in by the caller, which is what makes the tests deterministic.
-protocol Clock: Sendable {
+nonisolated protocol Clock: Sendable {
     var now: Date { get }
 }
 
-struct SystemClock: Clock {
+nonisolated struct SystemClock: Clock {
     var now: Date { Date() }
     init() {}
 }
 
 /// A clock frozen at a fixed instant. Tests only.
-struct FixedClock: Clock {
+nonisolated struct FixedClock: Clock {
     var now: Date
     init(_ now: Date) { self.now = now }
 }
 
 /// Knobs the engine reads instead of hardcoding numbers, so the platform caps
 /// can be tightened without touching logic.
-struct EngineConfiguration: Sendable, Hashable {
+nonisolated struct EngineConfiguration: Sendable, Hashable {
     /// iOS allows 64 pending local notifications per app. We keep headroom so
     /// an interactive snooze scheduled from the lock screen never gets refused.
     var notificationBudget: Int

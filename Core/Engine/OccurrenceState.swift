@@ -1,7 +1,7 @@
 import Foundation
 
 /// Where an occurrence stands right now.
-enum OccurrenceState: String, Sendable, Hashable, CaseIterable {
+nonisolated enum OccurrenceState: String, Sendable, Hashable, CaseIterable {
     /// Exists, but too early to show anywhere.
     case upcoming
     /// Inside its lead time, or undated and simply outstanding.
@@ -50,7 +50,7 @@ enum OccurrenceState: String, Sendable, Hashable, CaseIterable {
 }
 
 /// How the Today screen groups the day.
-enum DaySection: String, Sendable, Hashable, CaseIterable {
+nonisolated enum DaySection: String, Sendable, Hashable, CaseIterable {
     case now
     case upcoming
     case undated

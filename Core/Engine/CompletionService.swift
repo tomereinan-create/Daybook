@@ -2,7 +2,7 @@ import Foundation
 
 /// What a tap on a completion circle actually did. The surfaces use this to
 /// decide what to say back to the user.
-enum CompletionOutcome: Sendable, Hashable {
+nonisolated enum CompletionOutcome: Sendable, Hashable {
     /// The occurrence is finished.
     case completed
     /// A routine moved on; the value is the new step index.
@@ -14,7 +14,7 @@ enum CompletionOutcome: Sendable, Hashable {
 /// Pure transformations of a single occurrence record. No storage, no UI, so
 /// the same code runs from the app, the widget intent and the notification
 /// action, and can be tested on its own.
-struct CompletionService: Sendable {
+nonisolated struct CompletionService: Sendable {
     init() {}
 
     func complete(

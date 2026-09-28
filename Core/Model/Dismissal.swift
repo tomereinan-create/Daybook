@@ -1,6 +1,6 @@
 import Foundation
 
-enum EndCondition: Codable, Sendable, Hashable {
+nonisolated enum EndCondition: Codable, Sendable, Hashable {
     /// Stays on screen until the user completes it.
     case markedDone
     /// Disappears the moment the trigger time arrives (an event has begun).
@@ -13,7 +13,7 @@ enum EndCondition: Codable, Sendable, Hashable {
     case manualOnly
 }
 
-enum MissedPolicy: String, Codable, Sendable, Hashable, CaseIterable {
+nonisolated enum MissedPolicy: String, Codable, Sendable, Hashable, CaseIterable {
     /// Disappears and is recorded as missed.
     case logMissed
     /// Reappears on the next day at the same time.
@@ -22,7 +22,7 @@ enum MissedPolicy: String, Codable, Sendable, Hashable, CaseIterable {
     case becomeOpenTask
 }
 
-struct Dismissal: Codable, Sendable, Hashable {
+nonisolated struct Dismissal: Codable, Sendable, Hashable {
     var endCondition: EndCondition
     var onMissed: MissedPolicy
 

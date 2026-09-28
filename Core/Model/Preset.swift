@@ -5,7 +5,7 @@ import Foundation
 /// A preset is *only* a bag of defaults. Once an item is created the preset is
 /// kept for display and to decide which fields the editor shows first, but no
 /// engine decision is ever made from it.
-enum PresetKind: String, Codable, Sendable, Hashable, CaseIterable, Identifiable {
+nonisolated enum PresetKind: String, Codable, Sendable, Hashable, CaseIterable, Identifiable {
     case event
     case task
     case deadlineTask
@@ -214,7 +214,7 @@ extension PresetKind {
 }
 
 /// The editor's units of disclosure. Used only by the UI.
-enum SettingField: String, Sendable, Hashable, CaseIterable {
+nonisolated enum SettingField: String, Sendable, Hashable, CaseIterable {
     case trigger
     case recurrence
     case quota

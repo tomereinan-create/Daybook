@@ -22,6 +22,12 @@ settings:
     CURRENT_PROJECT_VERSION: "1"
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
+    # Xcode 26's default for new app projects. Views, view models and
+    # anything else in the app are main-actor isolated without saying so;
+    # Core/ opts back out with `nonisolated` because the widget process
+    # runs the same engine off the main actor.
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
     SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY: YES
     # Turn both of these back on once the first build is green. They are off
     # for now only because this project has not met a compiler yet, and a wall

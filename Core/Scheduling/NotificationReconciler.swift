@@ -1,7 +1,7 @@
 import Foundation
 
 /// What has to change to make the pending requests match the plan.
-struct NotificationReconciliation: Sendable, Equatable {
+nonisolated struct NotificationReconciliation: Sendable, Equatable {
     /// Requests to register. Already inside the budget.
     var toAdd: [PlannedNotification]
     /// Identifiers to cancel, because they are no longer planned or their time
@@ -20,7 +20,7 @@ struct NotificationReconciliation: Sendable, Equatable {
 /// rolling-window behaviour — add what is new, drop what expired, leave the
 /// rest — is decided here where it can be tested, and `NotificationScheduler`
 /// only carries out the result.
-struct NotificationReconciler: Sendable {
+nonisolated struct NotificationReconciler: Sendable {
     init() {}
 
     func reconcile(

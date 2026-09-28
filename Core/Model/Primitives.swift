@@ -2,7 +2,7 @@ import Foundation
 
 /// A wall-clock time with no date attached. Recurring items carry one of these
 /// instead of an absolute `Date`, so "07:30 every day" survives DST and travel.
-struct TimeOfDay: Codable, Sendable, Hashable, Comparable {
+nonisolated struct TimeOfDay: Codable, Sendable, Hashable, Comparable {
     var hour: Int
     var minute: Int
 
@@ -19,26 +19,26 @@ struct TimeOfDay: Codable, Sendable, Hashable, Comparable {
 }
 
 /// 1 = Sunday, matching `Calendar.component(.weekday:)`.
-enum Weekday: Int, Codable, Sendable, Hashable, CaseIterable, Comparable {
+nonisolated enum Weekday: Int, Codable, Sendable, Hashable, CaseIterable, Comparable {
     case sunday = 1, monday, tuesday, wednesday, thursday, friday, saturday
 
     static func < (lhs: Weekday, rhs: Weekday) -> Bool { lhs.rawValue < rhs.rawValue }
 }
 
-enum Priority: String, Codable, Sendable, Hashable, CaseIterable {
+nonisolated enum Priority: String, Codable, Sendable, Hashable, CaseIterable {
     case normal
     /// Reserved for the Screen Time / FamilyControls blocking that is out of
     /// scope for v1. Today it only affects ordering and notification budget.
     case mandatory
 }
 
-enum QuietHoursPolicy: String, Codable, Sendable, Hashable, CaseIterable {
+nonisolated enum QuietHoursPolicy: String, Codable, Sendable, Hashable, CaseIterable {
     case respect
     case override
 }
 
 /// One ordered sub-step of a routine.
-struct Step: Codable, Sendable, Hashable, Identifiable {
+nonisolated struct Step: Codable, Sendable, Hashable, Identifiable {
     var id: UUID
     var title: String
 
@@ -49,7 +49,7 @@ struct Step: Codable, Sendable, Hashable, Identifiable {
 }
 
 /// The user's global do-not-disturb band. Stored in app settings, not per item.
-struct QuietHours: Codable, Sendable, Hashable {
+nonisolated struct QuietHours: Codable, Sendable, Hashable {
     var isEnabled: Bool
     var start: TimeOfDay
     var end: TimeOfDay

@@ -5,7 +5,7 @@ import Foundation
 /// The engine only ever sees snapshots. That keeps SwiftData, the main actor
 /// and the widget process out of the scheduling logic, and lets every engine
 /// test run without a model container.
-struct ItemSnapshot: Sendable, Hashable, Identifiable {
+nonisolated struct ItemSnapshot: Sendable, Hashable, Identifiable {
     let id: UUID
     let title: String
     let notes: String
@@ -35,13 +35,13 @@ struct ItemSnapshot: Sendable, Hashable, Identifiable {
 
 /// Identity of a single occurrence: which item, and which slot of its
 /// recurrence. One-off and undated items use a single stable slot.
-struct OccurrenceKey: Sendable, Hashable, Codable {
+nonisolated struct OccurrenceKey: Sendable, Hashable, Codable {
     let itemID: UUID
     let slot: Date
 }
 
 /// Per-occurrence user state. Completion lives here, never on the item.
-struct OccurrenceStateRecord: Sendable, Hashable {
+nonisolated struct OccurrenceStateRecord: Sendable, Hashable {
     var key: OccurrenceKey
     var completedAt: Date?
     var missedAt: Date?
@@ -79,7 +79,7 @@ struct OccurrenceStateRecord: Sendable, Hashable {
 
 /// An occurrence the generator placed on the calendar, before user state is
 /// taken into account.
-struct GeneratedOccurrence: Sendable, Hashable {
+nonisolated struct GeneratedOccurrence: Sendable, Hashable {
     let key: OccurrenceKey
     /// When it fires. `nil` for items with no calendar-bound trigger: undated
     /// tasks, quota habits, location reminders and unstarted relative timers.
@@ -95,7 +95,7 @@ struct GeneratedOccurrence: Sendable, Hashable {
 
 /// A generated occurrence plus its item, its user state, and the state the
 /// engine resolved for a given moment. This is what every surface consumes.
-struct ResolvedOccurrence: Sendable, Hashable, Identifiable {
+nonisolated struct ResolvedOccurrence: Sendable, Hashable, Identifiable {
     let item: ItemSnapshot
     let generated: GeneratedOccurrence
     let record: OccurrenceStateRecord
@@ -140,7 +140,7 @@ struct ResolvedOccurrence: Sendable, Hashable, Identifiable {
     }
 }
 
-struct QuotaProgress: Sendable, Hashable {
+nonisolated struct QuotaProgress: Sendable, Hashable {
     let completed: Int
     let target: Int
     let period: DateInterval

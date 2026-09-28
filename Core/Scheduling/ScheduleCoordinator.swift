@@ -2,7 +2,7 @@ import Foundation
 
 /// The outcome of one reschedule, for the diagnostics row in Settings and for
 /// the tests.
-struct ScheduleOutcome: Sendable, Equatable {
+nonisolated struct ScheduleOutcome: Sendable, Equatable {
     var added: Int
     var removed: Int
     var kept: Int
@@ -27,7 +27,7 @@ struct ScheduleOutcome: Sendable, Equatable {
 /// data change, from the background refresh task, and after an alarm is
 /// dismissed. It is idempotent: running it twice in a row changes nothing the
 /// second time, which is what makes it safe to call that often.
-struct ScheduleCoordinator: Sendable {
+nonisolated struct ScheduleCoordinator: Sendable {
     var engine: ScheduleEngine
     var notifications: any NotificationScheduling
     var alarms: any AlarmScheduling

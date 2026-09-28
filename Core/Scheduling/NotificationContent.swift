@@ -6,7 +6,7 @@ import Foundation
 /// it a plain struct means the widget process, the tests and the app all build
 /// the same copy, and nothing has to hand a `UNNotificationRequest` across an
 /// isolation boundary.
-struct NotificationContent: Sendable, Hashable {
+nonisolated struct NotificationContent: Sendable, Hashable {
     var title: String
     var body: String
     var categoryIdentifier: String
@@ -29,7 +29,7 @@ struct NotificationContent: Sendable, Hashable {
     }
 }
 
-enum NotificationUserInfoKey {
+nonisolated enum NotificationUserInfoKey {
     static let itemID = "itemID"
     static let slot = "slot"
     static let snoozeMinutes = "snoozeMinutes"
@@ -37,7 +37,7 @@ enum NotificationUserInfoKey {
 
 /// Mirrors `UNNotificationInterruptionLevel` without importing it, so this file
 /// stays testable and the mapping lives in one obvious place.
-enum NotificationInterruptionLevel: String, Sendable, Hashable, CaseIterable {
+nonisolated enum NotificationInterruptionLevel: String, Sendable, Hashable, CaseIterable {
     case passive
     case active
     case timeSensitive
@@ -45,7 +45,7 @@ enum NotificationInterruptionLevel: String, Sendable, Hashable, CaseIterable {
 
 /// Turns a planned alert into words. The only place in the project that knows
 /// what a nag should say.
-struct NotificationContentBuilder: Sendable {
+nonisolated struct NotificationContentBuilder: Sendable {
     init() {}
 
     func content(for notification: PlannedNotification) -> NotificationContent {
@@ -105,12 +105,12 @@ struct NotificationContentBuilder: Sendable {
 
 /// The categories registered at launch. Their identifiers are stable strings
 /// because iOS matches delivered notifications against them by name.
-enum NotificationCategory: String, Sendable, CaseIterable {
+nonisolated enum NotificationCategory: String, Sendable, CaseIterable {
     case actionable = "daybook.actionable"
     case actionableWithSnooze = "daybook.actionable.snooze"
 }
 
-enum NotificationAction: String, Sendable, CaseIterable {
+nonisolated enum NotificationAction: String, Sendable, CaseIterable {
     case done = "daybook.action.done"
     case snooze = "daybook.action.snooze"
 }

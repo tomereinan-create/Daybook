@@ -1,7 +1,6 @@
 import SwiftData
 import SwiftUI
 
-@MainActor
 struct TodayView: View {
     @Environment(AppModel.self) private var model
     /// Re-reading these keeps the plan fresh when SwiftData changes underneath.
@@ -91,7 +90,6 @@ struct TodayView: View {
 }
 
 /// One line on the Today screen.
-@MainActor
 struct OccurrenceRow: View {
     @Environment(AppModel.self) private var model
     let occurrence: ResolvedOccurrence

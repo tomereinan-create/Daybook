@@ -1,11 +1,11 @@
 import Foundation
 
-enum QuotaPeriod: String, Codable, Sendable, Hashable, CaseIterable {
+nonisolated enum QuotaPeriod: String, Codable, Sendable, Hashable, CaseIterable {
     case week
     case month
 }
 
-enum Frequency: Codable, Sendable, Hashable {
+nonisolated enum Frequency: Codable, Sendable, Hashable {
     case once
     case daily
     case weekdays(Set<Weekday>)
@@ -26,13 +26,13 @@ enum Frequency: Codable, Sendable, Hashable {
     }
 }
 
-enum RecurrenceEnd: Codable, Sendable, Hashable {
+nonisolated enum RecurrenceEnd: Codable, Sendable, Hashable {
     case never
     case until(Date)
     case afterOccurrences(Int)
 }
 
-struct Recurrence: Codable, Sendable, Hashable {
+nonisolated struct Recurrence: Codable, Sendable, Hashable {
     var frequency: Frequency
     var end: RecurrenceEnd
     /// The day the recurrence counts from. `everyNDays` and `afterOccurrences`

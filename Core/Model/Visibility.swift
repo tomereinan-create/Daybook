@@ -2,7 +2,7 @@ import Foundation
 
 /// Where an item is allowed to appear. `appList` is implicit for everything;
 /// an item with an empty set still shows inside the app.
-struct SurfaceSet: OptionSet, Codable, Sendable, Hashable {
+nonisolated struct SurfaceSet: OptionSet, Codable, Sendable, Hashable {
     let rawValue: Int
 
     static let liveActivity = SurfaceSet(rawValue: 1 << 0)
@@ -13,7 +13,7 @@ struct SurfaceSet: OptionSet, Codable, Sendable, Hashable {
 }
 
 /// A single surface the engine can be asked to plan for.
-enum Surface: String, Sendable, Hashable, CaseIterable {
+nonisolated enum Surface: String, Sendable, Hashable, CaseIterable {
     case liveActivity
     case homeWidget
     case app
@@ -27,7 +27,7 @@ enum Surface: String, Sendable, Hashable, CaseIterable {
     }
 }
 
-struct Visibility: Codable, Sendable, Hashable {
+nonisolated struct Visibility: Codable, Sendable, Hashable {
     /// How long before the trigger the item starts appearing, in seconds.
     var leadTime: TimeInterval
     var surfaces: SurfaceSet

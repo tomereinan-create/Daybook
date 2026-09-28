@@ -1,6 +1,6 @@
 import Foundation
 
-enum Intensity: Int, Codable, Sendable, Hashable, Comparable, CaseIterable {
+nonisolated enum Intensity: Int, Codable, Sendable, Hashable, Comparable, CaseIterable {
     /// Appears on surfaces but never posts a notification.
     case none = 0
     case silent = 1
@@ -17,7 +17,7 @@ enum Intensity: Int, Codable, Sendable, Hashable, Comparable, CaseIterable {
     }
 }
 
-struct Nag: Codable, Sendable, Hashable {
+nonisolated struct Nag: Codable, Sendable, Hashable {
     var isEnabled: Bool
     var intervalMinutes: Int
     var maxRepeats: Int
@@ -29,7 +29,7 @@ struct Nag: Codable, Sendable, Hashable {
     }
 }
 
-struct Alerting: Codable, Sendable, Hashable {
+nonisolated struct Alerting: Codable, Sendable, Hashable {
     var intensity: Intensity
     /// Seconds *before* the trigger. Always positive.
     var preAlertOffsets: [TimeInterval]

@@ -3,7 +3,6 @@ import SwiftUI
 
 /// Every item the user has, grouped so the ones that never reach a surface
 /// are still easy to find.
-@MainActor
 struct AllItemsView: View {
     @Environment(AppModel.self) private var model
     @Query(sort: \Item.createdAt, order: .reverse) private var items: [Item]

@@ -1,7 +1,7 @@
 import Foundation
 import UserNotifications
 
-enum NotificationAuthorization: String, Sendable, Hashable {
+nonisolated enum NotificationAuthorization: String, Sendable, Hashable {
     case notDetermined
     case denied
     case authorized
@@ -17,7 +17,7 @@ enum NotificationAuthorization: String, Sendable, Hashable {
 /// centre, and so nothing has to pass a non-`Sendable` `UNNotificationRequest`
 /// across an isolation boundary — the live implementation builds the request
 /// from value types on the other side.
-protocol NotificationScheduling: Sendable {
+nonisolated protocol NotificationScheduling: Sendable {
     func pendingIdentifiers() async -> Set<String>
     func add(_ notification: PlannedNotification, content: NotificationContent) async throws
     func removePending(identifiers: [String]) async
@@ -28,7 +28,7 @@ protocol NotificationScheduling: Sendable {
 }
 
 /// The real thing.
-struct SystemNotificationScheduler: NotificationScheduling {
+nonisolated struct SystemNotificationScheduler: NotificationScheduling {
     private var center: UNUserNotificationCenter { .current() }
 
     init() {}

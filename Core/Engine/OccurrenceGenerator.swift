@@ -2,7 +2,7 @@ import Foundation
 
 /// Turns an item's recurrence into the concrete occurrences that fall in a
 /// date range. Knows nothing about completion, alerts or surfaces.
-struct OccurrenceGenerator: Sendable {
+nonisolated struct OccurrenceGenerator: Sendable {
     var calendar: Calendar
 
     init(calendar: Calendar) {

@@ -2,7 +2,7 @@ import AlarmKit
 import Foundation
 import SwiftUI
 
-enum AlarmAuthorization: String, Sendable, Hashable {
+nonisolated enum AlarmAuthorization: String, Sendable, Hashable {
     case notDetermined
     case denied
     case authorized
@@ -12,7 +12,7 @@ enum AlarmAuthorization: String, Sendable, Hashable {
 
 /// What the app needs from AlarmKit, behind a protocol so the coordinator can
 /// be tested without the framework.
-protocol AlarmScheduling: Sendable {
+nonisolated protocol AlarmScheduling: Sendable {
     func scheduledIdentifiers() async -> Set<UUID>
     func schedule(_ alarm: PlannedAlarm) async throws
     func cancel(ids: [UUID]) async
@@ -22,7 +22,7 @@ protocol AlarmScheduling: Sendable {
 
 /// Metadata travels with the alarm so the app can find the occurrence again
 /// when the alarm is stopped.
-struct DaybookAlarmMetadata: AlarmMetadata {
+nonisolated struct DaybookAlarmMetadata: AlarmMetadata {
     var itemID: UUID
     var slot: Date
 
@@ -34,7 +34,7 @@ struct DaybookAlarmMetadata: AlarmMetadata {
     }
 }
 
-struct SystemAlarmScheduler: AlarmScheduling {
+nonisolated struct SystemAlarmScheduler: AlarmScheduling {
     var calendar: Calendar
 
     init(calendar: Calendar = .current) {

@@ -3,7 +3,7 @@ import Foundation
 /// Turns a generated occurrence plus its stored state into the answer every
 /// surface needs: when it actually fires, when it goes away, and where it
 /// stands right now.
-struct StateResolver: Sendable {
+nonisolated struct StateResolver: Sendable {
     var calendar: Calendar
     var configuration: EngineConfiguration
 

@@ -2,7 +2,7 @@ import Foundation
 
 /// Everything that decides how an item behaves. The engine reads only this;
 /// it never branches on the preset an item was created from.
-struct ItemSettings: Codable, Sendable, Hashable {
+nonisolated struct ItemSettings: Codable, Sendable, Hashable {
     var trigger: Trigger
     var recurrence: Recurrence
     var visibility: Visibility

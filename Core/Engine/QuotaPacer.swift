@@ -7,7 +7,7 @@ import Foundation
 /// "3 times a week" only nudges on Friday if you have done fewer than one.
 /// It never nudges on the first day of a period, and it never nudges once the
 /// quota is met.
-struct QuotaPacer: Sendable {
+nonisolated struct QuotaPacer: Sendable {
     var calendar: Calendar
 
     init(calendar: Calendar) {

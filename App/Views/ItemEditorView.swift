@@ -4,7 +4,6 @@ import SwiftUI
 /// Create and edit share one form. The preset decides which settings sit in
 /// the open, everything else lives under Advanced, and nothing is hidden for
 /// good.
-@MainActor
 struct ItemEditorView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss

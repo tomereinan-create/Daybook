@@ -22,7 +22,6 @@ enum PresetCatalog {
 }
 
 /// Step one of creating an item: pick the shape, then edit only what matters.
-@MainActor
 struct NewItemFlow: View {
     @Environment(\.dismiss) private var dismiss
     @State private var chosen: PresetKind?

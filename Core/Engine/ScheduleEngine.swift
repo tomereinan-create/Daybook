@@ -6,7 +6,7 @@ import Foundation
 /// the four questions the app is built on: what occurrences exist, what state
 /// each is in, what each surface shows, and what should be scheduled next.
 /// It holds no state and touches no framework beyond Foundation.
-struct ScheduleEngine: Sendable {
+nonisolated struct ScheduleEngine: Sendable {
     var calendar: Calendar
     var configuration: EngineConfiguration
     var quietHours: QuietHours
@@ -211,7 +211,7 @@ struct ScheduleEngine: Sendable {
     }
 }
 
-struct MonitoredRegion: Sendable, Hashable, Identifiable {
+nonisolated struct MonitoredRegion: Sendable, Hashable, Identifiable {
     let key: OccurrenceKey
     let title: String
     let trigger: LocationTrigger
@@ -219,7 +219,7 @@ struct MonitoredRegion: Sendable, Hashable, Identifiable {
     var id: OccurrenceKey { key }
 }
 
-struct LocationMonitoringPlan: Sendable {
+nonisolated struct LocationMonitoringPlan: Sendable {
     let monitored: [MonitoredRegion]
     /// Regions the platform cap left out. The app surfaces these as a warning
     /// rather than failing quietly.

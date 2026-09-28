@@ -3,7 +3,7 @@ import Foundation
 
 /// Why a notification exists. The scheduler turns this into localized copy;
 /// the engine stays free of user-facing text.
-enum AlertRole: String, Sendable, Hashable, CaseIterable {
+nonisolated enum AlertRole: String, Sendable, Hashable, CaseIterable {
     case preAlert
     case primary
     case nag
@@ -13,7 +13,7 @@ enum AlertRole: String, Sendable, Hashable, CaseIterable {
     case followUp
 }
 
-struct PlannedNotification: Sendable, Hashable, Identifiable {
+nonisolated struct PlannedNotification: Sendable, Hashable, Identifiable {
     let id: String
     let key: OccurrenceKey
     let title: String
@@ -37,7 +37,7 @@ struct PlannedNotification: Sendable, Hashable, Identifiable {
     }
 }
 
-struct PlannedAlarm: Sendable, Hashable, Identifiable {
+nonisolated struct PlannedAlarm: Sendable, Hashable, Identifiable {
     let id: String
     /// AlarmKit identifies alarms by `UUID`, and it has to be the same one
     /// every time we reschedule or we would stack duplicates. Derived from the
@@ -56,7 +56,7 @@ struct PlannedAlarm: Sendable, Hashable, Identifiable {
     var repeatsWeekly: Bool { !weekdays.isEmpty }
 }
 
-struct NotificationPlan: Sendable {
+nonisolated struct NotificationPlan: Sendable {
     /// At most `configuration.notificationBudget` entries, ascending by time.
     let notifications: [PlannedNotification]
     let alarms: [PlannedAlarm]
@@ -77,7 +77,7 @@ struct NotificationPlan: Sendable {
 /// The 64-request iOS cap is the constraint that shapes this whole type: the
 /// planner always produces a *candidate* list first, then spends the budget on
 /// the things that matter most, primary alerts before repeat nags.
-struct NotificationPlanner: Sendable {
+nonisolated struct NotificationPlanner: Sendable {
     var calendar: Calendar
     var configuration: EngineConfiguration
     var quietHours: QuietHours

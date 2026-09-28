@@ -3,7 +3,6 @@ import SwiftUI
 
 /// Wraps a preview in an in-memory store seeded with a handful of items, so
 /// every canvas shows something real rather than an empty list.
-@MainActor
 struct PreviewHost<Content: View>: View {
     private let model: AppModel
     private let content: Content

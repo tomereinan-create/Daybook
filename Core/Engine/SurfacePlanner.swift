@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Ordering, highest first: mandatory before normal, then how urgent the state
 /// is, then the soonest trigger, then title so the result is stable.
-struct SurfacePlanner: Sendable {
+nonisolated struct SurfacePlanner: Sendable {
     var configuration: EngineConfiguration
 
     init(configuration: EngineConfiguration = .default) {
@@ -63,7 +63,7 @@ struct SurfacePlanner: Sendable {
 }
 
 /// Everything the Today screen needs for one day, already grouped.
-struct DayPlan: Sendable {
+nonisolated struct DayPlan: Sendable {
     let day: Date
     let sections: [DaySection: [ResolvedOccurrence]]
 
