@@ -2,16 +2,17 @@
 
 ## Status
 
-**Phase 1 (Foundation) — complete and green.**
+**Phases 1 and 2 complete and green.**
 
-CI: macOS 26.6.2, Xcode 26.6, iOS 26 SDK. All nine test suites pass.
+CI: macOS 26.6.2, Xcode 26.6, iOS 26 SDK. All twelve test suites pass.
 
 ```
-Notification planning and the 64-request cap ✓    What each surface shows ✓
-Occurrence generation ✓                           The day the Today screen sees ✓
-Quota pacing ✓                                    Presets are only defaults ✓
-Completion, routines and quotas ✓                 Daylight saving, midnight and time zones ✓
-Occurrence state ✓
+Occurrence generation ✓          Reconciling the rolling window ✓
+Occurrence state ✓               Scheduling end to end ✓
+Quota pacing ✓                   What a notification says ✓
+Completion, routines, quotas ✓   What each surface shows ✓
+Notification planning + cap ✓    The day the Today screen sees ✓
+Presets are only defaults ✓      Daylight saving, midnight, time zones ✓
 ```
 
 Every push runs `xcodegen generate` and `xcodebuild test` on a macOS runner.
@@ -57,6 +58,40 @@ every setting reachable under Advanced, all-items list. English and Hebrew,
 
 **Tests** (`Tests`) — nine suites, all deterministic: fixed calendars, explicit
 instants, no `Date()`.
+
+## Phase 2: notifications and alarms
+
+**The rolling window is a diff.** `NotificationReconciler` compares the plan
+against what iOS holds and returns add / remove / keep, so a reschedule is
+idempotent: running it twice changes nothing the second time. That is what
+makes it safe to call on launch, on every edit, on foreground and from the
+background task. Fire times are part of an identifier, because the reconciler
+compares identifiers and an alert whose time moved has to look like a different
+request or the stale one survives at the old time.
+
+**Completion silences its nags immediately**, not at the next refresh.
+
+**AlarmKit**, read from the API rather than guessed. Three things worth
+recording because they are not what you would assume:
+
+- `AlarmManager.alarms` is a throwing property.
+- `AlarmPresentation.Alert`'s current initialiser is iOS **26.1**, not 26.0, so
+  there is an availability branch and the deprecated `stopButton` form below it.
+  The deployment target stays at 26.0.
+- Snooze is not a button behaviour. It is `CountdownDuration.postAlert` behind
+  a `.countdown` secondary button.
+
+A daily or weekday alarm becomes **one repeating alarm AlarmKit owns**, keyed by
+the item so it is stable across days. Recurrences it cannot express weekly —
+every N days, day of month — fall back to a fixed alarm per occurrence under a
+derived deterministic id, so rescheduling replaces rather than stacks.
+
+**Actions work from a cold start**: the payload carries item and slot, and the
+handler resolves the occurrence from the store. **Background refresh queues its
+successor before doing any work**, so the chain survives being killed mid-run.
+
+Both schedulers sit behind protocols and the whole layer is tested against
+fakes.
 
 ## What the tests caught
 
@@ -149,5 +184,13 @@ pins them); reinstall with `npx skills add emilkowalski/skills`. The
 - [ ] Register the App Group in the Apple developer portal and enable the App
       Groups capability for the app ID.
 - [ ] Replace `icon-1024.png` with a real icon.
-- [ ] Nothing needs a physical device yet. Phase 2 (alarms) and phase 3 (Live
-      Activity, widgets, location) both do.
+- [ ] Enable three capabilities on the app ID and target: **App Groups**,
+      **Background Modes** (Background fetch), **Time Sensitive Notifications**.
+- [ ] Check whether AlarmKit needs a request-only entitlement from Apple. One
+      source says it does; Apple's own documentation only mentions
+      `NSAlarmKitUsageDescription`, which is already in Info.plist. Worth
+      settling before submission rather than at review.
+- [ ] **A physical device is now needed** to exercise phase 2 properly.
+      Notifications can be faked in the simulator; AlarmKit ringing through
+      silent mode, a Focus breaking through, and background refresh actually
+      firing cannot.
