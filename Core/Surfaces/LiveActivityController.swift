@@ -24,12 +24,13 @@ final class LiveActivityController {
 
     private init() {}
 
-    private var activity: Activity<DaybookActivityAttributes>? {
-        Activity<DaybookActivityAttributes>.activities.first
-    }
-
     var areActivitiesEnabled: Bool {
         ActivityAuthorizationInfo().areActivitiesEnabled
+    }
+
+    /// Which day the running card belongs to, if one is running.
+    private var runningDay: Date? {
+        Activity<DaybookActivityAttributes>.activities.first?.attributes.day
     }
 
     /// Bring the card into line with the day. Safe to call as often as you like.
@@ -39,34 +40,35 @@ final class LiveActivityController {
         let state = Self.contentState(now: now)
         let today = calendar.startOfDay(for: now)
 
-        guard let activity else {
+        guard let runningDay else {
             // Nothing running. Only start one if there is something to say.
             guard !state.isClear else { return }
-            await start(day: today, state: state, now: now)
+            start(day: today, state: state, now: now)
+            return
+        }
+
+        if state.isClear {
+            await end()
             return
         }
 
         // A new day, or old enough that the system is about to end it anyway.
-        let isStale = activity.attributes.day != today
+        let isStale = runningDay != today
             || (startedAt.map { now.timeIntervalSince($0) > maximumAge } ?? false)
-
-        if state.isClear {
-            await end(activity)
-            return
-        }
         if isStale {
-            await end(activity)
-            await start(day: today, state: state, now: now)
+            await end()
+            start(day: today, state: state, now: now)
             return
         }
-        await activity.update(content(state, now: now))
+
+        await Self.updateRunning(content(state, now: now))
     }
 
-    /// Ends the card outright. Used when the last thing is done, and on the
-    /// way out of a day.
+    /// Ends the card outright. Used when the last thing is done, and on the way
+    /// out of a day.
     func end() async {
-        guard let activity else { return }
-        await end(activity)
+        await Self.endAll()
+        startedAt = nil
     }
 
     // MARK: - Content
@@ -102,7 +104,7 @@ final class LiveActivityController {
         day: Date,
         state: DaybookActivityAttributes.ContentState,
         now: Date
-    ) async {
+    ) {
         do {
             _ = try Activity.request(
                 attributes: DaybookActivityAttributes(day: day),
@@ -119,8 +121,22 @@ final class LiveActivityController {
         }
     }
 
-    private func end(_ activity: Activity<DaybookActivityAttributes>) async {
-        await activity.end(nil, dismissalPolicy: .immediate)
-        startedAt = nil
+    // MARK: - Crossing into ActivityKit
+    //
+    // `Activity` cannot be carried from the main actor into ActivityKit's
+    // nonisolated async methods. These two fetch it and use it inside the same
+    // nonisolated context, so nothing is ever sent across a boundary.
+
+    private nonisolated static func endAll() async {
+        for activity in Activity<DaybookActivityAttributes>.activities {
+            await activity.end(nil, dismissalPolicy: .immediate)
+        }
+    }
+
+    private nonisolated static func updateRunning(
+        _ content: ActivityContent<DaybookActivityAttributes.ContentState>
+    ) async {
+        guard let activity = Activity<DaybookActivityAttributes>.activities.first else { return }
+        await activity.update(content)
     }
 }
