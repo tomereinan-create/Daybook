@@ -13,11 +13,9 @@ struct TimeZoneAndDSTTests {
         let anchor = Fixture.date(2026, 3, 1, 0, 0, calendar: newYork)
         let item = Fixture.dailyItem(at: TimeOfDay(hour: 7, minute: 0), from: anchor)
 
-        let occurrences = OccurrenceGenerator(calendar: newYork).occurrences(
-            for: item,
-            in: Fixture.date(2026, 3, 6, 0, 0, calendar: newYork)
-                ..<Fixture.date(2026, 3, 11, 0, 0, calendar: newYork)
-        )
+        let start = Fixture.date(2026, 3, 6, 0, 0, calendar: newYork)
+        let end = Fixture.date(2026, 3, 11, 0, 0, calendar: newYork)
+        let occurrences = OccurrenceGenerator(calendar: newYork).occurrences(for: item, in: start..<end)
         #expect(occurrences.count == 5)
         for occurrence in occurrences {
             #expect(newYork.component(.hour, from: occurrence.slot) == 7)
@@ -35,11 +33,9 @@ struct TimeZoneAndDSTTests {
         let anchor = Fixture.date(2026, 3, 1, 0, 0, calendar: newYork)
         let item = Fixture.dailyItem(at: TimeOfDay(hour: 2, minute: 30), from: anchor)
 
-        let occurrences = OccurrenceGenerator(calendar: newYork).occurrences(
-            for: item,
-            in: Fixture.date(2026, 3, 8, 0, 0, calendar: newYork)
-                ..<Fixture.date(2026, 3, 9, 0, 0, calendar: newYork)
-        )
+        let start = Fixture.date(2026, 3, 8, 0, 0, calendar: newYork)
+        let end = Fixture.date(2026, 3, 9, 0, 0, calendar: newYork)
+        let occurrences = OccurrenceGenerator(calendar: newYork).occurrences(for: item, in: start..<end)
         // What matters is that the missing hour neither swallows the
         // occurrence nor produces two. Foundation snaps the nonexistent 02:30
         // to one side of the gap; we assert only that it landed outside it,
@@ -55,11 +51,9 @@ struct TimeZoneAndDSTTests {
         let anchor = Fixture.date(2026, 10, 1, 0, 0, calendar: newYork)
         let item = Fixture.dailyItem(at: TimeOfDay(hour: 7, minute: 0), from: anchor)
 
-        let occurrences = OccurrenceGenerator(calendar: newYork).occurrences(
-            for: item,
-            in: Fixture.date(2026, 10, 31, 0, 0, calendar: newYork)
-                ..<Fixture.date(2026, 11, 3, 0, 0, calendar: newYork)
-        )
+        let start = Fixture.date(2026, 10, 31, 0, 0, calendar: newYork)
+        let end = Fixture.date(2026, 11, 3, 0, 0, calendar: newYork)
+        let occurrences = OccurrenceGenerator(calendar: newYork).occurrences(for: item, in: start..<end)
         #expect(occurrences.count == 3)
         for occurrence in occurrences {
             #expect(newYork.component(.hour, from: occurrence.slot) == 7)
@@ -73,8 +67,9 @@ struct TimeZoneAndDSTTests {
     func timeZoneChangeMovesTheAlarm() {
         let anchor = Fixture.date(2026, 6, 1, 0, 0, calendar: newYork)
         let item = Fixture.dailyItem(at: TimeOfDay(hour: 7, minute: 0), from: anchor)
-        let range = Fixture.date(2026, 6, 10, 0, 0, calendar: newYork)
-            ..<Fixture.date(2026, 6, 11, 0, 0, calendar: newYork)
+        let start = Fixture.date(2026, 6, 10, 0, 0, calendar: newYork)
+        let end = Fixture.date(2026, 6, 11, 0, 0, calendar: newYork)
+        let range = start..<end
 
         let inNewYork = OccurrenceGenerator(calendar: newYork).occurrences(for: item, in: range)
         let inJerusalem = OccurrenceGenerator(calendar: jerusalem).occurrences(for: item, in: range)
@@ -96,11 +91,9 @@ struct TimeZoneAndDSTTests {
             from: anchor,
             endCondition: .windowEnds(30 * 60)
         )
-        let generated = OccurrenceGenerator(calendar: calendar).occurrences(
-            for: item,
-            in: Fixture.date(2026, 3, 10, 0, 0, calendar: calendar)
-                ..<Fixture.date(2026, 3, 11, 0, 0, calendar: calendar)
-        )
+        let start = Fixture.date(2026, 3, 10, 0, 0, calendar: calendar)
+        let end = Fixture.date(2026, 3, 11, 0, 0, calendar: calendar)
+        let generated = OccurrenceGenerator(calendar: calendar).occurrences(for: item, in: start..<end)
         #expect(generated.count == 1)
 
         let resolver = StateResolver(calendar: calendar)
@@ -132,11 +125,9 @@ struct TimeZoneAndDSTTests {
             from: anchor,
             endCondition: .atTime(TimeOfDay(hour: 6, minute: 0))
         )
-        let generated = OccurrenceGenerator(calendar: calendar).occurrences(
-            for: item,
-            in: Fixture.date(2026, 3, 10, 0, 0, calendar: calendar)
-                ..<Fixture.date(2026, 3, 11, 0, 0, calendar: calendar)
-        )
+        let start = Fixture.date(2026, 3, 10, 0, 0, calendar: calendar)
+        let end = Fixture.date(2026, 3, 11, 0, 0, calendar: calendar)
+        let generated = OccurrenceGenerator(calendar: calendar).occurrences(for: item, in: start..<end)
         let resolver = StateResolver(calendar: calendar)
         let window = resolver.windowEnd(
             for: item,
