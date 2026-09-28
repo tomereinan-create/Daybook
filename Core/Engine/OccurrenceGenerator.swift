@@ -133,6 +133,18 @@ struct OccurrenceGenerator: Sendable {
     /// Zero-based position of `day` in the recurrence, computed in closed form
     /// so that a hundredth occurrence costs the same as the first.
     func ordinal(of day: Date, frequency: Frequency, anchorDay: Date) -> Int? {
+        // A quota counts whole periods, and the period holding the anchor
+        // begins before the anchor itself: a habit created on a Tuesday still
+        // belongs to that week. So it is measured here, above the day-level
+        // guard, which would otherwise throw away the week it was created in.
+        if case .quota(_, let period) = frequency {
+            let anchorPeriod = calendar.startOfPeriod(period, containing: anchorDay)
+            let dayPeriod = calendar.startOfPeriod(period, containing: day)
+            let unit: Calendar.Component = period == .week ? .weekOfYear : .month
+            let count = calendar.dateComponents([unit], from: anchorPeriod, to: dayPeriod).value(for: unit) ?? 0
+            return count >= 0 ? count : nil
+        }
+
         let delta = calendar.dayCount(from: anchorDay, to: day)
         guard delta >= 0 else { return nil }
 
@@ -161,12 +173,9 @@ struct OccurrenceGenerator: Sendable {
             let dayMonth = calendar.startOfPeriod(.month, containing: day)
             let months = calendar.dateComponents([.month], from: firstMonth, to: dayMonth).month ?? 0
             return months >= 0 ? months : nil
-        case .quota(_, let period):
-            let anchorPeriod = calendar.startOfPeriod(period, containing: anchorDay)
-            let dayPeriod = calendar.startOfPeriod(period, containing: day)
-            let unit: Calendar.Component = period == .week ? .weekOfYear : .month
-            let count = calendar.dateComponents([unit], from: anchorPeriod, to: dayPeriod).value(for: unit) ?? 0
-            return count >= 0 ? count : nil
+        case .quota:
+            // Handled above, before the day guard.
+            return nil
         }
     }
 

@@ -200,6 +200,53 @@ struct OccurrenceGeneratorTests {
         }
     }
 
+    @Test("A quota habit started mid-week counts that week, not the next one")
+    func quotaCountsTheWeekItWasCreatedIn() {
+        // Created on a Tuesday. The week holding it began on the Sunday, two
+        // days before the anchor, and it still has to be this week's quota.
+        let created = Fixture.date(2026, 3, 10, 14, 30, calendar: calendar)
+        var settings = ItemSettings.default
+        settings.recurrence = Recurrence(
+            frequency: .quota(count: 3, period: .week),
+            end: .never,
+            anchorDate: created
+        )
+        let item = Fixture.item(title: "Gym", preset: .flexibleHabit, settings: settings, createdAt: created)
+
+        let start = Fixture.date(2026, 3, 10, 0, 0, calendar: calendar)
+        let end = Fixture.date(2026, 3, 12, 0, 0, calendar: calendar)
+        let occurrences = generator().occurrences(for: item, in: start..<end)
+
+        #expect(occurrences.count == 1)
+        #expect(occurrences.first?.ordinal == 0)
+        #expect(occurrences.first?.quotaPeriod?.start == Fixture.date(2026, 3, 8, 0, 0, calendar: calendar))
+        // Weeks entirely before the anchor are still left alone.
+        let older = generator().occurrences(
+            for: item,
+            in: Fixture.date(2026, 2, 1, 0, 0, calendar: calendar)..<Fixture.date(2026, 3, 8, 0, 0, calendar: calendar)
+        )
+        #expect(older.isEmpty)
+    }
+
+    @Test("A monthly quota started mid-month counts that month")
+    func monthlyQuotaCountsTheMonthItWasCreatedIn() {
+        let created = Fixture.date(2026, 3, 20, 9, 0, calendar: calendar)
+        var settings = ItemSettings.default
+        settings.recurrence = Recurrence(
+            frequency: .quota(count: 2, period: .month),
+            end: .never,
+            anchorDate: created
+        )
+        let item = Fixture.item(title: "Call home", preset: .flexibleHabit, settings: settings, createdAt: created)
+
+        let start = Fixture.date(2026, 3, 20, 0, 0, calendar: calendar)
+        let end = Fixture.date(2026, 3, 25, 0, 0, calendar: calendar)
+        let occurrences = generator().occurrences(for: item, in: start..<end)
+
+        #expect(occurrences.count == 1)
+        #expect(occurrences.first?.quotaPeriod?.start == Fixture.date(2026, 3, 1, 0, 0, calendar: calendar))
+    }
+
     @Test("An archived item generates nothing")
     func archivedGeneratesNothing() {
         let anchor = Fixture.date(2026, 3, 1, 0, 0, calendar: calendar)
