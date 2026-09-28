@@ -25,7 +25,7 @@ nonisolated struct OccurrenceReference: Sendable {
 ///
 /// Runs in the widget extension with the app closed, so it does the work
 /// against the shared store directly and then asks WidgetKit to redraw.
-struct CompleteOccurrenceIntent: AppIntent {
+struct CompleteOccurrenceIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "intent.complete.title"
     static let description = IntentDescription("intent.complete.description")
     /// The app must not be launched for a tick on a widget.
@@ -53,7 +53,7 @@ struct CompleteOccurrenceIntent: AppIntent {
     }
 }
 
-struct SnoozeOccurrenceIntent: AppIntent {
+struct SnoozeOccurrenceIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "intent.snooze.title"
     static let description = IntentDescription("intent.snooze.description")
     static let openAppWhenRun = false
@@ -81,7 +81,7 @@ struct SnoozeOccurrenceIntent: AppIntent {
 }
 
 /// Starting a relative timer from a surface.
-struct StartOccurrenceIntent: AppIntent {
+struct StartOccurrenceIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "intent.start.title"
     static let description = IntentDescription("intent.start.description")
     static let openAppWhenRun = false

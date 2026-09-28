@@ -25,6 +25,11 @@ final class AppModel {
         alarms: any AlarmScheduling = SystemAlarmScheduler()
     ) {
         self.store = store
+        // The Live Activity controller and the widget-facing helpers read
+        // through SharedStore. In the app process that has to be *this* store,
+        // or there would be two model containers open on one file.
+        SharedStore.override(store)
+
         let engine = ScheduleEngine(
             calendar: .current,
             configuration: .default,
@@ -80,6 +85,10 @@ final class AppModel {
             records: store.recordsByKey(),
             now: now
         )
+        // The card, the widgets and the notifications all describe the same
+        // day, so they are brought into line together or not at all.
+        await LiveActivityController.shared.refresh(now: now)
+        await SurfaceRefresh.reloadAll()
     }
 
     // MARK: - Writing

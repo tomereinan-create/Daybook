@@ -7,5 +7,6 @@ nonisolated struct DaybookWidgetBundle: WidgetBundle {
         TodayWidget()
         NextUpWidget()
         ProgressWidget()
+        DaybookLiveActivity()
     }
 }
