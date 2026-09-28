@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 /// Why a notification exists. The scheduler turns this into localized copy;
@@ -23,16 +24,36 @@ struct PlannedNotification: Sendable, Hashable, Identifiable {
     let sequence: Int
     let isMandatory: Bool
     let snoozeMinutes: Int?
+    /// When the thing itself happens. A pre-alert fires before this; a nag
+    /// after it. `nil` for alerts with no calendar-bound trigger.
+    let triggerDate: Date?
 
     var allowsSnooze: Bool { snoozeMinutes != nil }
+
+    /// How long before the thing itself this alert lands. Negative once the
+    /// trigger has passed, which is the nag case.
+    var leadTime: TimeInterval? {
+        triggerDate.map { $0.timeIntervalSince(fireDate) }
+    }
 }
 
 struct PlannedAlarm: Sendable, Hashable, Identifiable {
     let id: String
+    /// AlarmKit identifies alarms by `UUID`, and it has to be the same one
+    /// every time we reschedule or we would stack duplicates. Derived from the
+    /// item or the occurrence, never random.
+    let alarmID: UUID
     let key: OccurrenceKey
     let title: String
     let fireDate: Date
     let snoozeMinutes: Int?
+    /// Non-empty when AlarmKit can own the recurrence itself. We then schedule
+    /// one repeating alarm for the item instead of one per day, which is both
+    /// what the system expects and what keeps a 07:00 wake-up at 07:00 through
+    /// a clock change.
+    let weekdays: Set<Weekday>
+
+    var repeatsWeekly: Bool { !weekdays.isEmpty }
 }
 
 struct NotificationPlan: Sendable {
@@ -107,10 +128,22 @@ struct NotificationPlanner: Sendable {
 
         return NotificationPlan(
             notifications: chosen.sorted { $0.fireDate < $1.fireDate },
-            alarms: alarms.sorted { $0.fireDate < $1.fireDate },
+            alarms: Self.collapseRepeats(alarms),
             droppedCount: max(dropped, 0),
             window: window
         )
+    }
+
+    /// A daily wake-up has an occurrence on every day of the window, but
+    /// AlarmKit wants one repeating alarm, not three. Keep the earliest of each
+    /// identifier and drop the rest.
+    static func collapseRepeats(_ alarms: [PlannedAlarm]) -> [PlannedAlarm] {
+        var earliest: [UUID: PlannedAlarm] = [:]
+        for alarm in alarms {
+            if let existing = earliest[alarm.alarmID], existing.fireDate <= alarm.fireDate { continue }
+            earliest[alarm.alarmID] = alarm
+        }
+        return earliest.values.sorted { $0.fireDate < $1.fireDate }
     }
 
     // MARK: - Candidates
@@ -207,16 +240,34 @@ struct NotificationPlanner: Sendable {
         guard let trigger = occurrence.effectiveTrigger,
               trigger > window.start,
               trigger < window.end else { return [] }
-        let alerting = occurrence.item.settings.alerting
+        let item = occurrence.item
+        let alerting = item.settings.alerting
+        let weekdays = Self.weeklyDays(of: item.settings.recurrence.frequency)
+
         return [
             PlannedAlarm(
-                id: Self.identifier(occurrence.key, role: .primary, sequence: 0),
+                id: Self.identifier(occurrence.key, role: .primary, sequence: 0, fireDate: trigger),
+                // A repeating alarm belongs to the item, so its id must not
+                // change from day to day; a one-off belongs to its occurrence.
+                alarmID: weekdays.isEmpty ? Self.alarmID(for: occurrence.key) : item.id,
                 key: occurrence.key,
                 title: occurrence.displayTitle,
                 fireDate: trigger,
-                snoozeMinutes: alerting.snoozeAllowed ? alerting.snoozeMinutes : nil
+                snoozeMinutes: alerting.snoozeAllowed ? alerting.snoozeMinutes : nil,
+                weekdays: weekdays
             )
         ]
+    }
+
+    /// The days a frequency can hand to AlarmKit. Anything it cannot express
+    /// weekly — every N days, a day of the month, a quota — returns empty and
+    /// gets a fixed alarm per occurrence instead.
+    static func weeklyDays(of frequency: Frequency) -> Set<Weekday> {
+        switch frequency {
+        case .daily: Set(Weekday.allCases)
+        case .weekdays(let days): days
+        case .once, .everyNDays, .dayOfMonth, .quota: []
+        }
     }
 
     private func append(
@@ -235,7 +286,7 @@ struct NotificationPlanner: Sendable {
         let alerting = occurrence.item.settings.alerting
         result.append(
             PlannedNotification(
-                id: Self.identifier(occurrence.key, role: role, sequence: sequence),
+                id: Self.identifier(occurrence.key, role: role, sequence: sequence, fireDate: fire),
                 key: occurrence.key,
                 title: occurrence.displayTitle,
                 fireDate: fire,
@@ -243,7 +294,8 @@ struct NotificationPlanner: Sendable {
                 role: role,
                 sequence: sequence,
                 isMandatory: occurrence.item.settings.priority == .mandatory,
-                snoozeMinutes: alerting.snoozeAllowed ? alerting.snoozeMinutes : nil
+                snoozeMinutes: alerting.snoozeAllowed ? alerting.snoozeMinutes : nil,
+                triggerDate: occurrence.effectiveTrigger
             )
         )
     }
@@ -272,10 +324,15 @@ struct NotificationPlanner: Sendable {
 
     // MARK: - Identity
 
-    /// Stable across reschedules, so a pending request can be found and
-    /// cancelled the instant its occurrence is completed from any surface.
-    static func identifier(_ key: OccurrenceKey, role: AlertRole, sequence: Int) -> String {
-        "\(prefix(for: key))\(role.rawValue).\(sequence)"
+    /// Identifies one pending request.
+    ///
+    /// The fire time is part of the identifier on purpose. The scheduler
+    /// reconciles by comparing identifiers, so an alert whose time moved has to
+    /// look like a different request — otherwise the old one would survive at
+    /// its old time and the new one would never be added. Everything before the
+    /// `@` is stable, which is what makes prefix cancellation work.
+    static func identifier(_ key: OccurrenceKey, role: AlertRole, sequence: Int, fireDate: Date) -> String {
+        "\(prefix(for: key))\(role.rawValue).\(sequence)@\(Int(fireDate.timeIntervalSince1970))"
     }
 
     /// Every request for one occurrence starts with this, which is how
@@ -286,5 +343,22 @@ struct NotificationPlanner: Sendable {
 
     static func itemPrefix(for itemID: UUID) -> String {
         "\(itemID.uuidString)|"
+    }
+
+    /// A stable `UUID` for one occurrence, so rescheduling an alarm replaces it
+    /// rather than stacking another copy beside it. Derived, never random: the
+    /// same occurrence always produces the same identifier, on any launch and
+    /// on any device.
+    static func alarmID(for key: OccurrenceKey) -> UUID {
+        let seed = "\(key.itemID.uuidString)|\(Int(key.slot.timeIntervalSince1970))"
+        var bytes = Array(SHA256.hash(data: Data(seed.utf8)).prefix(16))
+        bytes[6] = (bytes[6] & 0x0F) | 0x40  // version 4
+        bytes[8] = (bytes[8] & 0x3F) | 0x80  // RFC 4122 variant
+        return UUID(uuid: (
+            bytes[0], bytes[1], bytes[2], bytes[3],
+            bytes[4], bytes[5], bytes[6], bytes[7],
+            bytes[8], bytes[9], bytes[10], bytes[11],
+            bytes[12], bytes[13], bytes[14], bytes[15]
+        ))
     }
 }

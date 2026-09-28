@@ -250,6 +250,9 @@ struct NotificationPlannerTests {
         let todays = plan.notifications.filter { $0.id.hasPrefix(prefix) }
         #expect(todays.count == 4)  // one pre-alert, one primary, two nags
         #expect(Set(todays.map(\.id)).count == 4)
+        // The fire time is part of the identifier, so moving an alert produces
+        // a different request rather than leaving a stale one behind.
+        #expect(todays.allSatisfy { $0.id.contains("@") })
         #expect(todays.allSatisfy { $0.id.hasPrefix(NotificationPlanner.itemPrefix(for: item.id)) })
     }
 }

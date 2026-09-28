@@ -6,5 +6,9 @@
 	<array>
 		<string>$(APP_GROUP_ID)</string>
 	</array>
+	<!-- Lets an item marked time-sensitive break through a Focus. Requested
+	     alongside the other notification options at onboarding. -->
+	<key>com.apple.developer.usernotifications.time-sensitive</key>
+	<true/>
 </dict>
 </plist>

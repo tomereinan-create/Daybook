@@ -44,6 +44,15 @@
 	<key>UIUserInterfaceStyle</key>
 	<string>Automatic</string>
 
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.tomereinan.daybook.refresh</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
+
 	<!-- Read by AppGroup.identifier so the app, the widget and the tests
 	     cannot drift apart. Filled from the APP_GROUP_ID build setting. -->
 	<key>AppGroupIdentifier</key>
