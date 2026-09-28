@@ -56,6 +56,14 @@ final class AppModel {
 
     func allItems() -> [Item] { store.allItems() }
 
+    func weekReview(now: Date) -> WeekReview {
+        engine.weekReview(
+            items: store.snapshots(),
+            records: store.recordsByKey(),
+            now: now
+        )
+    }
+
     func items(matching preset: PresetKind) -> [Item] {
         store.allItems().filter { $0.preset == preset && !$0.isArchived }
     }
