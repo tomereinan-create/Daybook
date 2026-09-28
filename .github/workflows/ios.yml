@@ -8,25 +8,43 @@ on:
 
 jobs:
   test:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -switch /Applications/Xcode_26.app
+      - name: Show what this runner has
+        run: |
+          sw_vers
+          ls -d /Applications/Xcode*.app || true
 
-      - name: Install XcodeGen
-        run: brew install xcodegen
+      - name: Select the newest Xcode on the image
+        run: |
+          LATEST=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$LATEST" ]; then
+            echo "Switching to $LATEST"
+            sudo xcode-select -switch "$LATEST"
+          else
+            echo "No versioned Xcode found; keeping the default toolchain."
+          fi
+          xcodebuild -version
 
-      - name: Generate project
+      - name: Install tools
+        run: |
+          brew install xcodegen
+          command -v xcbeautify >/dev/null 2>&1 || brew install xcbeautify
+
+      - name: Generate the project
         run: xcodegen generate
 
       - name: Pick a simulator
         id: sim
         run: |
-          NAME=$(xcrun simctl list devices available --json \
-            | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];\
-print([x['name'] for k,v in d.items() if 'iOS' in k for x in v if 'iPhone' in x['name']][-1])")
+          xcrun simctl list devices available
+          NAME=$(xcrun simctl list devices available --json | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone")) | .name] | last')
+          if [ -z "$NAME" ] || [ "$NAME" = "null" ]; then
+            echo "No iPhone simulator available on this runner."
+            exit 1
+          fi
           echo "Using simulator: $NAME"
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
 
