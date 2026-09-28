@@ -108,6 +108,10 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
       - run: npm ci
+      # wrangler reads secret NAMES from .dev.vars when generating Env. The
+      # example file holds the names with placeholder values, so CI generates
+      # the same shape a developer does.
+      - run: cp .dev.vars.example .dev.vars
       # wrangler generates the runtime types, so they have to exist before tsc.
       - run: npx wrangler types
       - run: npx tsc --noEmit

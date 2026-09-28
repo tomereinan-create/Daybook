@@ -5,7 +5,7 @@ import Foundation
 /// The value comes from the target's Info.plist (`AppGroupIdentifier`), which
 /// XcodeGen fills from the `APP_GROUP_ID` build setting, so the app, the widget
 /// extension and the tests can never drift apart.
-enum AppGroup {
+nonisolated enum AppGroup {
     static let identifier: String = {
         guard let value = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String,
               !value.isEmpty
@@ -29,7 +29,7 @@ enum AppGroup {
 }
 
 /// Small shared flags the widget reads without opening the store.
-enum SharedDefaults {
+nonisolated enum SharedDefaults {
     static var store: UserDefaults {
         UserDefaults(suiteName: AppGroup.identifier) ?? .standard
     }
