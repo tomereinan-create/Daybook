@@ -1,0 +1,78 @@
+# XcodeGen spec. Regenerate the project with:  xcodegen generate
+#
+# RENAME POINT: the four values under `settings.base` below are the only
+# placeholders. Change APP_NAME / PRODUCT_BUNDLE_IDENTIFIER / APP_GROUP_ID /
+# DEVELOPMENT_TEAM, run `xcodegen generate`, and the whole project follows.
+name: Daybook
+options:
+  bundleIdPrefix: com.tomereinan
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+  generateEmptyDirectories: false
+
+settings:
+  base:
+    APP_NAME: Daybook                                   # PLACEHOLDER
+    PRODUCT_BUNDLE_IDENTIFIER: com.tomereinan.daybook   # PLACEHOLDER
+    APP_GROUP_ID: group.com.tomereinan.daybook          # PLACEHOLDER
+    DEVELOPMENT_TEAM: ""                                # PLACEHOLDER - your Apple Team ID
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY: YES
+    # Turn both of these back on once the first build is green. They are off
+    # for now only because this project has not met a compiler yet, and a wall
+    # of promoted warnings would hide the real errors.
+    GCC_TREAT_WARNINGS_AS_ERRORS: NO
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: NO
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    CODE_SIGN_STYLE: Automatic
+    IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+
+targets:
+  Daybook:
+    type: application
+    platform: iOS
+    sources:
+      - path: Core
+      - path: App
+    settings:
+      base:
+        INFOPLIST_FILE: App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: App/Daybook.entitlements
+        PRODUCT_NAME: $(APP_NAME)
+        PRODUCT_BUNDLE_IDENTIFIER: $(PRODUCT_BUNDLE_IDENTIFIER)
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        DEVELOPMENT_ASSET_PATHS: ""
+
+  DaybookTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: Daybook
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(PRODUCT_BUNDLE_IDENTIFIER).tests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  Daybook:
+    build:
+      targets:
+        Daybook: all
+    test:
+      targets:
+        - DaybookTests
+      gatherCoverageData: true
+    run:
+      config: Debug

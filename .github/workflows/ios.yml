@@ -1,0 +1,41 @@
+name: build-and-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_26.app
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Pick a simulator
+        id: sim
+        run: |
+          NAME=$(xcrun simctl list devices available --json \
+            | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];\
+print([x['name'] for k,v in d.items() if 'iOS' in k for x in v if 'iPhone' in x['name']][-1])")
+          echo "Using simulator: $NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Build and test
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Daybook.xcodeproj \
+            -scheme Daybook \
+            -destination "platform=iOS Simulator,OS=latest,name=${{ steps.sim.outputs.name }}" \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcbeautify
