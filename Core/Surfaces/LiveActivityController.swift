@@ -7,11 +7,12 @@ import Foundation
 /// decides by itself whether to start, update, restart or end — so launch,
 /// background refresh, a completion and the wake-up alarm can all just call it.
 ///
-/// Two platform facts shape this. The system kills an activity after about
-/// eight hours, so a card started at breakfast is gone by mid-afternoon unless
-/// it is replaced. And `ContentState` is the only thing that travels on an
-/// update, which is why the push updater in phase 4 can slot in without
-/// restructuring: it sends the same value this builds locally.
+/// Three platform facts shape this. The system kills an activity after about
+/// eight hours, so one started at breakfast is gone by mid-afternoon unless it
+/// is replaced. `attributes` never travel after the activity starts, which is
+/// why the day's items live there and the push carries only an index. And a
+/// push token arrives asynchronously, some time after the request, so it is
+/// observed rather than waited for.
 @MainActor
 final class LiveActivityController {
     static let shared = LiveActivityController()
@@ -21,6 +22,11 @@ final class LiveActivityController {
     private let maximumAge: TimeInterval = 7 * 3600
 
     private var startedAt: Date?
+    private var tokenObservation: Task<Void, Never>?
+
+    /// Set by the app when push updates are switched on. Given the token and
+    /// the schedule; never given any item's content.
+    var uploadRegistration: (@MainActor (PushRegistration) async -> Void)?
 
     private init() {}
 
@@ -28,73 +34,80 @@ final class LiveActivityController {
         ActivityAuthorizationInfo().areActivitiesEnabled
     }
 
-    /// Which day the running card belongs to, if one is running.
-    private var runningDay: Date? {
-        Activity<DaybookActivityAttributes>.activities.first?.attributes.day
+    private var running: Activity<DaybookActivityAttributes>? {
+        Activity<DaybookActivityAttributes>.activities.first
     }
 
     /// Bring the card into line with the day. Safe to call as often as you like.
     func refresh(now: Date = .now, calendar: Calendar = .current) async {
         guard areActivitiesEnabled else { return }
 
-        let state = Self.contentState(now: now)
+        let items = Self.todaysItems(now: now)
+        let progress = SurfaceData.progress(now: now)
         let today = calendar.startOfDay(for: now)
 
-        guard let runningDay else {
-            // Nothing running. Only start one if there is something to say.
-            guard !state.isClear else { return }
-            start(day: today, state: state, now: now)
+        guard let running else {
+            guard !items.isEmpty else { return }
+            await start(day: today, items: items, progress: progress, now: now)
             return
         }
 
-        if state.isClear {
+        if items.isEmpty {
             await end()
             return
         }
 
-        // A new day, or old enough that the system is about to end it anyway.
-        let isStale = runningDay != today
+        // The attributes are frozen, so any change to the day's shape means the
+        // card is holding a list that no longer matches and has to be replaced.
+        let itemsChanged = running.attributes.items != items
+        let isStale = running.attributes.day != today
+            || itemsChanged
             || (startedAt.map { now.timeIntervalSince($0) > maximumAge } ?? false)
+
         if isStale {
             await end()
-            start(day: today, state: state, now: now)
+            await start(day: today, items: items, progress: progress, now: now)
             return
         }
 
-        await Self.updateRunning(content(state, now: now))
+        let state = Self.contentState(items: items, progress: progress, now: now)
+        await Self.updateRunning(content(state, items: items, now: now))
     }
 
-    /// Ends the card outright. Used when the last thing is done, and on the way
-    /// out of a day.
+    /// Ends the card outright.
     func end() async {
+        tokenObservation?.cancel()
+        tokenObservation = nil
         await Self.endAll()
         startedAt = nil
     }
 
     // MARK: - Content
 
-    /// The single place the card's contents are built. The push updater sends
-    /// exactly this value.
-    static func contentState(now: Date = .now) -> DaybookActivityAttributes.ContentState {
-        let entries = SurfaceData.entries(for: .liveActivity, now: now)
-        let items = entries.map(LiveItem.init)
-        let progress = SurfaceData.progress(now: now)
-        return DaybookActivityAttributes.ContentState(
-            current: items.first,
-            upcoming: Array(items.dropFirst()),
-            doneCount: progress.done,
-            totalCount: progress.total
-        )
+    /// The day's items, in the order the card will step through them.
+    static func todaysItems(now: Date = .now) -> [LiveItem] {
+        SurfaceData.entries(for: .liveActivity, now: now).map(LiveItem.init)
+    }
+
+    /// The only thing a push carries. Numbers, and nothing else.
+    static func contentState(
+        items: [LiveItem],
+        progress: (done: Int, total: Int),
+        now: Date
+    ) -> DaybookActivityAttributes.ContentState {
+        .at(now, items: items, doneCount: progress.done, totalCount: progress.total)
     }
 
     private func content(
         _ state: DaybookActivityAttributes.ContentState,
+        items: [LiveItem],
         now: Date
     ) -> ActivityContent<DaybookActivityAttributes.ContentState> {
         // Go visibly stale rather than keep showing a day that has moved on.
-        // The next trigger is the first moment this card could be wrong.
-        let nextChange = state.current?.triggerDate
-            ?? state.upcoming.compactMap(\.triggerDate).first
+        // The next moment is the first at which this card could be wrong.
+        let nextChange = items
+            .compactMap(\.triggerDate)
+            .first { $0 > now }
         let stale = nextChange.map { max($0, now.addingTimeInterval(60)) }
             ?? now.addingTimeInterval(3600)
         return ActivityContent(state: state, staleDate: stale)
@@ -102,17 +115,24 @@ final class LiveActivityController {
 
     private func start(
         day: Date,
-        state: DaybookActivityAttributes.ContentState,
+        items: [LiveItem],
+        progress: (done: Int, total: Int),
         now: Date
-    ) {
+    ) async {
+        let state = Self.contentState(items: items, progress: progress, now: now)
         do {
-            _ = try Activity.request(
-                attributes: DaybookActivityAttributes(day: day),
-                content: content(state, now: now),
-                // Phase 4 swaps this for `.token` and keeps everything else.
-                pushType: nil
+            let activity = try Activity.request(
+                attributes: DaybookActivityAttributes(day: day, items: items),
+                content: content(state, items: items, now: now),
+                // A token means a server can move the card on while the app is
+                // closed. Without an upload handler nothing is ever sent, and
+                // the token simply goes unused.
+                pushType: uploadRegistration == nil ? nil : .token
             )
             startedAt = now
+            if uploadRegistration != nil {
+                observeToken(of: activity, items: items, progress: progress, now: now)
+            }
         } catch {
             // Refused when the user has switched Live Activities off, or when
             // too many are already running. Neither is worth interrupting them
@@ -121,11 +141,38 @@ final class LiveActivityController {
         }
     }
 
+    /// The push token is not available at request time; it arrives shortly
+    /// after, and can be reissued. Each one is uploaded with the schedule it
+    /// belongs to.
+    private func observeToken(
+        of activity: Activity<DaybookActivityAttributes>,
+        items: [LiveItem],
+        progress: (done: Int, total: Int),
+        now: Date
+    ) {
+        tokenObservation?.cancel()
+        let schedule = PushSchedule.from(
+            items: items,
+            doneCount: progress.done,
+            totalCount: progress.total,
+            after: now
+        )
+        tokenObservation = Task { [weak self] in
+            for await data in activity.pushTokenUpdates {
+                guard !Task.isCancelled else { return }
+                let token = data.map { String(format: "%02x", $0) }.joined()
+                await self?.uploadRegistration?(
+                    PushRegistration(token: token, schedule: schedule)
+                )
+            }
+        }
+    }
+
     // MARK: - Crossing into ActivityKit
     //
     // `Activity` cannot be carried from the main actor into ActivityKit's
-    // nonisolated async methods. These two fetch it and use it inside the same
-    // nonisolated context, so nothing is ever sent across a boundary.
+    // nonisolated async methods, so these fetch it and use it in the same
+    // nonisolated context.
 
     private nonisolated static func endAll() async {
         for activity in Activity<DaybookActivityAttributes>.activities {
@@ -139,4 +186,10 @@ final class LiveActivityController {
         guard let activity = Activity<DaybookActivityAttributes>.activities.first else { return }
         await activity.update(content)
     }
+}
+
+/// Everything the push server is ever told.
+nonisolated struct PushRegistration: Codable, Sendable, Hashable {
+    var token: String
+    var schedule: PushSchedule
 }

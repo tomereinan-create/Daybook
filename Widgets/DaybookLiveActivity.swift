@@ -7,18 +7,18 @@ import WidgetKit
 nonisolated struct DaybookLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: DaybookActivityAttributes.self) { context in
-            LockScreenCard(state: context.state)
+            LockScreenCard(attributes: context.attributes, state: context.state)
                 .activityBackgroundTint(Color.black.opacity(0.45))
                 .activitySystemActionForegroundColor(.white)
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Image(systemName: context.state.current?.state.islandSymbol ?? "checkmark.circle")
+                    Image(systemName: context.attributes.current(at: context.state)?.state.islandSymbol ?? "checkmark.circle")
                         .font(.title3)
-                        .foregroundStyle(context.state.current?.state.widgetTint ?? .green)
+                        .foregroundStyle(context.attributes.current(at: context.state)?.state.widgetTint ?? .green)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    if let trigger = context.state.current?.triggerDate {
+                    if let trigger = context.attributes.current(at: context.state)?.triggerDate {
                         Text(trigger, style: .relative)
                             .font(.caption.weight(.semibold))
                             .monospacedDigit()
@@ -26,20 +26,20 @@ nonisolated struct DaybookLiveActivity: Widget {
                     }
                 }
                 DynamicIslandExpandedRegion(.center) {
-                    Text(context.state.current?.title ?? String(localized: "widget.clear.title"))
+                    Text(context.attributes.current(at: context.state)?.title ?? String(localized: "widget.clear.title"))
                         .font(.headline)
                         .lineLimit(1)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    if let item = context.state.current {
+                    if let item = context.attributes.current(at: context.state) {
                         ActionRow(item: item)
                     }
                 }
             } compactLeading: {
                 Image(systemName: "circle")
-                    .foregroundStyle(context.state.current?.state.widgetTint ?? .secondary)
+                    .foregroundStyle(context.attributes.current(at: context.state)?.state.widgetTint ?? .secondary)
             } compactTrailing: {
-                if let trigger = context.state.current?.triggerDate {
+                if let trigger = context.attributes.current(at: context.state)?.triggerDate {
                     Text(trigger, style: .timer)
                         .monospacedDigit()
                         .frame(maxWidth: 44)
@@ -49,26 +49,29 @@ nonisolated struct DaybookLiveActivity: Widget {
                 }
             } minimal: {
                 Image(systemName: "circle")
-                    .foregroundStyle(context.state.current?.state.widgetTint ?? .secondary)
+                    .foregroundStyle(context.attributes.current(at: context.state)?.state.widgetTint ?? .secondary)
             }
             // The island's own expansion spring belongs to the system. Tapping
             // it opens the app on the item rather than doing anything clever.
-            .widgetURL(context.state.current.map { URL(string: "daybook://item/\($0.itemID)")! })
+            .widgetURL(context.attributes.current(at: context.state).map { URL(string: "daybook://item/\($0.itemID)")! })
         }
     }
 }
 
 struct LockScreenCard: View {
+    let attributes: DaybookActivityAttributes
     let state: DaybookActivityAttributes.ContentState
+
+    private var upcoming: [LiveItem] { attributes.upcoming(at: state) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             header
-            if let current = state.current {
+            if let current = attributes.current(at: state) {
                 CurrentItemView(item: current)
-                if !state.upcoming.isEmpty {
+                if !upcoming.isEmpty {
                     Divider().opacity(0.25)
-                    ForEach(state.upcoming.prefix(3)) { item in
+                    ForEach(upcoming) { item in
                         UpcomingRow(item: item)
                     }
                 }
