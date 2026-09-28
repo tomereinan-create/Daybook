@@ -22,7 +22,7 @@ nonisolated enum PresetKind: String, Codable, Sendable, Hashable, CaseIterable, 
     var id: String { rawValue }
 }
 
-extension PresetKind {
+nonisolated extension PresetKind {
     /// The settings a freshly created item of this kind starts with.
     /// `reference` is "now": it anchors the recurrence and places a first
     /// sensible trigger date.

@@ -161,7 +161,7 @@ nonisolated struct SystemAlarmScheduler: AlarmScheduling {
     }
 }
 
-extension Weekday {
+nonisolated extension Weekday {
     var localeWeekday: Locale.Weekday {
         switch self {
         case .sunday: .sunday

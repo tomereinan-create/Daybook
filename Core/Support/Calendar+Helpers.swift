@@ -1,6 +1,6 @@
 import Foundation
 
-extension Calendar {
+nonisolated extension Calendar {
     /// The given wall-clock time on the given day.
     ///
     /// On a spring-forward day a time that does not exist (02:30 where the

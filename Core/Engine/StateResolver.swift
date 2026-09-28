@@ -147,7 +147,7 @@ nonisolated struct StateResolver: Sendable {
     }
 }
 
-extension ResolvedOccurrence {
+nonisolated extension ResolvedOccurrence {
     /// True when the window closed because the thing simply happened, not
     /// because the user let it slip. Events are the only case today, and the
     /// Today screen files them under "Earlier" rather than "Missed".
