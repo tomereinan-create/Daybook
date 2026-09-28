@@ -6,7 +6,7 @@ import WidgetKit
 /// first home page, with the medium one below it.
 nonisolated struct TodayWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: WidgetKind.today, provider: TodayTimelineProvider()) { entry in
+        AppIntentConfiguration(kind: WidgetKind.today, intent: TodayWidgetConfiguration.self, provider: TodayTimelineProvider()) { entry in
             TodayWidgetView(entry: entry)
                 .containerBackground(.background, for: .widget)
         }

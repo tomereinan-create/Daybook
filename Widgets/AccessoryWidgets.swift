@@ -1,10 +1,11 @@
+import AppIntents
 import SwiftUI
 import WidgetKit
 
 /// Lock screen, rectangular: the one thing happening next.
 nonisolated struct NextUpWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: WidgetKind.nextUp, provider: TodayTimelineProvider()) { entry in
+        AppIntentConfiguration(kind: WidgetKind.nextUp, intent: TodayWidgetConfiguration.self, provider: TodayTimelineProvider()) { entry in
             NextUpView(entry: entry)
                 .containerBackground(.clear, for: .widget)
         }
@@ -51,7 +52,7 @@ struct NextUpView: View {
 /// Lock screen, circular: how much of the day is behind you.
 nonisolated struct ProgressWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: WidgetKind.progress, provider: TodayTimelineProvider()) { entry in
+        AppIntentConfiguration(kind: WidgetKind.progress, intent: TodayWidgetConfiguration.self, provider: TodayTimelineProvider()) { entry in
             ProgressRingView(entry: entry)
                 .containerBackground(.clear, for: .widget)
         }

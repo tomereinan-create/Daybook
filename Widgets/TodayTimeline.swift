@@ -1,3 +1,4 @@
+import AppIntents
 import Foundation
 import WidgetKit
 
@@ -72,20 +73,28 @@ nonisolated struct WidgetRow: Sendable, Hashable, Identifiable {
     ]
 }
 
-nonisolated struct TodayTimelineProvider: TimelineProvider {
+/// The widget takes no options yet. It exists because AppIntentTimelineProvider
+/// is the form of the protocol whose requirements are genuinely `async` —
+/// TimelineProvider's async methods are convenience wrappers around a
+/// completion handler that is not Sendable, so it cannot reach the store.
+struct TodayWidgetConfiguration: WidgetConfigurationIntent {
+    static let title: LocalizedStringResource = "widget.today.name"
+    static let description = IntentDescription("widget.today.description")
+    init() {}
+}
+
+nonisolated struct TodayTimelineProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> TodayEntry {
         .placeholder
     }
 
-    // The async variants, not the completion-handler ones: those hand back a
-    // non-Sendable closure that cannot cross into a Task.
-    func snapshot(in context: Context) async -> TodayEntry {
+    func snapshot(for configuration: TodayWidgetConfiguration, in context: Context) async -> TodayEntry {
         // The gallery preview must never show a real person's day.
         if context.isPreview { return .placeholder }
         return await Self.entry(at: .now)
     }
 
-    func timeline(in context: Context) async -> Timeline<TodayEntry> {
+    func timeline(for configuration: TodayWidgetConfiguration, in context: Context) async -> Timeline<TodayEntry> {
         let now = Date.now
         let first = await Self.entry(at: now)
         // Redraw when something actually changes rather than on a fixed tick:
