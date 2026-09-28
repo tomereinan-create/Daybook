@@ -29,20 +29,53 @@ final class DataStore {
             return (try! ModelContainer(for: schema, configurations: config), false)
         }
 
-        if let url = AppGroup.storeURL {
+        // Preferred: the App Group container, which the widgets and the Live
+        // Activity intents can also open.
+        if let url = AppGroup.storeURL, ensureDirectoryExists(url.deletingLastPathComponent()) {
             let config = ModelConfiguration(schema: schema, url: url)
             if let container = try? ModelContainer(for: schema, configurations: config) {
                 return (container, false)
             }
         }
 
-        let local = ModelConfiguration(schema: schema)
-        if let container = try? ModelContainer(for: schema, configurations: local) {
-            return (container, true)
+        // Fallback: this process only. Reached when the App Groups entitlement
+        // is missing — an unsigned simulator build, or a misconfigured app ID.
+        // Application Support does not exist in a fresh container, and SwiftData
+        // will not create it, so make it ourselves rather than lose the store.
+        if let support = try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        ) {
+            let url = support.appending(path: "Daybook.store")
+            let config = ModelConfiguration(schema: schema, url: url)
+            if let container = try? ModelContainer(for: schema, configurations: config) {
+                return (container, true)
+            }
         }
 
+        // Last resort. Data will not survive the process, so the app says so
+        // rather than pretending everything is fine.
         let memory = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-        return (try! ModelContainer(for: schema, configurations: memory), true)
+        if let container = try? ModelContainer(for: schema, configurations: memory) {
+            return (container, true)
+        }
+        // A failure here means the schema itself is invalid, which the tests
+        // would have caught long before a user ever ran this.
+        preconditionFailure("Could not open a model container for the Daybook schema.")
+    }
+
+    @discardableResult
+    private static func ensureDirectoryExists(_ url: URL) -> Bool {
+        let manager = FileManager.default
+        if manager.fileExists(atPath: url.path(percentEncoded: false)) { return true }
+        do {
+            try manager.createDirectory(at: url, withIntermediateDirectories: true)
+            return true
+        } catch {
+            return false
+        }
     }
 
     // MARK: - Reading
