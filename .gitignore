@@ -13,3 +13,7 @@ xcuserdata/
 # Swift
 .build/
 .swiftpm/
+
+# Claude Code's per-tool symlinks into .agents/skills. Absolute paths, so
+# machine-specific. Regenerate with `npx skills add emilkowalski/skills`.
+.claude/skills/
