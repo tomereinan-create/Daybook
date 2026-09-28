@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// Which presets the create flow offers today.
-///
-/// `locationReminder` is deliberately absent until phase 3 brings the map
-/// picker: the engine handles location triggers already, but offering the
-/// preset now would create items with nowhere to fire.
+/// Which presets the create flow offers.
 enum PresetCatalog {
     static let available: [PresetKind] = [
         .task,
@@ -15,6 +11,7 @@ enum PresetCatalog {
         .routine,
         .flexibleHabit,
         .relativeTimer,
+        .locationReminder,
         .wakeUp,
         .waitingFor,
         .someday

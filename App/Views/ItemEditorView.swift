@@ -111,10 +111,8 @@ struct ItemEditorView: View {
         return false
     }
 
-    /// `.location` has no editor until the map picker lands in phase 3, so it
-    /// is left out rather than shown as an empty row.
     private var editableFields: [SettingField] {
-        SettingField.allCases.filter { $0 != .location }
+        SettingField.allCases
     }
 
     private var orderedProminentFields: [SettingField] {

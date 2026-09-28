@@ -409,6 +409,40 @@
         }
       }
     },
+    "edge.arrive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrive"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מגיע"
+          }
+        }
+      }
+    },
+    "edge.leave": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עוזב"
+          }
+        }
+      }
+    },
     "edit.title": {
       "extractionState": "manual",
       "localizations": {
@@ -915,6 +949,108 @@
           "stringUnit": {
             "state": "translated",
             "value": "אם פספסתי"
+          }
+        }
+      }
+    },
+    "field.placeEdge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remind me when I"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "להזכיר לי כש"
+          }
+        }
+      }
+    },
+    "field.placeMap": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Map"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מפה"
+          }
+        }
+      }
+    },
+    "field.placeMap.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap the map to choose a place."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הקישו על המפה כדי לבחור מקום."
+          }
+        }
+      }
+    },
+    "field.placeMap.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to move the pin"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הקישו כדי להזיז את הסיכה"
+          }
+        }
+      }
+    },
+    "field.placeName": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Place name"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שם המקום"
+          }
+        }
+      }
+    },
+    "field.placeRadius": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Within"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "בטווח של"
           }
         }
       }
@@ -1561,6 +1697,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "בזמן עצמו"
+          }
+        }
+      }
+    },
+    "location.needsAlways.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daybook can only notice you arriving somewhere if location is set to Always."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daybook יכול לזהות שהגעתם למקום רק אם המיקום מוגדר ל\"תמיד\"."
+          }
+        }
+      }
+    },
+    "location.needsAlways.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Place reminders need background location"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "תזכורות מקום דורשות מיקום ברקע"
+          }
+        }
+      }
+    },
+    "location.overflow.body %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS watches 20 places at once. %lld are not being watched."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS עוקב אחרי 20 מקומות בו-זמנית. אחרי %lld לא עוקבים."
+          }
+        }
+      }
+    },
+    "location.overflow.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many places"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "יותר מדי מקומות"
           }
         }
       }

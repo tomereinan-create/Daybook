@@ -11,7 +11,7 @@ struct SettingFieldView: View {
         case .trigger: TriggerField(settings: $settings)
         case .recurrence: RecurrenceField(settings: $settings)
         case .quota: QuotaField(settings: $settings)
-        case .location: EmptyView()
+        case .location: LocationField(settings: $settings)
         case .relativeDuration: RelativeDurationField(settings: $settings)
         case .leadTime: LeadTimeField(settings: $settings)
         case .surfaces: SurfacesField(settings: $settings)
@@ -32,9 +32,10 @@ struct SettingFieldView: View {
 
 // MARK: - Trigger
 
-/// Trigger kinds the app can honour today. Location and after-previous are
-/// driven by machinery that lands in phase 3, so they are not offered yet.
-private let availableTriggerKinds: [TriggerKind] = [.time, .relative, .none]
+/// Trigger kinds the app can honour. `afterPrevious` is not offered: routines
+/// already chain through `steps`, and chaining separate items is a different
+/// feature nobody has asked for yet.
+private let availableTriggerKinds: [TriggerKind] = [.time, .relative, .location, .none]
 
 private struct TriggerField: View {
     @Binding var settings: ItemSettings

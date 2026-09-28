@@ -66,7 +66,44 @@ final class AppModel {
     /// the schedule up to date.
     func start(now: Date = .now) async {
         await coordinator.prepare()
+
+        // A region firing is the trigger for a place reminder, so it has to
+        // raise the alert itself; there is nothing to have scheduled earlier.
+        let monitor = LocationMonitorController.shared
+        monitor.onTrigger = { [weak self] key in
+            guard let self else { return }
+            Task { await self.locationDidFire(key) }
+        }
+        monitor.onAuthorizationChange = { [weak self] in
+            Task { await self?.reschedule() }
+        }
+
         await reschedule(now: now)
+    }
+
+    /// A place reminder's region was entered or left.
+    private func locationDidFire(_ key: OccurrenceKey, now: Date = .now) async {
+        await coordinator.alertNow(
+            for: key,
+            items: store.snapshots(),
+            records: store.recordsByKey(),
+            now: now
+        )
+        didChange()
+    }
+
+    /// Place reminders the platform cap left unmonitored. Settings shows these
+    /// rather than letting them silently not work.
+    var unmonitoredPlaces: [MonitoredRegion] {
+        LocationMonitorController.shared.overflow
+    }
+
+    var locationAuthorization: LocationAuthorization {
+        LocationMonitorController.shared.authorization
+    }
+
+    func requestLocationAuthorization() {
+        LocationMonitorController.shared.requestAuthorization()
     }
 
     /// Asks for notification and alarm permission. Onboarding calls this; the
@@ -88,6 +125,13 @@ final class AppModel {
         // The card, the widgets and the notifications all describe the same
         // day, so they are brought into line together or not at all.
         await LiveActivityController.shared.refresh(now: now)
+        await LocationMonitorController.shared.sync(
+            engine.locationMonitoringPlan(
+                items: store.snapshots(),
+                records: store.recordsByKey(),
+                now: now
+            )
+        )
         await SurfaceRefresh.reloadAll()
     }
 
