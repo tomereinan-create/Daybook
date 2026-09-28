@@ -25,7 +25,7 @@ nonisolated struct OccurrenceReference: Sendable {
 ///
 /// Runs in the widget extension with the app closed, so it does the work
 /// against the shared store directly and then asks WidgetKit to redraw.
-nonisolated struct CompleteOccurrenceIntent: AppIntent {
+struct CompleteOccurrenceIntent: AppIntent {
     static let title: LocalizedStringResource = "intent.complete.title"
     static let description = IntentDescription("intent.complete.description")
     /// The app must not be launched for a tick on a widget.
@@ -47,15 +47,13 @@ nonisolated struct CompleteOccurrenceIntent: AppIntent {
     func perform() async throws -> some IntentResult {
         let reference = OccurrenceReference(itemID: itemID, slot: slot)
         guard let key = reference.key else { return .result() }
-        await MainActor.run {
-            OccurrenceActions.complete(key)
-        }
+        OccurrenceActions.complete(key)
         await SurfaceRefresh.reloadAll()
         return .result()
     }
 }
 
-nonisolated struct SnoozeOccurrenceIntent: AppIntent {
+struct SnoozeOccurrenceIntent: AppIntent {
     static let title: LocalizedStringResource = "intent.snooze.title"
     static let description = IntentDescription("intent.snooze.description")
     static let openAppWhenRun = false
@@ -76,16 +74,14 @@ nonisolated struct SnoozeOccurrenceIntent: AppIntent {
     func perform() async throws -> some IntentResult {
         let reference = OccurrenceReference(itemID: itemID, slot: slot)
         guard let key = reference.key else { return .result() }
-        await MainActor.run {
-            OccurrenceActions.snooze(key)
-        }
+        OccurrenceActions.snooze(key)
         await SurfaceRefresh.reloadAll()
         return .result()
     }
 }
 
 /// Starting a relative timer from a surface.
-nonisolated struct StartOccurrenceIntent: AppIntent {
+struct StartOccurrenceIntent: AppIntent {
     static let title: LocalizedStringResource = "intent.start.title"
     static let description = IntentDescription("intent.start.description")
     static let openAppWhenRun = false
@@ -106,15 +102,13 @@ nonisolated struct StartOccurrenceIntent: AppIntent {
     func perform() async throws -> some IntentResult {
         let reference = OccurrenceReference(itemID: itemID, slot: slot)
         guard let key = reference.key else { return .result() }
-        await MainActor.run {
-            OccurrenceActions.start(key)
-        }
+        OccurrenceActions.start(key)
         await SurfaceRefresh.reloadAll()
         return .result()
     }
 }
 
-extension OccurrenceReference {
+nonisolated extension OccurrenceReference {
     init(itemID: String, slot: Double) {
         self.itemID = itemID
         self.slot = slot
