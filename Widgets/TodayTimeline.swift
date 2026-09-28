@@ -77,29 +77,26 @@ nonisolated struct TodayTimelineProvider: TimelineProvider {
         .placeholder
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (TodayEntry) -> Void) {
+    // The async variants, not the completion-handler ones: those hand back a
+    // non-Sendable closure that cannot cross into a Task.
+    func snapshot(in context: Context) async -> TodayEntry {
         // The gallery preview must never show a real person's day.
-        if context.isPreview {
-            completion(.placeholder)
-            return
-        }
-        Task { completion(await Self.entry(at: .now)) }
+        if context.isPreview { return .placeholder }
+        return await Self.entry(at: .now)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry>) -> Void) {
-        Task {
-            let now = Date.now
-            let first = await Self.entry(at: now)
-            // Redraw when something actually changes rather than on a fixed
-            // tick: the next trigger, the next window closing, or midnight.
-            let refreshDates = await Self.refreshPoints(after: now)
-            var entries = [first]
-            for date in refreshDates {
-                entries.append(await Self.entry(at: date))
-            }
-            let nextReload = refreshDates.first ?? now.addingTimeInterval(3600)
-            completion(Timeline(entries: entries, policy: .after(nextReload)))
+    func timeline(in context: Context) async -> Timeline<TodayEntry> {
+        let now = Date.now
+        let first = await Self.entry(at: now)
+        // Redraw when something actually changes rather than on a fixed tick:
+        // the next trigger, the next window closing, or midnight.
+        let refreshDates = await Self.refreshPoints(after: now)
+        var entries = [first]
+        for date in refreshDates {
+            entries.append(await Self.entry(at: date))
         }
+        let nextReload = refreshDates.first ?? now.addingTimeInterval(3600)
+        return Timeline(entries: entries, policy: .after(nextReload))
     }
 
     @MainActor

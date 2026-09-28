@@ -47,7 +47,7 @@ struct CompleteOccurrenceIntent: AppIntent {
     func perform() async throws -> some IntentResult {
         let reference = OccurrenceReference(itemID: itemID, slot: slot)
         guard let key = reference.key else { return .result() }
-        OccurrenceActions.complete(key)
+        await MainActor.run { _ = OccurrenceActions.complete(key) }
         await SurfaceRefresh.reloadAll()
         return .result()
     }
@@ -74,7 +74,7 @@ struct SnoozeOccurrenceIntent: AppIntent {
     func perform() async throws -> some IntentResult {
         let reference = OccurrenceReference(itemID: itemID, slot: slot)
         guard let key = reference.key else { return .result() }
-        OccurrenceActions.snooze(key)
+        await MainActor.run { _ = OccurrenceActions.snooze(key) }
         await SurfaceRefresh.reloadAll()
         return .result()
     }
@@ -102,7 +102,7 @@ struct StartOccurrenceIntent: AppIntent {
     func perform() async throws -> some IntentResult {
         let reference = OccurrenceReference(itemID: itemID, slot: slot)
         guard let key = reference.key else { return .result() }
-        OccurrenceActions.start(key)
+        await MainActor.run { _ = OccurrenceActions.start(key) }
         await SurfaceRefresh.reloadAll()
         return .result()
     }
