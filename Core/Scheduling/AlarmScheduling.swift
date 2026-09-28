@@ -44,16 +44,19 @@ struct SystemAlarmScheduler: AlarmScheduling {
     private var manager: AlarmManager { .shared }
 
     func scheduledIdentifiers() async -> Set<UUID> {
-        Set(manager.alarms.map(\.id))
+        // `alarms` can throw when the store is unavailable. An empty set is the
+        // safe answer: the coordinator then re-schedules what it wants rather
+        // than cancelling things it could not see.
+        let existing = (try? manager.alarms) ?? []
+        return Set(existing.map(\.id))
     }
 
     func schedule(_ alarm: PlannedAlarm) async throws {
         let metadata = DaybookAlarmMetadata(key: alarm.key)
 
-        // `stopButton` is deprecated; the system supplies the stop affordance
-        // and we only describe the secondary one. Snooze is not a button
-        // behaviour of its own — it is a countdown that starts after the alarm
-        // has alerted, which is what `postAlert` below sets up.
+        // Snooze is not a button behaviour of its own. It is a countdown that
+        // starts once the alarm has alerted, which is what the `postAlert`
+        // duration below sets up; the button just has to start it.
         let secondary: AlarmButton? = alarm.snoozeMinutes.map { minutes in
             AlarmButton(
                 text: LocalizedStringResource("alarm.snoozeMinutes \(minutes)"),
@@ -62,11 +65,32 @@ struct SystemAlarmScheduler: AlarmScheduling {
             )
         }
 
-        let alert = AlarmPresentation.Alert(
-            title: LocalizedStringResource(stringLiteral: alarm.title),
-            secondaryButton: secondary,
-            secondaryButtonBehavior: secondary == nil ? nil : .countdown
-        )
+        let title = LocalizedStringResource(stringLiteral: alarm.title)
+        let behaviour: AlarmPresentation.Alert.SecondaryButtonBehavior? = secondary == nil ? nil : .countdown
+
+        // The system supplies its own stop affordance from 26.1 onwards. On
+        // 26.0 the only initialiser available still wants one, so we describe
+        // it. Deployment target stays at 26.0 rather than narrowing who can
+        // install the app.
+        let alert: AlarmPresentation.Alert
+        if #available(iOS 26.1, *) {
+            alert = AlarmPresentation.Alert(
+                title: title,
+                secondaryButton: secondary,
+                secondaryButtonBehavior: behaviour
+            )
+        } else {
+            alert = AlarmPresentation.Alert(
+                title: title,
+                stopButton: AlarmButton(
+                    text: LocalizedStringResource("alarm.stop"),
+                    textColor: .white,
+                    systemImageName: "stop.circle"
+                ),
+                secondaryButton: secondary,
+                secondaryButtonBehavior: behaviour
+            )
+        }
 
         let attributes = AlarmAttributes<DaybookAlarmMetadata>(
             presentation: AlarmPresentation(alert: alert, countdown: nil, paused: nil),
@@ -85,7 +109,7 @@ struct SystemAlarmScheduler: AlarmScheduling {
             sound: .default
         )
 
-        _ = try await manager.schedule(id: alarm.id, configuration: configuration)
+        _ = try await manager.schedule(id: alarm.alarmID, configuration: configuration)
     }
 
     func cancel(ids: [UUID]) async {

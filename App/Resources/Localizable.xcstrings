@@ -290,6 +290,23 @@
         }
       }
     },
+    "alarm.stop": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עצירה"
+          }
+        }
+      }
+    },
     "alert.body.followUp": {
       "extractionState": "manual",
       "localizations": {
