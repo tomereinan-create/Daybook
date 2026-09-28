@@ -67,6 +67,15 @@ final class AppModel {
     func start(now: Date = .now) async {
         await coordinator.prepare()
 
+        // Push updates are off unless the user has pointed the app at a
+        // server. With no handler set, the activity asks for no push token and
+        // nothing ever leaves the device.
+        if let registrar = PushRegistrar.configured() {
+            LiveActivityController.shared.uploadRegistration = { registration in
+                try? await registrar.send(registration)
+            }
+        }
+
         // A region firing is the trigger for a place reminder, so it has to
         // raise the alert itself; there is nothing to have scheduled earlier.
         let monitor = LocationMonitorController.shared

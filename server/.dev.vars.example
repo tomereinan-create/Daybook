@@ -1,0 +1,6 @@
+# Copy to .dev.vars (gitignored) and fill in for local development.
+# In production these are set with `wrangler secret put <NAME>`.
+APNS_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nREPLACE\n-----END PRIVATE KEY-----"
+APNS_KEY_ID="REPLACE"
+APNS_TEAM_ID="REPLACE"
+REGISTRATION_SECRET="REPLACE"

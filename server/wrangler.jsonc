@@ -1,0 +1,34 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "daybook-push",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-09-28",
+	"compatibility_flags": ["nodejs_compat"],
+
+	// Every minute. A card that moves on a minute late is fine; one that moves
+	// on an hour late is the thing this whole service exists to prevent.
+	"triggers": {
+		"crons": ["* * * * *"]
+	},
+
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "daybook-push",
+			"database_id": "PLACEHOLDER-run-wrangler-d1-create-daybook-push",
+			"migrations_dir": "migrations"
+		}
+	],
+
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 1
+	},
+
+	// Not secret. The APNs key, its id, the team id and the shared registration
+	// secret are all set with `wrangler secret put`.
+	"vars": {
+		"APNS_HOST": "https://api.push.apple.com",
+		"APNS_TOPIC": "com.tomereinan.daybook.push-type.liveactivity"
+	}
+}

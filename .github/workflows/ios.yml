@@ -94,3 +94,21 @@ jobs:
           name: raw-xcodebuild-log
           path: raw-xcodebuild.log
           retention-days: 7
+
+  server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      # wrangler generates the runtime types, so they have to exist before tsc.
+      - run: npx wrangler types
+      - run: npx tsc --noEmit
+      - run: npm test
