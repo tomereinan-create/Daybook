@@ -121,6 +121,15 @@ struct SettingsView: View {
                 }
             }
 
+            Button("settings.test.send") {
+                Task {
+                    let status = await model.sendTestNotification()
+                    transferMessage = status.canPost
+                        ? String(localized: "settings.test.sent")
+                        : String(localized: "settings.test.blocked")
+                }
+            }
+
             Button("settings.permission.open") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)

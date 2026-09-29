@@ -153,6 +153,14 @@ nonisolated struct ScheduleCoordinator: Sendable {
         await notifications.registerCategories()
     }
 
+    /// Answers "is the problem permission, or is it my schedule?" directly.
+    func sendTestAlert() async throws -> NotificationAuthorization {
+        let status = await notifications.authorizationStatus()
+        guard status.canPost else { return status }
+        try await notifications.sendTest()
+        return status
+    }
+
     @discardableResult
     func requestPermissions() async -> (notifications: NotificationAuthorization, alarms: AlarmAuthorization) {
         let granted = await notifications.requestAuthorization()

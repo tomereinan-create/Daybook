@@ -58,6 +58,14 @@ struct ItemEditorView: View {
                 Label(draft.preset.title, systemImage: draft.preset.symbol)
             }
 
+            if !draft.settings.canAlert {
+                Section {
+                    Label("editor.silent", systemImage: "bell.slash")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             Section {
                 DisclosureGroup("section.advanced") {
                     ForEach(advancedFields, id: \.self) { field in

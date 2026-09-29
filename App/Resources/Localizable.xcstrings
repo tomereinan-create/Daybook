@@ -528,6 +528,23 @@
         }
       }
     },
+    "editor.silent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This one will never alert you. It has no time to alert at, or its alert is set to show only — change Triggered by, or Alert under Advanced."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הפריט הזה לעולם לא יתריע. אין לו שעה להתריע בה, או שההתראה מוגדרת לתצוגה בלבד — שנו את \"מופעל על ידי\", או את \"התראה\" בהגדרות המתקדמות."
+          }
+        }
+      }
+    },
     "end.afterCount": {
       "extractionState": "manual",
       "localizations": {
@@ -3669,6 +3686,91 @@
           "stringUnit": {
             "state": "translated",
             "value": "עד"
+          }
+        }
+      }
+    },
+    "settings.test.blocked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are not allowed yet. Open iOS Settings and turn them on for Daybook."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "התראות עדיין לא מאושרות. פתחו את הגדרות iOS והפעילו אותן עבור Daybook."
+          }
+        }
+      }
+    },
+    "settings.test.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you can see this, notifications are allowed."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אם אתם רואים את זה, ההתראות מאושרות."
+          }
+        }
+      }
+    },
+    "settings.test.send": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send a test notification"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שליחת התראת בדיקה"
+          }
+        }
+      }
+    },
+    "settings.test.sent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sent. It should arrive in about five seconds — lock the phone to see it on the lock screen."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נשלחה. אמורה להגיע בערך תוך חמש שניות — נעלו את הטלפון כדי לראות אותה במסך הנעילה."
+          }
+        }
+      }
+    },
+    "settings.test.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daybook is working"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daybook עובד"
           }
         }
       }

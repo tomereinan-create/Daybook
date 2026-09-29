@@ -25,6 +25,7 @@ nonisolated protocol NotificationScheduling: Sendable {
     func authorizationStatus() async -> NotificationAuthorization
     func requestAuthorization() async -> NotificationAuthorization
     func registerCategories() async
+    func sendTest() async throws
 }
 
 /// The real thing.
@@ -58,12 +59,36 @@ nonisolated struct SystemNotificationScheduler: NotificationScheduling {
 
         let interval = max(notification.fireDate.timeIntervalSinceNow, 1)
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false)
-        let request = UNNotificationRequest(
-            identifier: notification.id,
-            content: mutable,
-            trigger: trigger
+        do {
+            try await center.add(
+                UNNotificationRequest(identifier: notification.id, content: mutable, trigger: trigger)
+            )
+        } catch {
+            // A time-sensitive level needs an entitlement this build may not
+            // hold — a sideloaded one never does. Better an ordinary alert
+            // than no alert, so drop a rung and try once more.
+            guard mutable.interruptionLevel == .timeSensitive else { throw error }
+            mutable.interruptionLevel = .active
+            try await center.add(
+                UNNotificationRequest(identifier: notification.id, content: mutable, trigger: trigger)
+            )
+        }
+    }
+
+    /// Posts one alert a few seconds from now, so "did I allow notifications?"
+    /// can be answered without waiting for a real item to come due.
+    func sendTest() async throws {
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "settings.test.title")
+        content.body = String(localized: "settings.test.body")
+        content.sound = .default
+        try await center.add(
+            UNNotificationRequest(
+                identifier: "daybook.test.\(Int(Date.now.timeIntervalSince1970))",
+                content: content,
+                trigger: UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+            )
         )
-        try await center.add(request)
     }
 
     func removePending(identifiers: [String]) async {

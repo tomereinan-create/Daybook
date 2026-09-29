@@ -70,6 +70,12 @@ final class AppModel {
         return count
     }
 
+    /// Fires a notification five seconds from now. If this does not arrive,
+    /// the problem is permission, not scheduling.
+    func sendTestNotification() async -> NotificationAuthorization {
+        (try? await coordinator.sendTestAlert()) ?? .denied
+    }
+
     func weekReview(now: Date) -> WeekReview {
         engine.weekReview(
             items: store.snapshots(),

@@ -45,6 +45,9 @@ actor FakeNotificationScheduler: NotificationScheduling {
     }
 
     func registerCategories() async { categoriesRegistered = true }
+
+    private(set) var testsSent = 0
+    func sendTest() async throws { testsSent += 1 }
 }
 
 actor FakeAlarmScheduler: AlarmScheduling {

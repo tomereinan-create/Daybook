@@ -23,3 +23,21 @@ nonisolated struct ItemSettings: Codable, Sendable, Hashable {
         steps: []
     )
 }
+
+nonisolated extension ItemSettings {
+    /// False when nothing about this item could ever produce an alert: either
+    /// it has no moment to alert at, or its alert is set to display only. A
+    /// plain Task is both, on purpose — but that is worth saying out loud
+    /// rather than leaving someone waiting for a notification that was never
+    /// going to come.
+    var canAlert: Bool {
+        guard alerting.intensity > .none else { return false }
+        switch trigger.kind {
+        case .time, .relative, .location:
+            return true
+        case .afterPrevious, .none:
+            // Undated items can still chase you if they are set to.
+            return alerting.nag.isEnabled || recurrence.frequency.isQuota
+        }
+    }
+}
