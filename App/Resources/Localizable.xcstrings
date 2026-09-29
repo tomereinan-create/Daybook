@@ -154,6 +154,23 @@
         }
       }
     },
+    "action.edit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עריכה"
+          }
+        }
+      }
+    },
     "action.newItem": {
       "extractionState": "manual",
       "localizations": {
@@ -167,6 +184,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "פריט חדש"
+          }
+        }
+      }
+    },
+    "action.notDone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not done"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לא בוצע"
+          }
+        }
+      }
+    },
+    "action.notDoneUndo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ביטול"
           }
         }
       }
@@ -405,6 +456,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "למחוק את הפריט ואת ההיסטוריה שלו?"
+          }
+        }
+      }
+    },
+    "delete.recurring.confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this and every future repeat?"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "למחוק את זה ואת כל החזרות העתידיות?"
           }
         }
       }
@@ -2955,6 +3023,176 @@
           "stringUnit": {
             "state": "translated",
             "value": "בהמשך היום"
+          }
+        }
+      }
+    },
+    "settings.data.export": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export a backup"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ייצוא גיבוי"
+          }
+        }
+      }
+    },
+    "settings.data.exportAgain": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make a fresh backup"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ליצור גיבוי חדש"
+          }
+        }
+      }
+    },
+    "settings.data.exportFailed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not write the backup."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לא ניתן לכתוב את הגיבוי."
+          }
+        }
+      }
+    },
+    "settings.data.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing is stored anywhere but this phone, so a backup is the only copy. Restoring replaces everything currently in the app."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שום דבר לא נשמר מחוץ לטלפון הזה, כך שגיבוי הוא העותק היחיד. שחזור מחליף את כל מה שנמצא כרגע באפליקציה."
+          }
+        }
+      }
+    },
+    "settings.data.restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore from a backup"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שחזור מגיבוי"
+          }
+        }
+      }
+    },
+    "settings.data.restoreFailed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That file could not be read as a Daybook backup."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לא ניתן לקרוא את הקובץ כגיבוי של Daybook."
+          }
+        }
+      }
+    },
+    "settings.data.restored %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restored %lld items."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שוחזרו %lld פריטים."
+          }
+        }
+      }
+    },
+    "settings.data.result": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "גיבוי"
+          }
+        }
+      }
+    },
+    "settings.data.share": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save or send the backup"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לשמור או לשלוח את הגיבוי"
+          }
+        }
+      }
+    },
+    "settings.data.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "YOUR DATA"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הנתונים שלך"
           }
         }
       }

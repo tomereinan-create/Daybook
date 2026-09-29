@@ -76,6 +76,12 @@ private struct TriggerField: View {
                 if newValue == .relative, settings.trigger.relativeMinutes == nil {
                     settings.trigger.relativeMinutes = 30
                 }
+                // And the other way round: taking the time away leaves a
+                // repeat with nothing to hang off, so it stops repeating.
+                if newValue != .time, settings.recurrence.frequency.repeats,
+                   !settings.recurrence.frequency.isQuota {
+                    settings.recurrence.frequency = .once
+                }
             }
         )
     }
@@ -177,7 +183,17 @@ private struct RecurrenceField: View {
     private var kindBinding: Binding<FrequencyKind> {
         Binding(
             get: { settings.recurrence.frequency.kind },
-            set: { settings.recurrence.frequency = .make($0, from: settings.recurrence.frequency) }
+            set: { newKind in
+                settings.recurrence.frequency = .make(newKind, from: settings.recurrence.frequency)
+                // Nothing can repeat without a time to repeat at. A quota is
+                // the exception: it has no time on purpose.
+                if newKind != .once, newKind != .quota, settings.trigger.kind != .time {
+                    settings.trigger.kind = .time
+                    if settings.trigger.timeOfDay == nil {
+                        settings.trigger.timeOfDay = TimeOfDay(hour: 9, minute: 0)
+                    }
+                }
+            }
         )
     }
 

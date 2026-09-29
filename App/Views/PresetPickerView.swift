@@ -2,19 +2,16 @@ import SwiftUI
 
 /// Which presets the create flow offers.
 enum PresetCatalog {
+    /// Five, chosen by Tomer after using the app. The other seven kinds still
+    /// exist in the model and the engine — an item created before this change
+    /// keeps working, and the settings that made those kinds distinctive are
+    /// all still reachable under Advanced on any item.
     static let available: [PresetKind] = [
         .task,
         .event,
         .recurringTask,
-        .deadlineTask,
-        .timeBlock,
         .routine,
-        .flexibleHabit,
-        .relativeTimer,
-        .locationReminder,
-        .wakeUp,
-        .waitingFor,
-        .someday
+        .relativeTimer
     ]
 }
 

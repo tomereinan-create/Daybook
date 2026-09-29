@@ -113,6 +113,9 @@ nonisolated struct StateResolver: Sendable {
         now: Date
     ) -> OccurrenceState {
         if record.completedAt != nil { return .done }
+        // The user said they did not do it. That is a different answer from
+        // "the window closed", and it outranks the clock: they have decided.
+        if record.missedAt != nil { return .missed }
         if let snoozed = record.snoozedUntil, snoozed > now { return .snoozed }
 
         guard let trigger else {

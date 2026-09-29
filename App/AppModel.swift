@@ -56,6 +56,20 @@ final class AppModel {
 
     func allItems() -> [Item] { store.allItems() }
 
+    /// Writes a JSON backup and hands back the file to share.
+    func exportData(now: Date = .now) throws -> URL {
+        try DataTransfer.writeExport(from: store, now: now)
+    }
+
+    /// Replaces everything with the contents of a backup.
+    @discardableResult
+    func restoreData(from data: Data) throws -> Int {
+        let payload = try DataTransfer.read(data)
+        let count = DataTransfer.restore(payload, into: store)
+        didChange()
+        return count
+    }
+
     func weekReview(now: Date) -> WeekReview {
         engine.weekReview(
             items: store.snapshots(),
@@ -171,11 +185,31 @@ final class AppModel {
         return outcome
     }
 
+    /// "I did not do this." Different from letting the window close on its own,
+    /// and different from done: it clears the row without claiming credit.
+    func markNotDone(_ occurrence: ResolvedOccurrence, now: Date = .now) {
+        let row = store.record(for: occurrence.key)
+        var updated = completion.markMissed(row.state, now: now)
+        updated.completedAt = nil
+        updated.snoozedUntil = nil
+        row.state = updated
+        store.save()
+        Task { await coordinator.cancelAlerts(for: occurrence.key) }
+        didChange()
+    }
+
+    /// Deletes the item this occurrence belongs to, and everything it ever did.
+    func deleteItem(of occurrence: ResolvedOccurrence) {
+        guard let item = store.item(with: occurrence.item.id) else { return }
+        delete(item)
+    }
+
     func reopen(_ occurrence: ResolvedOccurrence) {
         let row = store.record(for: occurrence.key)
         row.state = completion.reopen(row.state, item: occurrence.item)
         store.save()
         didChange()
+        Task { await reschedule() }
     }
 
     @discardableResult

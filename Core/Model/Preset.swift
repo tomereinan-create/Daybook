@@ -58,8 +58,8 @@ nonisolated extension PresetKind {
             s.alerting = Alerting(
                 intensity: .standard,
                 preAlertOffsets: [24 * 3600, 4 * 3600, 3600],
-                nag: .every(30, upTo: 4),
-                escalates: true,
+                nag: .off,
+                escalates: false,
                 snoozeAllowed: true,
                 snoozeMinutes: 15
             )
@@ -72,7 +72,7 @@ nonisolated extension PresetKind {
             s.alerting = Alerting(
                 intensity: .standard,
                 preAlertOffsets: [],
-                nag: .every(15, upTo: 3),
+                nag: .off,
                 escalates: false,
                 snoozeAllowed: true,
                 snoozeMinutes: 10
@@ -129,7 +129,7 @@ nonisolated extension PresetKind {
             s.alerting = Alerting(
                 intensity: .timeSensitive,
                 preAlertOffsets: [],
-                nag: .every(5, upTo: 3),
+                nag: .off,
                 escalates: false,
                 snoozeAllowed: true,
                 snoozeMinutes: 5
@@ -157,7 +157,7 @@ nonisolated extension PresetKind {
             s.alerting = Alerting(
                 intensity: .silent,
                 preAlertOffsets: [],
-                nag: .every(3 * 24 * 60, upTo: 5),
+                nag: .off,
                 escalates: false,
                 snoozeAllowed: true,
                 snoozeMinutes: 24 * 60

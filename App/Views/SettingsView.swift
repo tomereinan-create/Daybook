@@ -1,10 +1,14 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var quietHours = SharedDefaults.quietHours
     @State private var showsWidgetHelp = false
     @State private var showsPushSetup = false
+    @State private var exportURL: URL?
+    @State private var showsImporter = false
+    @State private var transferMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -13,12 +17,24 @@ struct SettingsView: View {
                 permissionsSection
                 widgetSection
                 pushSection
+                dataSection
                 diagnosticsSection
                 privacySection
             }
             .navigationTitle("settings.title")
             .sheet(isPresented: $showsWidgetHelp) { WidgetSetupView() }
             .sheet(isPresented: $showsPushSetup) { PushSetupView() }
+            .fileImporter(
+                isPresented: $showsImporter,
+                allowedContentTypes: [.json]
+            ) { result in
+                restore(from: result)
+            }
+            .alert("settings.data.result", isPresented: .constant(transferMessage != nil)) {
+                Button("action.done") { transferMessage = nil }
+            } message: {
+                Text(transferMessage ?? "")
+            }
         }
     }
 
@@ -152,6 +168,60 @@ struct SettingsView: View {
             }
         } footer: {
             Text("settings.push.footer")
+        }
+    }
+
+    // MARK: - Data
+    //
+    // There is no account and no server, so a backup is the only thing between
+    // a reinstall and losing everything — and a sideloaded build has to be
+    // reinstalled every seven days.
+
+    private var dataSection: some View {
+        Section {
+            if let exportURL {
+                ShareLink(item: exportURL) {
+                    Label("settings.data.share", systemImage: "square.and.arrow.up")
+                }
+            }
+            Button {
+                prepareExport()
+            } label: {
+                Label(
+                    exportURL == nil ? "settings.data.export" : "settings.data.exportAgain",
+                    systemImage: "arrow.down.document"
+                )
+            }
+            Button {
+                showsImporter = true
+            } label: {
+                Label("settings.data.restore", systemImage: "arrow.up.document")
+            }
+        } header: {
+            Text("settings.data.title")
+        } footer: {
+            Text("settings.data.footer")
+        }
+    }
+
+    private func prepareExport() {
+        do {
+            exportURL = try model.exportData()
+        } catch {
+            transferMessage = String(localized: "settings.data.exportFailed")
+        }
+    }
+
+    /// Restoring replaces everything. Merging two histories of the same item
+    /// would silently invent a third.
+    private func restore(from result: Result<URL, Error>) {
+        do {
+            let url = try result.get()
+            let data = try Data(contentsOf: url)
+            let count = try model.restoreData(from: data)
+            transferMessage = String(localized: "settings.data.restored \(count)")
+        } catch {
+            transferMessage = String(localized: "settings.data.restoreFailed")
         }
     }
 

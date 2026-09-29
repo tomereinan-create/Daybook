@@ -95,6 +95,7 @@ struct OccurrenceRow: View {
     let occurrence: ResolvedOccurrence
     let now: Date
     let onEdit: @MainActor () -> Void
+    @State private var pendingDelete = false
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
@@ -114,7 +115,18 @@ struct OccurrenceRow: View {
         }
         .contentShape(.rect)
         .onTapGesture(perform: onEdit)
+        // Three answers to every row: I did it, I did not, and get rid of it.
+        // Swipe for speed, long press for the ones you use less often.
         .swipeActions(edge: .trailing) {
+            Button("action.delete", systemImage: "trash", role: .destructive) {
+                pendingDelete = true
+            }
+            if occurrence.state != .missed {
+                Button("action.notDone", systemImage: "xmark") {
+                    model.markNotDone(occurrence, now: now)
+                }
+                .tint(.orange)
+            }
             if occurrence.item.settings.alerting.snoozeAllowed && occurrence.state.isOutstanding {
                 Button("action.snooze", systemImage: "moon.zzz") {
                     model.snooze(occurrence, now: now)
@@ -123,12 +135,57 @@ struct OccurrenceRow: View {
             }
         }
         .swipeActions(edge: .leading) {
+            if occurrence.state == .done || occurrence.state == .missed {
+                Button("action.notDoneUndo", systemImage: "arrow.uturn.backward") {
+                    model.reopen(occurrence)
+                }
+                .tint(.gray)
+            } else {
+                Button("action.done", systemImage: "checkmark") {
+                    model.complete(occurrence, now: now)
+                }
+                .tint(.green)
+            }
             if occurrence.canStart {
                 Button("action.start", systemImage: "play.fill") {
                     model.start(occurrence, now: now)
                 }
                 .tint(.blue)
             }
+        }
+        .contextMenu {
+            if occurrence.state != .done {
+                Button("action.done", systemImage: "checkmark.circle") {
+                    model.complete(occurrence, now: now)
+                }
+            }
+            if occurrence.state != .missed {
+                Button("action.notDone", systemImage: "xmark.circle") {
+                    model.markNotDone(occurrence, now: now)
+                }
+            }
+            if occurrence.state == .done || occurrence.state == .missed {
+                Button("action.notDoneUndo", systemImage: "arrow.uturn.backward") {
+                    model.reopen(occurrence)
+                }
+            }
+            Button("action.edit", systemImage: "pencil", action: onEdit)
+            Divider()
+            Button("action.delete", systemImage: "trash", role: .destructive) {
+                pendingDelete = true
+            }
+        }
+        .confirmationDialog(
+            occurrence.item.settings.recurrence.frequency.repeats
+                ? "delete.recurring.confirm"
+                : "delete.confirm",
+            isPresented: $pendingDelete,
+            titleVisibility: .visible
+        ) {
+            Button("action.delete", role: .destructive) {
+                model.deleteItem(of: occurrence)
+            }
+            Button("action.cancel", role: .cancel) {}
         }
     }
 
