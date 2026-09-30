@@ -89,7 +89,8 @@ final class AppModel {
             liveActivitiesEnabled: LiveActivityController.shared.areActivitiesEnabled,
             liveActivityRunning: LiveActivityController.shared.isRunning,
             onLockScreen: SurfaceData.entries(for: .liveActivity, now: now).count,
-            onHomeWidget: SurfaceData.entries(for: .homeWidget, now: now).count
+            onHomeWidget: SurfaceData.entries(for: .homeWidget, now: now).count,
+            itemsToday: SurfaceData.progress(now: now).total
         )
     }
 
@@ -365,4 +366,7 @@ nonisolated struct Diagnostics: Sendable, Equatable {
     var liveActivityRunning = false
     var onLockScreen = 0
     var onHomeWidget = 0
+    /// Everything on today's plan, done or not. Without it there is no telling
+    /// "nothing is set to show" from "there is nothing today".
+    var itemsToday = 0
 }

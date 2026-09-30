@@ -137,6 +137,23 @@
         }
       }
     },
+    "action.dismiss": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "סגירה"
+          }
+        }
+      }
+    },
     "action.done": {
       "extractionState": "manual",
       "localizations": {
@@ -1969,6 +1986,210 @@
           "stringUnit": {
             "state": "translated",
             "value": "מה זה?"
+          }
+        }
+      }
+    },
+    "notice.container.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The widget and the lock-screen card run in a separate process, and this build was not granted the shared container they read through. They will look empty however many items you have. Everything inside the app still works."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הווידג’ט וכרטיס מסך הנעילה רצים בתהליך נפרד, ולבנייה הזו לא ניתן המכל המשותף שדרכו הם קוראים. הם ייראו ריקים לא משנה כמה פריטים יש. כל השאר באפליקציה עובד."
+          }
+        }
+      }
+    },
+    "notice.container.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The widget cannot read your data"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הווידג’ט לא יכול לקרוא את הנתונים"
+          }
+        }
+      }
+    },
+    "notice.denied.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They were refused earlier, so only iOS can turn them back on: Settings › Daybook › Notifications › Allow Notifications."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הן נדחו קודם, ולכן רק iOS יכול להחזיר אותן: הגדרות › Daybook › התראות › אפשר התראות."
+          }
+        }
+      }
+    },
+    "notice.denied.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are blocked"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ההתראות חסומות"
+          }
+        }
+      }
+    },
+    "notice.liveActivities.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The lock-screen card needs them: Settings › Daybook › Live Activities."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "כרטיס מסך הנעילה זקוק להן: הגדרות › Daybook › פעילויות בזמן אמת."
+          }
+        }
+      }
+    },
+    "notice.liveActivities.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live Activities are off"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פעילויות בזמן אמת כבויות"
+          }
+        }
+      }
+    },
+    "notice.notifications.action": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on notifications"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הפעלת התראות"
+          }
+        }
+      }
+    },
+    "notice.notifications.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS has never been asked, so nothing will ever arrive. It can only be asked once, and only from inside the app — this button is it."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS מעולם לא נשאל, ולכן שום דבר לא יגיע. אפשר לשאול רק פעם אחת, ורק מתוך האפליקציה — הכפתור הזה הוא ההזדמנות."
+          }
+        }
+      }
+    },
+    "notice.notifications.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are off"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ההתראות כבויות"
+          }
+        }
+      }
+    },
+    "notice.openSettings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open iOS Settings"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פתיחת הגדרות iOS"
+          }
+        }
+      }
+    },
+    "notice.surfaces.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None of today’s items are set for the lock screen or the widget. Open one and turn on Lock screen or Home widget."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אף אחד מפריטי היום לא מוגדר למסך הנעילה או לווידג’ט. פתחו פריט והפעילו \"מסך נעילה\" או \"ווידג’ט\"."
+          }
+        }
+      }
+    },
+    "notice.surfaces.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing is set to show"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שום דבר לא מוגדר להופיע"
           }
         }
       }

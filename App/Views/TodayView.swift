@@ -10,6 +10,10 @@ struct TodayView: View {
     @State private var now = Date.now
     @State private var creating = false
     @State private var editing: Item?
+    @State private var diagnostics = Diagnostics()
+    /// Notices the user has put away, kept across launches. Only the ones
+    /// they cannot act on from here can end up in this list.
+    @AppStorage("dismissedNotices") private var dismissedNotices = ""
 
     private let sectionOrder: [DaySection] = [.now, .upcoming, .undated, .done, .missed]
 
@@ -20,7 +24,22 @@ struct TodayView: View {
         let plan = currentPlan
 
         return NavigationStack {
-            Group {
+            VStack(spacing: 0) {
+                // Whatever is stopping the app from reaching a surface belongs
+                // here, on the screen that is open anyway — not in Settings,
+                // where it can only be found by somebody who already suspects
+                // something is wrong.
+                if let notice = visibleNotice {
+                    SetupNoticeBanner(
+                        notice: notice,
+                        onAsk: {
+                            await model.requestPermissions()
+                            await loadDiagnostics()
+                        },
+                        onDismiss: { dismiss(notice) }
+                    )
+                }
+
                 if plan.isEmpty {
                     emptyState
                 } else {
@@ -41,6 +60,7 @@ struct TodayView: View {
             }
         }
         .task {
+            await loadDiagnostics()
             // One cheap tick keeps countdowns and state transitions honest
             // without a timer that fires while the app is backgrounded.
             while !Task.isCancelled {
@@ -48,6 +68,24 @@ struct TodayView: View {
                 try? await Task.sleep(for: .seconds(30))
             }
         }
+        // What is on a surface changes when the items do.
+        .onChange(of: model.revision) {
+            Task { await loadDiagnostics() }
+        }
+    }
+
+    private var visibleNotice: SetupNotice? {
+        guard let notice = SetupNotice.first(from: diagnostics) else { return nil }
+        return dismissedNotices.contains(notice.id) ? nil : notice
+    }
+
+    private func dismiss(_ notice: SetupNotice) {
+        guard notice.isDismissible else { return }
+        dismissedNotices += "\(notice.id),"
+    }
+
+    private func loadDiagnostics() async {
+        diagnostics = await model.diagnostics(now: .now)
     }
 
     private var currentPlan: DayPlan {

@@ -255,3 +255,79 @@ struct PresetQuietnessTests {
         #expect(PresetCatalog.available == [.task, .event, .recurringTask, .routine, .relativeTimer])
     }
 }
+
+@Suite("The setup notice names one blocker at a time")
+struct SetupNoticeTests {
+    private var healthy: Diagnostics {
+        Diagnostics(
+            notifications: .authorized,
+            pendingWithSystem: 3,
+            hasSharedContainer: true,
+            liveActivitiesEnabled: true,
+            liveActivityRunning: true,
+            onLockScreen: 2,
+            onHomeWidget: 2,
+            itemsToday: 2
+        )
+    }
+
+    @Test("Nothing to say when everything works")
+    func silentWhenHealthy() {
+        #expect(SetupNotice.first(from: healthy) == nil)
+    }
+
+    @Test("Never being asked outranks everything else")
+    func permissionComesFirst() {
+        // Deliberately broken in every way at once. Explaining the lock-screen
+        // card to somebody who has not been asked about notifications yet is
+        // answering the second question first.
+        var d = healthy
+        d.notifications = .notDetermined
+        d.liveActivitiesEnabled = false
+        d.hasSharedContainer = false
+        d.onLockScreen = 0
+        d.onHomeWidget = 0
+        #expect(SetupNotice.first(from: d) == .notificationsNeverAsked)
+        #expect(SetupNotice.first(from: d)?.action == .ask)
+    }
+
+    @Test("A refusal sends them to iOS, because the app cannot ask twice")
+    func deniedGoesToSystemSettings() {
+        var d = healthy
+        d.notifications = .denied
+        #expect(SetupNotice.first(from: d) == .notificationsDenied)
+        #expect(SetupNotice.first(from: d)?.action == .openSystemSettings)
+    }
+
+    @Test("Then the card, then the container, then the items")
+    func theRestFollowInOrder() {
+        var d = healthy
+        d.liveActivitiesEnabled = false
+        d.hasSharedContainer = false
+        #expect(SetupNotice.first(from: d) == .liveActivitiesOff)
+
+        d.liveActivitiesEnabled = true
+        #expect(SetupNotice.first(from: d) == .noSharedContainer)
+
+        d.hasSharedContainer = true
+        d.onLockScreen = 0
+        d.onHomeWidget = 0
+        #expect(SetupNotice.first(from: d) == .nothingOnSurfaces)
+    }
+
+    @Test("An empty day is not a misconfigured one")
+    func noItemsIsNotAProblem() {
+        var d = healthy
+        d.onLockScreen = 0
+        d.onHomeWidget = 0
+        d.itemsToday = 0
+        #expect(SetupNotice.first(from: d) == nil)
+    }
+
+    @Test("Only what cannot be acted on here can be put away")
+    func onlyUnactionableNoticesDismiss() {
+        for notice in SetupNotice.allCases {
+            #expect(notice.isDismissible == (notice.action == nil))
+        }
+    }
+}
