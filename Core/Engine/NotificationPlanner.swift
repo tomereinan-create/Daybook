@@ -104,16 +104,28 @@ nonisolated struct NotificationPlanner: Sendable {
             guard occurrence.state.isOutstanding else { continue }
             let alerting = occurrence.item.settings.alerting
 
-            if alerting.intensity == .alarm {
+            // A running hold has to be announced whatever the item's alert
+            // setting says, so it is decided ahead of both guards below:
+            // one would skip a display-only item entirely — which is the
+            // default for a plain task, and exactly the thing a two-minute
+            // timer gets put on — and the other would divert an alarm one
+            // into AlarmKit, where the hold has nothing to do with the
+            // alarm's own schedule.
+            let isHolding = occurrence.record.holdUntil != nil && occurrence.record.completedAt == nil
+
+            if alerting.intensity == .alarm, !isHolding {
                 alarms.append(contentsOf: alarmCandidates(for: occurrence, window: window))
                 continue
             }
-            guard alerting.intensity > .none else { continue }
+            guard isHolding || alerting.intensity > .none else { continue }
 
             let candidates = candidates(for: occurrence, window: window)
             for candidate in candidates {
                 switch candidate.role {
-                case .preAlert, .primary:
+                // A hold ends at a moment the user is waiting for, so it
+                // ranks with the primaries rather than the repeats: it is
+                // the last thing the budget should drop.
+                case .preAlert, .primary, .holdEnded:
                     primaries.append(candidate)
                 case .nag, .quotaNudge, .followUp:
                     repeats.append(candidate)

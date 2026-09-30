@@ -358,3 +358,38 @@ struct ResponseTests {
         }
     }
 }
+
+@Suite("A hold is announced even by an item that never speaks")
+struct HoldAlertTests {
+    let calendar = Fixture.calendar()
+    private var now: Date { Fixture.date(2026, 3, 10, 8, 0, calendar: calendar) }
+
+    @Test("A display-only item still gets an alert when its clock runs out")
+    func silentItemsStillEndTheirClock() {
+        // The default for a plain task is display only — intensity .none —
+        // and a plain task is exactly what a two-minute timer gets put on.
+        // The planner skips silent items, so the hold has to be decided
+        // before that, or the timer would be decoration.
+        var settings = ItemSettings.default
+        settings.holdMinutes = 2
+        #expect(settings.alerting.intensity == Intensity.none)
+
+        let item = Fixture.item(title: "Brush teeth", settings: settings, createdAt: now)
+        let key = OccurrenceKey(itemID: item.id, slot: calendar.startOfDay(for: now))
+        let ranOut = now.addingTimeInterval(120)
+        let engine = ScheduleEngine(calendar: calendar, configuration: .default, quietHours: .default)
+
+        let plan = engine.notificationPlan(
+            items: [item],
+            records: [key: OccurrenceStateRecord(key: key, holdUntil: ranOut)],
+            now: now.addingTimeInterval(1)
+        )
+
+        let alert = plan.notifications.first { $0.key == key }
+        #expect(alert != nil)
+        #expect(alert?.role == .holdEnded)
+        #expect(alert?.fireDate == ranOut)
+        // Raised to something audible, but never so far as taking the screen.
+        #expect(alert?.intensity == .standard)
+    }
+}
