@@ -55,6 +55,11 @@ nonisolated struct OccurrenceStateRecord: Sendable, Hashable {
     /// Quota habits only: how many times the user has done it this period.
     /// Everything else completes once and uses `completedAt`.
     var completionCount: Int
+    /// What the user answered when they finished it, if it asked.
+    var answer: String?
+    /// When a hold started by Done runs out. Until then the item is being
+    /// done rather than waiting to be.
+    var holdUntil: Date?
 
     init(
         key: OccurrenceKey,
@@ -64,7 +69,9 @@ nonisolated struct OccurrenceStateRecord: Sendable, Hashable {
         startedAt: Date? = nil,
         currentStepIndex: Int = 0,
         nagsFired: Int = 0,
-        completionCount: Int = 0
+        completionCount: Int = 0,
+        answer: String? = nil,
+        holdUntil: Date? = nil
     ) {
         self.key = key
         self.completedAt = completedAt
@@ -74,6 +81,8 @@ nonisolated struct OccurrenceStateRecord: Sendable, Hashable {
         self.currentStepIndex = currentStepIndex
         self.nagsFired = nagsFired
         self.completionCount = completionCount
+        self.answer = answer
+        self.holdUntil = holdUntil
     }
 }
 

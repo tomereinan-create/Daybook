@@ -134,6 +134,8 @@ struct OccurrenceRow: View {
     let now: Date
     let onEdit: @MainActor () -> Void
     @State private var pendingDelete = false
+    @State private var askingForAnswer = false
+    @State private var answerDraft = ""
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
@@ -153,6 +155,21 @@ struct OccurrenceRow: View {
         }
         .contentShape(.rect)
         .onTapGesture(perform: onEdit)
+        // An item that asks for an answer asks for it here, at the moment it
+        // is finished, rather than making the user open the editor to record
+        // a number they already have in their head.
+        .alert(answerPrompt, isPresented: $askingForAnswer) {
+            TextField("field.answer", text: $answerDraft)
+                .keyboardType(
+                    occurrence.item.settings.answerKind == .number ? .decimalPad : .default
+                )
+            Button("action.save") {
+                model.complete(occurrence, now: now, answer: answerDraft)
+            }
+            Button("action.cancel", role: .cancel) {}
+        } message: {
+            Text(occurrence.displayTitle)
+        }
         // Three answers to every row: I did it, I did not, and get rid of it.
         // Swipe for speed, long press for the ones you use less often.
         .swipeActions(edge: .trailing) {
@@ -180,7 +197,7 @@ struct OccurrenceRow: View {
                 .tint(.gray)
             } else {
                 Button("action.done", systemImage: "checkmark") {
-                    model.complete(occurrence, now: now)
+                    done()
                 }
                 .tint(.green)
             }
@@ -194,7 +211,7 @@ struct OccurrenceRow: View {
         .contextMenu {
             if occurrence.state != .done {
                 Button("action.done", systemImage: "checkmark.circle") {
-                    model.complete(occurrence, now: now)
+                    done()
                 }
             }
             if occurrence.state != .missed {
@@ -232,7 +249,7 @@ struct OccurrenceRow: View {
             if occurrence.state == .done {
                 model.reopen(occurrence)
             } else {
-                model.complete(occurrence, now: now)
+                done()
             }
         } label: {
             Image(systemName: completionSymbol)
@@ -252,9 +269,34 @@ struct OccurrenceRow: View {
     }
 
     @ViewBuilder
+    private var answerPrompt: LocalizedStringKey {
+        occurrence.item.settings.answerKind == .number ? "answer.prompt.number" : "answer.prompt.text"
+    }
+
+    /// Done either finishes the thing or starts its clock; either way the tap
+    /// is the same, and an item that wants an answer asks for one first.
+    private func done() {
+        guard occurrence.item.settings.answerKind.asksForAnything,
+              occurrence.state.isOutstanding
+        else {
+            model.complete(occurrence, now: now)
+            return
+        }
+        answerDraft = occurrence.record.answer ?? ""
+        askingForAnswer = true
+    }
+
     private var subtitle: some View {
         HStack(spacing: 6) {
-            if let quota = occurrence.quotaProgress {
+            // A running hold is the only thing worth saying while it runs.
+            if let hold = occurrence.record.holdUntil, hold > now {
+                Text("label.stopIn \(Formatting.countdown(to: hold, from: now))")
+                    .foregroundStyle(.blue)
+            } else if let answer = occurrence.record.answer, !answer.isEmpty {
+                Text(verbatim: answer)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+            } else if let quota = occurrence.quotaProgress {
                 Text(verbatim: "\(quota.completed)/\(quota.target)")
                 if quota.isBehindPace {
                     Text("label.behindPace")

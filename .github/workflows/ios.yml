@@ -19,6 +19,12 @@ jobs:
       - name: The icon matches its committed colour
         run: node scripts/icon-d.mjs --check
 
+      # A key asked for in a form the catalog does not hold fails silently:
+      # no warning, no crash, just the key itself drawn on screen in both
+      # languages. Two shipped that way before this step existed.
+      - name: Localized keys match the catalog
+        run: node scripts/check-strings.mjs
+
       - name: Show what this runner has
         run: |
           sw_vers

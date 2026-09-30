@@ -129,43 +129,7 @@ final class AppModel {
             }
         }
 
-        // A region firing is the trigger for a place reminder, so it has to
-        // raise the alert itself; there is nothing to have scheduled earlier.
-        let monitor = LocationMonitorController.shared
-        monitor.onTrigger = { [weak self] key in
-            guard let self else { return }
-            Task { await self.locationDidFire(key) }
-        }
-        monitor.onAuthorizationChange = { [weak self] in
-            Task { await self?.reschedule() }
-        }
-
         await reschedule(now: now)
-    }
-
-    /// A place reminder's region was entered or left.
-    private func locationDidFire(_ key: OccurrenceKey, now: Date = .now) async {
-        await coordinator.alertNow(
-            for: key,
-            items: store.snapshots(),
-            records: store.recordsByKey(),
-            now: now
-        )
-        didChange()
-    }
-
-    /// Place reminders the platform cap left unmonitored. Settings shows these
-    /// rather than letting them silently not work.
-    var unmonitoredPlaces: [MonitoredRegion] {
-        LocationMonitorController.shared.overflow
-    }
-
-    var locationAuthorization: LocationAuthorization {
-        LocationMonitorController.shared.authorization
-    }
-
-    func requestLocationAuthorization() {
-        LocationMonitorController.shared.requestAuthorization()
     }
 
     /// Asks for notification and alarm permission. Onboarding calls this; the
@@ -179,6 +143,16 @@ final class AppModel {
 
     /// The single reschedule path. Idempotent, so calling it often is cheap.
     func reschedule(now: Date = .now) async {
+        // Holds whose clock ran out while the app was closed are written out
+        // first, so everything below plans against a settled day.
+        let settled = completion.settleElapsedHolds(store.recordsByKey(), now: now)
+        if !settled.isEmpty {
+            for (key, record) in settled {
+                store.record(for: key).state = record
+            }
+            store.save()
+        }
+
         lastSchedule = await coordinator.refresh(
             items: store.snapshots(),
             records: store.recordsByKey(),
@@ -187,22 +161,24 @@ final class AppModel {
         // The card, the widgets and the notifications all describe the same
         // day, so they are brought into line together or not at all.
         await LiveActivityController.shared.refresh(now: now)
-        await LocationMonitorController.shared.sync(
-            engine.locationMonitoringPlan(
-                items: store.snapshots(),
-                records: store.recordsByKey(),
-                now: now
-            )
-        )
         await SurfaceRefresh.reloadAll()
     }
 
     // MARK: - Writing
 
     @discardableResult
-    func complete(_ occurrence: ResolvedOccurrence, now: Date = .now) -> CompletionOutcome {
+    func complete(
+        _ occurrence: ResolvedOccurrence,
+        now: Date = .now,
+        answer: String? = nil
+    ) -> CompletionOutcome {
         let row = store.record(for: occurrence.key)
-        let (updated, outcome) = completion.complete(row.state, item: occurrence.item, now: now)
+        let (updated, outcome) = completion.complete(
+            row.state,
+            item: occurrence.item,
+            now: now,
+            answer: answer
+        )
         row.state = updated
         store.save()
 

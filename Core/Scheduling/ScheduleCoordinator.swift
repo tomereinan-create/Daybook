@@ -95,42 +95,6 @@ nonisolated struct ScheduleCoordinator: Sendable {
         return outcome
     }
 
-    /// Alerts about one occurrence right now.
-    ///
-    /// A place reminder has no time, so nothing can be scheduled for it in
-    /// advance — the region firing *is* the trigger. This posts the alert the
-    /// item would have had, through the same content builder as everything
-    /// else, so a location alert reads like every other alert.
-    func alertNow(
-        for key: OccurrenceKey,
-        items: [ItemSnapshot],
-        records: [OccurrenceKey: OccurrenceStateRecord],
-        now: Date
-    ) async {
-        guard await notifications.authorizationStatus().canPost else { return }
-        let resolved = engine.live(items: items, records: records, now: now)
-        guard let occurrence = resolved.first(where: { $0.key == key }),
-              occurrence.state.isOutstanding else { return }
-
-        let alerting = occurrence.item.settings.alerting
-        guard alerting.intensity > .none else { return }
-
-        let fire = now.addingTimeInterval(1)
-        let planned = PlannedNotification(
-            id: NotificationPlanner.identifier(key, role: .primary, sequence: 0, fireDate: fire),
-            key: key,
-            title: occurrence.displayTitle,
-            fireDate: fire,
-            intensity: alerting.intensity,
-            role: .primary,
-            sequence: 0,
-            isMandatory: occurrence.item.settings.priority == .mandatory,
-            snoozeMinutes: alerting.snoozeAllowed ? alerting.snoozeMinutes : nil,
-            triggerDate: nil
-        )
-        try? await notifications.add(planned, content: builder.content(for: planned))
-    }
-
     /// Cancels every pending alert for one occurrence, now, without waiting for
     /// a full reschedule. The brief is explicit that completing something from
     /// any surface has to silence its nags immediately.

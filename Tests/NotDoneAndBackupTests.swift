@@ -207,7 +207,7 @@ struct PresetQuietnessTests {
         // waiting-for are hidden on purpose and answer that question with
         // "not yet", so they are the ones exempt.
         let settings = preset.defaultSettings(reference: now, calendar: calendar)
-        let whens: Set<SettingField> = [.trigger, .location, .quota, .relativeDuration]
+        let whens: Set<SettingField> = [.trigger, .quota, .relativeDuration]
         if !settings.visibility.surfaces.isEmpty {
             #expect(!prominent.isDisjoint(with: whens))
         }

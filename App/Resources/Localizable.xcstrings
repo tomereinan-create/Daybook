@@ -392,6 +392,23 @@
         }
       }
     },
+    "alert.body.holdEnded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time is up."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הזמן נגמר."
+          }
+        }
+      }
+    },
     "alert.body.nag %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -460,6 +477,40 @@
         }
       }
     },
+    "answer.prompt.number": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What is the number?"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מה המספר?"
+          }
+        }
+      }
+    },
+    "answer.prompt.text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What would you like to record?"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מה תרצו לרשום?"
+          }
+        }
+      }
+    },
     "delete.confirm": {
       "extractionState": "manual",
       "localizations": {
@@ -494,36 +545,19 @@
         }
       }
     },
-    "edge.arrive": {
+    "duration.minutes %lld": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Arrive"
+            "value": "%lld min"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "מגיע"
-          }
-        }
-      }
-    },
-    "edge.leave": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Leave"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "עוזב"
+            "value": "%lld דק’"
           }
         }
       }
@@ -715,6 +749,23 @@
         }
       }
     },
+    "field.answer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "תשובה"
+          }
+        }
+      }
+    },
     "field.dateAndTime": {
       "extractionState": "manual",
       "localizations": {
@@ -881,6 +932,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "אחרי %lld ימים בלי עדכון"
+          }
+        }
+      }
+    },
+    "field.holdMinutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "למשך"
+          }
+        }
+      }
+    },
+    "field.holdTimer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run a timer on Done"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הפעלת טיימר בסיום"
+          }
+        }
+      }
+    },
+    "field.holdTimer.explain": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done starts the clock instead of stopping it. The item stays on screen counting down, and finishes by itself when the time is up."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\"בוצע\" מפעיל את השעון במקום לעצור אותו. הפריט נשאר על המסך וסופר לאחור, ומסתיים מעצמו כשהזמן נגמר."
           }
         }
       }
@@ -1055,108 +1157,6 @@
         }
       }
     },
-    "field.placeEdge": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remind me when I"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "להזכיר לי כש"
-          }
-        }
-      }
-    },
-    "field.placeMap": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Map"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "מפה"
-          }
-        }
-      }
-    },
-    "field.placeMap.empty": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tap the map to choose a place."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "הקישו על המפה כדי לבחור מקום."
-          }
-        }
-      }
-    },
-    "field.placeMap.hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tap to move the pin"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "הקישו כדי להזיז את הסיכה"
-          }
-        }
-      }
-    },
-    "field.placeName": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Place name"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "שם המקום"
-          }
-        }
-      }
-    },
-    "field.placeRadius": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Within"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "בטווח של"
-          }
-        }
-      }
-    },
     "field.quotaCount %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -1221,6 +1221,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "חזרה"
+          }
+        }
+      }
+    },
+    "field.response": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer when done"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "תשובה בסיום"
           }
         }
       }
@@ -1871,6 +1888,23 @@
         }
       }
     },
+    "label.stopIn %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "stop in %@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לעצור בעוד %@"
+          }
+        }
+      }
+    },
     "leadTime.atTheTime": {
       "extractionState": "manual",
       "localizations": {
@@ -1884,74 +1918,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "בזמן עצמו"
-          }
-        }
-      }
-    },
-    "location.needsAlways.body": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Daybook can only notice you arriving somewhere if location is set to Always."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Daybook יכול לזהות שהגעתם למקום רק אם המיקום מוגדר ל\"תמיד\"."
-          }
-        }
-      }
-    },
-    "location.needsAlways.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Place reminders need background location"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "תזכורות מקום דורשות מיקום ברקע"
-          }
-        }
-      }
-    },
-    "location.overflow.body %lld": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "iOS watches 20 places at once. %lld are not being watched."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "iOS עוקב אחרי 20 מקומות בו-זמנית. אחרי %lld לא עוקבים."
-          }
-        }
-      }
-    },
-    "location.overflow.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Too many places"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "יותר מדי מקומות"
           }
         }
       }
@@ -2500,23 +2466,6 @@
         }
       }
     },
-    "onboarding.permissions.location": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Location, only asked when you make your first place reminder"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "מיקום, נשאל רק כשתיצרו תזכורת מקום ראשונה"
-          }
-        }
-      }
-    },
     "onboarding.permissions.notifications": {
       "extractionState": "manual",
       "localizations": {
@@ -2670,23 +2619,6 @@
         }
       }
     },
-    "permission.whenInUse": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Only while open"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "רק כשהאפליקציה פתוחה"
-          }
-        }
-      }
-    },
     "preAlert.before %@": {
       "extractionState": "manual",
       "localizations": {
@@ -2802,40 +2734,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "כמה פעמים בשבוע, מתי שמתאים. מזכיר רק אם נשארתם מאחור."
-          }
-        }
-      }
-    },
-    "preset.locationReminder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Place reminder"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "תזכורת לפי מקום"
-          }
-        }
-      }
-    },
-    "preset.locationReminder.caption": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fires when you arrive somewhere or leave it."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "קופץ כשמגיעים למקום או יוצאים ממנו."
           }
         }
       }
@@ -3108,6 +3006,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "שעון מעורר אמיתי. כשמכבים אותו היום מתחיל."
+          }
+        }
+      }
+    },
+    "response.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ללא"
+          }
+        }
+      }
+    },
+    "response.number": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A number"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מספר"
+          }
+        }
+      }
+    },
+    "response.text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Words"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מילים"
           }
         }
       }
@@ -3673,7 +3622,7 @@
         }
       }
     },
-    "settings.diag.groupGranted": {
+    "settings.diag.groupGranted %@": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -3707,7 +3656,7 @@
         }
       }
     },
-    "settings.diag.groupWanted": {
+    "settings.diag.groupWanted %@": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -4026,40 +3975,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "אפשר לסרב לכל אחת והאפליקציה עדיין עובדת — היא פשוט מפסיקה להבטיח מה שאינה יכולה."
-          }
-        }
-      }
-    },
-    "settings.permission.location": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Location"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "מיקום"
-          }
-        }
-      }
-    },
-    "settings.permission.location.denied": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Place reminders will not fire. Everything else is unaffected."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "תזכורות מקום לא יופעלו. כל השאר לא מושפע."
           }
         }
       }
@@ -4859,23 +4774,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "השלב הקודם"
-          }
-        }
-      }
-    },
-    "trigger.location": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A place"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "מקום"
           }
         }
       }

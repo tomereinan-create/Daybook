@@ -9,6 +9,9 @@ nonisolated enum CompletionOutcome: Sendable, Hashable {
     case advancedToStep(Int)
     /// A quota habit was tallied; the values are the new count and the target.
     case tallied(count: Int, target: Int)
+    /// Done started a clock instead of finishing the thing. The item is being
+    /// done until the date given, and finishes by itself when it arrives.
+    case holding(until: Date)
 }
 
 /// Pure transformations of a single occurrence record. No storage, no UI, so
@@ -20,10 +23,23 @@ nonisolated struct CompletionService: Sendable {
     func complete(
         _ record: OccurrenceStateRecord,
         item: ItemSnapshot,
-        now: Date
+        now: Date,
+        answer: String? = nil
     ) -> (record: OccurrenceStateRecord, outcome: CompletionOutcome) {
         var updated = record
         updated.snoozedUntil = nil
+        if let answer {
+            let trimmed = answer.trimmingCharacters(in: .whitespacesAndNewlines)
+            updated.answer = trimmed.isEmpty ? nil : trimmed
+        }
+
+        // Pressing Done while a hold is running finishes it early rather than
+        // starting the clock again. Somebody who taps twice means "enough".
+        if updated.holdUntil != nil {
+            updated.holdUntil = nil
+            updated.completedAt = now
+            return (updated, .completed)
+        }
 
         // A routine advances one step at a time and only finishes on the last.
         let steps = item.settings.steps
@@ -34,8 +50,8 @@ nonisolated struct CompletionService: Sendable {
                 return (updated, .advancedToStep(next))
             }
             updated.currentStepIndex = steps.count
-            updated.completedAt = now
-            return (updated, .completed)
+            let outcome = finish(&updated, item: item, now: now)
+            return (updated, outcome)
         }
 
         // A quota habit tallies until it reaches its target.
@@ -43,14 +59,32 @@ nonisolated struct CompletionService: Sendable {
             let count = record.completionCount + 1
             updated.completionCount = count
             if count >= target {
-                updated.completedAt = now
-                return (updated, .completed)
+                let outcome = finish(&updated, item: item, now: now)
+                return (updated, outcome)
             }
             return (updated, .tallied(count: count, target: target))
         }
 
+        let outcome = finish(&updated, item: item, now: now)
+        return (updated, outcome)
+    }
+
+    /// The last step of finishing: either it is done, or it now runs for a
+    /// while and is done when that runs out. Every path into completion goes
+    /// through here so a hold cannot be skipped by finishing a routine or
+    /// filling a quota instead.
+    private func finish(
+        _ updated: inout OccurrenceStateRecord,
+        item: ItemSnapshot,
+        now: Date
+    ) -> CompletionOutcome {
+        if let minutes = item.settings.holdDuration {
+            let until = now.addingTimeInterval(TimeInterval(minutes) * 60)
+            updated.holdUntil = until
+            return .holding(until: until)
+        }
         updated.completedAt = now
-        return (updated, .completed)
+        return .completed
     }
 
     /// Undo. Steps and tallies step back by one; everything else reopens.
@@ -61,6 +95,9 @@ nonisolated struct CompletionService: Sendable {
         var updated = record
         updated.completedAt = nil
         updated.missedAt = nil
+        // A running clock stops too. The answer stays: undoing a tap should
+        // not throw away a number the user typed.
+        updated.holdUntil = nil
 
         if !item.settings.steps.isEmpty {
             updated.currentStepIndex = max(record.currentStepIndex - 1, 0)
@@ -105,5 +142,29 @@ nonisolated struct CompletionService: Sendable {
         var updated = record
         if updated.missedAt == nil { updated.missedAt = now }
         return updated
+    }
+}
+
+nonisolated extension CompletionService {
+    /// Writes out holds whose clock has run out.
+    ///
+    /// The resolver already shows these as done, because they are; this makes
+    /// the store agree, so the week's review counts them and the row is not
+    /// recalculated from a date in the past forever. Called from the same
+    /// reschedule that runs on launch, on every change and in the background.
+    func settleElapsedHolds(
+        _ records: [OccurrenceKey: OccurrenceStateRecord],
+        now: Date
+    ) -> [OccurrenceKey: OccurrenceStateRecord] {
+        var settled: [OccurrenceKey: OccurrenceStateRecord] = [:]
+        for (key, record) in records {
+            guard let hold = record.holdUntil, now >= hold, record.completedAt == nil else { continue }
+            var updated = record
+            updated.holdUntil = nil
+            // Finished when the clock ran out, not when the app noticed.
+            updated.completedAt = hold
+            settled[key] = updated
+        }
+        return settled
     }
 }

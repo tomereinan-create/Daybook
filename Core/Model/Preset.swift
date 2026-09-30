@@ -10,7 +10,6 @@ nonisolated enum PresetKind: String, Codable, Sendable, Hashable, CaseIterable, 
     case task
     case deadlineTask
     case recurringTask
-    case locationReminder
     case flexibleHabit
     case timeBlock
     case relativeTimer
@@ -81,19 +80,6 @@ nonisolated extension PresetKind {
                 snoozeMinutes: 10
             )
             s.dismissal = Dismissal(endCondition: .windowEnds(3 * 3600), onMissed: .logMissed)
-
-        case .locationReminder:
-            s.trigger = Trigger(kind: .location, location: nil)
-            s.visibility = Visibility(leadTime: 0, surfaces: .all)
-            s.alerting = Alerting(
-                intensity: .timeSensitive,
-                preAlertOffsets: [],
-                nag: .off,
-                escalates: false,
-                snoozeAllowed: false,
-                snoozeMinutes: 30
-            )
-            s.dismissal = Dismissal(endCondition: .markedDone, onMissed: .becomeOpenTask)
 
         case .flexibleHabit:
             s.trigger = .none
@@ -209,10 +195,9 @@ nonisolated extension PresetKind {
         let basics: Set<SettingField> = [.surfaces, .intensity]
         return switch self {
         case .event: basics.union([.trigger])
-        case .task: basics.union([.trigger])
+        case .task: basics.union([.trigger, .response])
         case .deadlineTask: basics.union([.trigger])
         case .recurringTask: basics.union([.trigger, .recurrence])
-        case .locationReminder: basics.union([.location])
         case .flexibleHabit: basics.union([.quota])
         case .timeBlock: basics.union([.trigger, .window])
         case .relativeTimer: basics.union([.relativeDuration])
@@ -229,9 +214,10 @@ nonisolated enum SettingField: String, Sendable, Hashable, CaseIterable {
     case trigger
     case recurrence
     case quota
-    case location
     case relativeDuration
     case timerStart
+    case response
+    case holdTimer
     case leadTime
     case surfaces
     case intensity
@@ -264,14 +250,14 @@ nonisolated enum SettingGroup: String, Sendable, Hashable, CaseIterable, Identif
 nonisolated extension SettingField {
     var group: SettingGroup {
         switch self {
-        case .trigger, .recurrence, .quota, .location, .relativeDuration, .timerStart,
-             .window, .onMissed:
+        case .trigger, .recurrence, .quota, .relativeDuration, .timerStart,
+             .holdTimer, .window, .onMissed:
             .timing
         case .intensity, .preAlerts, .nag, .escalation, .snooze, .quietHours:
             .alerts
         case .leadTime, .surfaces:
             .display
-        case .priority, .steps, .followUpInterval:
+        case .priority, .steps, .followUpInterval, .response:
             .extras
         }
     }

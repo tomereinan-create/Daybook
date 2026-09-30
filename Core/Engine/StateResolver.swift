@@ -130,6 +130,12 @@ nonisolated struct StateResolver: Sendable {
         now: Date
     ) -> OccurrenceState {
         if record.completedAt != nil { return .done }
+        // Done started a clock rather than stopping one. While it runs the
+        // item is being done — which is what `.active` means — and when it
+        // runs out the item is finished, whatever else the day says.
+        if let hold = record.holdUntil {
+            return now < hold ? .active : .done
+        }
         // The user said they did not do it. That is a different answer from
         // "the window closed", and it outranks the clock: they have decided.
         if record.missedAt != nil { return .missed }

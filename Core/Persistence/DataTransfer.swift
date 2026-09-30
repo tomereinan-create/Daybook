@@ -34,6 +34,9 @@ nonisolated struct DataExport: Codable, Sendable {
         var currentStepIndex: Int
         var nagsFired: Int
         var completionCount: Int
+        /// Optional so a backup written by an earlier build still restores.
+        var answer: String?
+        var holdUntil: Date?
     }
 
     /// Readable on purpose. If Daybook ever disappears, this file should still
@@ -88,7 +91,9 @@ enum DataTransfer {
                 startedAt: state.startedAt,
                 currentStepIndex: state.currentStepIndex,
                 nagsFired: state.nagsFired,
-                completionCount: state.completionCount
+                completionCount: state.completionCount,
+                answer: state.answer,
+                holdUntil: state.holdUntil
             )
         }
         let payload = DataExport(
@@ -157,7 +162,9 @@ enum DataTransfer {
                 startedAt: exported.startedAt,
                 currentStepIndex: exported.currentStepIndex,
                 nagsFired: exported.nagsFired,
-                completionCount: exported.completionCount
+                completionCount: exported.completionCount,
+                answer: exported.answer,
+                holdUntil: exported.holdUntil
             )
         }
 

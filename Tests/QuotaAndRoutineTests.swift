@@ -211,3 +211,150 @@ struct CompletionServiceTests {
         #expect(service.start(started!, item: timer, now: now) == nil)
     }
 }
+
+@Suite("Done starts a clock when the item runs for a while")
+struct HoldTimerTests {
+    let calendar = Fixture.calendar()
+    let completion = CompletionService()
+    let resolver = StateResolver(calendar: Fixture.calendar())
+    private var now: Date { Fixture.date(2026, 3, 10, 8, 0, calendar: calendar) }
+
+    private func brushing() -> ItemSnapshot {
+        var settings = ItemSettings.default
+        settings.holdMinutes = 2
+        return Fixture.item(title: "Brush teeth", settings: settings, createdAt: now)
+    }
+
+    @Test("Done sets the clock rather than finishing it")
+    func doneStartsTheClock() {
+        let item = brushing()
+        let key = OccurrenceKey(itemID: item.id, slot: calendar.startOfDay(for: now))
+        let (record, outcome) = completion.complete(OccurrenceStateRecord(key: key), item: item, now: now)
+
+        #expect(record.completedAt == nil)
+        #expect(record.holdUntil == now.addingTimeInterval(120))
+        #expect(outcome == .holding(until: now.addingTimeInterval(120)))
+    }
+
+    @Test("It is being done while the clock runs, and done when it stops")
+    func theClockDecidesTheState() {
+        let item = brushing()
+        let key = OccurrenceKey(itemID: item.id, slot: calendar.startOfDay(for: now))
+        let running = OccurrenceStateRecord(key: key, holdUntil: now.addingTimeInterval(120))
+        let generated = GeneratedOccurrence(key: key, triggerDate: nil, ordinal: 0, quotaPeriod: nil)
+
+        let midway = resolver.resolve(
+            item: item, generated: generated, record: running,
+            now: now.addingTimeInterval(60)
+        )
+        #expect(midway.state == .active)
+
+        let after = resolver.resolve(
+            item: item, generated: generated, record: running,
+            now: now.addingTimeInterval(121)
+        )
+        #expect(after.state == .done)
+    }
+
+    @Test("A second tap finishes early rather than restarting the clock")
+    func tappingAgainFinishesIt() {
+        let item = brushing()
+        let key = OccurrenceKey(itemID: item.id, slot: calendar.startOfDay(for: now))
+        let running = OccurrenceStateRecord(key: key, holdUntil: now.addingTimeInterval(120))
+
+        let (record, outcome) = completion.complete(
+            running, item: item, now: now.addingTimeInterval(30)
+        )
+        #expect(record.holdUntil == nil)
+        #expect(record.completedAt == now.addingTimeInterval(30))
+        #expect(outcome == .completed)
+    }
+
+    @Test("An elapsed clock is written out as a completion at the moment it ran out")
+    func elapsedHoldsSettle() {
+        let item = brushing()
+        let key = OccurrenceKey(itemID: item.id, slot: calendar.startOfDay(for: now))
+        let ranOut = now.addingTimeInterval(120)
+        let records = [key: OccurrenceStateRecord(key: key, holdUntil: ranOut)]
+
+        // Still running: nothing to write.
+        #expect(completion.settleElapsedHolds(records, now: now.addingTimeInterval(60)).isEmpty)
+
+        // Finished an hour ago, because the app was closed. It completed when
+        // the clock ran out, not when the app noticed.
+        let settled = completion.settleElapsedHolds(records, now: now.addingTimeInterval(3600))
+        #expect(settled[key]?.completedAt == ranOut)
+        #expect(settled[key]?.holdUntil == nil)
+    }
+
+    @Test("Undo stops the clock")
+    func reopeningClearsTheHold() {
+        let item = brushing()
+        let key = OccurrenceKey(itemID: item.id, slot: calendar.startOfDay(for: now))
+        let running = OccurrenceStateRecord(key: key, holdUntil: now.addingTimeInterval(120))
+        #expect(completion.reopen(running, item: item).holdUntil == nil)
+    }
+
+    @Test("A held item can always say when its clock ran out")
+    func aHeldItemCanAlert() {
+        var settings = ItemSettings.default
+        // Display only, no trigger: the quietest an item gets.
+        #expect(!settings.canAlert)
+        settings.holdMinutes = 2
+        #expect(settings.canAlert)
+    }
+}
+
+@Suite("Answering an item with a number or a word")
+struct ResponseTests {
+    let calendar = Fixture.calendar()
+    let completion = CompletionService()
+    private var now: Date { Fixture.date(2026, 3, 10, 8, 0, calendar: calendar) }
+
+    private func weighIn() -> ItemSnapshot {
+        var settings = ItemSettings.default
+        settings.response = .number
+        return Fixture.item(title: "Weight", settings: settings, createdAt: now)
+    }
+
+    @Test("The answer is kept with the occurrence, not the item")
+    func theAnswerIsPerOccurrence() {
+        let item = weighIn()
+        let key = OccurrenceKey(itemID: item.id, slot: calendar.startOfDay(for: now))
+        let (record, _) = completion.complete(
+            OccurrenceStateRecord(key: key), item: item, now: now, answer: "78.1"
+        )
+        #expect(record.answer == "78.1")
+        #expect(record.completedAt == now)
+    }
+
+    @Test("Whitespace is not an answer")
+    func blankAnswersAreNotKept() {
+        let item = weighIn()
+        let key = OccurrenceKey(itemID: item.id, slot: calendar.startOfDay(for: now))
+        let (record, _) = completion.complete(
+            OccurrenceStateRecord(key: key), item: item, now: now, answer: "   "
+        )
+        #expect(record.answer == nil)
+    }
+
+    @Test("Finishing without being asked leaves an earlier answer alone")
+    func completingWithoutAnAnswerKeepsTheOldOne() {
+        let item = weighIn()
+        let key = OccurrenceKey(itemID: item.id, slot: calendar.startOfDay(for: now))
+        let existing = OccurrenceStateRecord(key: key, answer: "77.4")
+        let (record, _) = completion.complete(existing, item: item, now: now)
+        #expect(record.answer == "77.4")
+    }
+
+    @Test("Nothing asks for an answer unless it was set to")
+    func nothingAsksByDefault() {
+        #expect(ItemSettings.default.answerKind == .none)
+        #expect(!ItemSettings.default.answerKind.asksForAnything)
+        for preset in PresetKind.allCases {
+            let settings = preset.defaultSettings(reference: now, calendar: calendar)
+            #expect(settings.answerKind == .none)
+            #expect(settings.holdDuration == nil)
+        }
+    }
+}

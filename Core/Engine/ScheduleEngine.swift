@@ -167,28 +167,6 @@ nonisolated struct ScheduleEngine: Sendable {
         return planner.plan(for: resolved, now: now)
     }
 
-    /// Items that need a monitored region right now, and whether the user has
-    /// asked for more than CoreLocation will accept.
-    func locationMonitoringPlan(
-        items: [ItemSnapshot],
-        records: [OccurrenceKey: OccurrenceStateRecord],
-        now: Date
-    ) -> LocationMonitoringPlan {
-        let active = live(items: items, records: records, now: now)
-            .filter { $0.state.isOutstanding }
-            .filter { $0.item.settings.trigger.kind == .location }
-            .compactMap { occurrence -> MonitoredRegion? in
-                guard let location = occurrence.item.settings.trigger.location else { return nil }
-                return MonitoredRegion(key: occurrence.key, title: occurrence.displayTitle, trigger: location)
-            }
-        let limit = configuration.locationRegionLimit
-        return LocationMonitoringPlan(
-            monitored: Array(active.prefix(limit)),
-            overflow: Array(active.dropFirst(limit)),
-            limit: limit
-        )
-    }
-
     // MARK: - Quota
 
     private func quotaProgress(
@@ -209,22 +187,4 @@ nonisolated struct ScheduleEngine: Sendable {
             now: now
         )
     }
-}
-
-nonisolated struct MonitoredRegion: Sendable, Hashable, Identifiable {
-    let key: OccurrenceKey
-    let title: String
-    let trigger: LocationTrigger
-
-    var id: OccurrenceKey { key }
-}
-
-nonisolated struct LocationMonitoringPlan: Sendable {
-    let monitored: [MonitoredRegion]
-    /// Regions the platform cap left out. The app surfaces these as a warning
-    /// rather than failing quietly.
-    let overflow: [MonitoredRegion]
-    let limit: Int
-
-    var exceedsLimit: Bool { !overflow.isEmpty }
 }

@@ -6,6 +6,10 @@ nonisolated enum TriggerKind: String, Codable, Sendable, Hashable, CaseIterable 
     /// Fires `relativeMinutes` after the user starts the occurrence.
     case relative
     /// Fires on entering or leaving a region.
+    ///
+    /// Withdrawn: nothing creates one and nothing monitors for one any more.
+    /// The case stays so that anything already stored still decodes rather
+    /// than taking its whole item down with it.
     case location
     /// Fires when the previous step of a routine is completed.
     case afterPrevious

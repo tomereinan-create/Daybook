@@ -64,10 +64,6 @@
 
 	<!-- Permissions. Phase 1 requests none of these; the strings are here so
 	     the value is settled once and localized alongside everything else. -->
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Used to remind you about an item when you arrive at or leave a place you chose.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Location reminders only work when Daybook can notice you arriving or leaving while it is closed. Nothing about your location leaves the phone.</string>
 	<key>NSAlarmKitUsageDescription</key>
 	<string>Used to ring a real alarm for your wake-up item and anything else you mark as an alarm, so it sounds even in silent mode.</string>
 </dict>

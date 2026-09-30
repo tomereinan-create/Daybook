@@ -16,6 +16,8 @@ final class OccurrenceRecord {
     var currentStepIndex: Int = 0
     var nagsFired: Int = 0
     var completionCount: Int = 0
+    var answer: String?
+    var holdUntil: Date?
 
     init(key: OccurrenceKey) {
         self.itemID = key.itemID
@@ -34,7 +36,9 @@ final class OccurrenceRecord {
                 startedAt: startedAt,
                 currentStepIndex: currentStepIndex,
                 nagsFired: nagsFired,
-                completionCount: completionCount
+                completionCount: completionCount,
+                answer: answer,
+                holdUntil: holdUntil
             )
         }
         set {
@@ -47,6 +51,8 @@ final class OccurrenceRecord {
             currentStepIndex = newValue.currentStepIndex
             nagsFired = newValue.nagsFired
             completionCount = newValue.completionCount
+            answer = newValue.answer
+            holdUntil = newValue.holdUntil
         }
     }
 }

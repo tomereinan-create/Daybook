@@ -102,27 +102,6 @@ struct SettingsView: View {
                 isGranted: model.lastSchedule.alarmAuthorization.canSchedule,
                 consequence: "settings.permission.alarms.denied"
             )
-            PermissionRow(
-                title: "settings.permission.location",
-                status: model.locationAuthorization.label,
-                isGranted: model.locationAuthorization.canMonitor,
-                consequence: "settings.permission.location.denied"
-            )
-
-            if !model.unmonitoredPlaces.isEmpty {
-                Label {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("location.overflow.title")
-                            .font(.subheadline.weight(.semibold))
-                        Text("location.overflow.body \(model.unmonitoredPlaces.count)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                } icon: {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.orange)
-                }
-            }
 
             // iOS shows the prompt once, ever. Until it has been shown the
             // app does not appear in the system's notification list at all,
@@ -470,17 +449,6 @@ nonisolated extension AlarmAuthorization {
     var label: LocalizedStringKey {
         switch self {
         case .authorized: "permission.allowed"
-        case .denied: "permission.denied"
-        case .notDetermined: "permission.notAsked"
-        }
-    }
-}
-
-nonisolated extension LocationAuthorization {
-    var label: LocalizedStringKey {
-        switch self {
-        case .always: "permission.allowed"
-        case .whenInUse: "permission.whenInUse"
         case .denied: "permission.denied"
         case .notDetermined: "permission.notAsked"
         }

@@ -11,9 +11,10 @@ struct SettingFieldView: View {
         case .trigger: TriggerField(settings: $settings)
         case .recurrence: RecurrenceField(settings: $settings)
         case .quota: QuotaField(settings: $settings)
-        case .location: LocationField(settings: $settings)
         case .relativeDuration: RelativeDurationField(settings: $settings)
         case .timerStart: TimerStartField(settings: $settings)
+        case .response: ResponseField(settings: $settings)
+        case .holdTimer: HoldTimerField(settings: $settings)
         case .leadTime: LeadTimeField(settings: $settings)
         case .surfaces: SurfacesField(settings: $settings)
         case .intensity: IntensityField(settings: $settings)
@@ -33,10 +34,13 @@ struct SettingFieldView: View {
 
 // MARK: - Trigger
 
-/// Trigger kinds the app can honour. `afterPrevious` is not offered: routines
-/// already chain through `steps`, and chaining separate items is a different
-/// feature nobody has asked for yet.
-private let availableTriggerKinds: [TriggerKind] = [.time, .relative, .location, .none]
+/// Trigger kinds the app can honour.
+///
+/// `afterPrevious` is not offered: routines already chain through `steps`, and
+/// chaining separate items is a different feature nobody has asked for yet.
+/// `location` was offered and has been withdrawn — the kind stays in the model
+/// so anything already stored still decodes, but nothing creates one now.
+private let availableTriggerKinds: [TriggerKind] = [.time, .relative, .none]
 
 private struct TriggerField: View {
     @Binding var settings: ItemSettings
@@ -364,6 +368,63 @@ private struct RelativeDurationField: View {
         Binding(
             get: { settings.trigger.relativeMinutes ?? 30 },
             set: { settings.trigger.relativeMinutes = max($0, 1) }
+        )
+    }
+}
+
+/// Some things are worth writing down a number for. A weigh-in is a task
+/// whose answer is 78.1; a note to self is one whose answer is a sentence.
+private struct ResponseField: View {
+    @Binding var settings: ItemSettings
+
+    var body: some View {
+        Picker("field.response", selection: binding) {
+            ForEach(ResponseKind.allCases) { kind in
+                Text(kind.label).tag(kind)
+            }
+        }
+    }
+
+    private var binding: Binding<ResponseKind> {
+        Binding(
+            get: { settings.answerKind },
+            set: { settings.response = $0 == .none ? nil : $0 }
+        )
+    }
+}
+
+private let holdChoices = [1, 2, 3, 5, 10, 15, 20, 30, 45, 60]
+
+/// For something that takes a known length of time. Done starts the clock
+/// instead of stopping it, and the item finishes when the clock runs out.
+private struct HoldTimerField: View {
+    @Binding var settings: ItemSettings
+
+    var body: some View {
+        Toggle("field.holdTimer", isOn: enabled)
+        if let minutes = settings.holdDuration {
+            Picker("field.holdMinutes", selection: minutesBinding(current: minutes)) {
+                ForEach(holdChoices, id: \.self) { value in
+                    Text("duration.minutes \(value)").tag(value)
+                }
+            }
+            Text("field.holdTimer.explain")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var enabled: Binding<Bool> {
+        Binding(
+            get: { settings.holdDuration != nil },
+            set: { settings.holdMinutes = $0 ? 2 : nil }
+        )
+    }
+
+    private func minutesBinding(current: Int) -> Binding<Int> {
+        Binding(
+            get: { current },
+            set: { settings.holdMinutes = max($0, 1) }
         )
     }
 }

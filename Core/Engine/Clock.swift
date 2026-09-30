@@ -31,8 +31,6 @@ nonisolated struct EngineConfiguration: Sendable, Hashable {
     /// How long after its trigger an occurrence still reads as "due" rather
     /// than "overdue".
     var dueGrace: TimeInterval
-    /// CoreLocation stops monitoring past roughly this many regions.
-    var locationRegionLimit: Int
     /// Live Activities are killed by the system after about eight hours.
     var liveActivityMaxDuration: TimeInterval
     /// How many entries the engine hands each surface.
@@ -44,7 +42,6 @@ nonisolated struct EngineConfiguration: Sendable, Hashable {
         schedulingWindow: 48 * 3600,
         outstandingLookback: 30 * 24 * 3600,
         dueGrace: 15 * 60,
-        locationRegionLimit: 20,
         liveActivityMaxDuration: 8 * 3600,
         liveActivityEntryCount: 4,
         homeWidgetEntryCount: 12

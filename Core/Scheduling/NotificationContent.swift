@@ -77,6 +77,8 @@ nonisolated struct NotificationContentBuilder: Sendable {
             return String(localized: "alert.body.quotaNudge")
         case .followUp:
             return String(localized: "alert.body.followUp")
+        case .holdEnded:
+            return String(localized: "alert.body.holdEnded")
         }
     }
 

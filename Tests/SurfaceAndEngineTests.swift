@@ -248,29 +248,6 @@ struct ScheduleEngineTests {
         #expect(gym?.quotaProgress?.completed == 1)
         #expect(gym?.quotaProgress?.target == 3)
     }
-
-    @Test("Location monitoring reports the overflow rather than dropping it silently")
-    func locationCapIsSurfaced() {
-        let items = (0..<25).map { index -> ItemSnapshot in
-            var settings = ItemSettings.default
-            settings.trigger = Trigger(
-                kind: .location,
-                location: LocationTrigger(
-                    name: "Place \(index)",
-                    latitude: 32.0 + Double(index) / 100,
-                    longitude: 34.8,
-                    radius: 100,
-                    edge: .arrive
-                )
-            )
-            return Fixture.item(title: "Place \(index)", settings: settings, createdAt: anchor)
-        }
-
-        let plan = engine.locationMonitoringPlan(items: items, records: [:], now: now)
-        #expect(plan.monitored.count == EngineConfiguration.default.locationRegionLimit)
-        #expect(plan.exceedsLimit)
-        #expect(plan.overflow.count == 5)
-    }
 }
 
 @Suite("Presets are only defaults")
@@ -293,8 +270,7 @@ struct PresetTests {
         let engine = ScheduleEngine(calendar: calendar, configuration: .default, quietHours: .default)
 
         let resolved = engine.live(items: [item], records: [:], now: now)
-        // A location reminder has nowhere to fire until a place is chosen, but
-        // it still exists as an open item.
+        // Even an undated one exists as an open item.
         #expect(!resolved.isEmpty)
     }
 

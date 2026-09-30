@@ -79,7 +79,6 @@ private struct PermissionsPage: View {
             VStack(alignment: .leading, spacing: 14) {
                 Bullet(symbol: "bell", text: "onboarding.permissions.notifications")
                 Bullet(symbol: "alarm", text: "onboarding.permissions.alarms")
-                Bullet(symbol: "mappin.and.ellipse", text: "onboarding.permissions.location")
             }
 
             Button {

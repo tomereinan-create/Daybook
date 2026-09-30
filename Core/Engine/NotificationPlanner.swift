@@ -11,6 +11,8 @@ nonisolated enum AlertRole: String, Sendable, Hashable, CaseIterable {
     case quotaNudge
     /// A waiting-for item that has had no update.
     case followUp
+    /// The clock Done started has run out.
+    case holdEnded
 }
 
 nonisolated struct PlannedNotification: Sendable, Hashable, Identifiable {
@@ -152,6 +154,27 @@ nonisolated struct NotificationPlanner: Sendable {
         let item = occurrence.item
         let alerting = item.settings.alerting
         var result: [PlannedNotification] = []
+
+        // A running hold displaces everything else. The item is no longer
+        // waiting for its time to come round; it is being done, and the only
+        // thing left to say about it is when to stop. Loud enough to hear,
+        // too — an item set to display only still has to end its own clock,
+        // or the timer would be decoration.
+        if let hold = occurrence.record.holdUntil, occurrence.record.completedAt == nil {
+            append(
+                &result,
+                occurrence: occurrence,
+                fire: hold,
+                role: .holdEnded,
+                sequence: 0,
+                // Loud enough to hear, never loud enough to become a
+                // full AlarmKit alarm: a two-minute brush does not warrant
+                // taking over the screen.
+                intensity: min(max(alerting.intensity, .standard), .timeSensitive),
+                window: window
+            )
+            return result
+        }
 
         if let trigger = occurrence.effectiveTrigger {
             for (index, offset) in alerting.preAlertOffsets.sorted(by: >).enumerated() {

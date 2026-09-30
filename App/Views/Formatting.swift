@@ -70,7 +70,6 @@ extension TriggerKind {
         switch self {
         case .time: "trigger.time"
         case .relative: "trigger.relative"
-        case .location: "trigger.location"
         case .afterPrevious: "trigger.afterPrevious"
         case .none: "trigger.none"
         }
@@ -114,6 +113,16 @@ extension Weekday {
     }
 }
 
+extension ResponseKind {
+    var label: LocalizedStringKey {
+        switch self {
+        case .none: "response.none"
+        case .number: "response.number"
+        case .text: "response.text"
+        }
+    }
+}
+
 extension SettingGroup {
     var title: LocalizedStringKey {
         switch self {
@@ -132,7 +141,6 @@ extension PresetKind {
         case .task: "preset.task"
         case .deadlineTask: "preset.deadlineTask"
         case .recurringTask: "preset.recurringTask"
-        case .locationReminder: "preset.locationReminder"
         case .flexibleHabit: "preset.flexibleHabit"
         case .timeBlock: "preset.timeBlock"
         case .relativeTimer: "preset.relativeTimer"
@@ -149,7 +157,6 @@ extension PresetKind {
         case .task: "preset.task.caption"
         case .deadlineTask: "preset.deadlineTask.caption"
         case .recurringTask: "preset.recurringTask.caption"
-        case .locationReminder: "preset.locationReminder.caption"
         case .flexibleHabit: "preset.flexibleHabit.caption"
         case .timeBlock: "preset.timeBlock.caption"
         case .relativeTimer: "preset.relativeTimer.caption"
@@ -166,7 +173,6 @@ extension PresetKind {
         case .task: "checkmark.circle"
         case .deadlineTask: "hourglass"
         case .recurringTask: "repeat"
-        case .locationReminder: "mappin.and.ellipse"
         case .flexibleHabit: "chart.bar"
         case .timeBlock: "rectangle.portrait.and.arrow.right"
         case .relativeTimer: "timer"
