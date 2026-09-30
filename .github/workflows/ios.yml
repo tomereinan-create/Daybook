@@ -17,9 +17,7 @@ jobs:
       # screen would say "this is the new one" when it is not. Regenerate
       # from the committed index and refuse the build if anything moved.
       - name: The icon matches its committed colour
-        run: |
-          node scripts/icon-d.mjs
-          git diff --exit-code -- App/Resources/Assets.xcassets Core/Generated
+        run: node scripts/icon-d.mjs --check
 
       - name: Show what this runner has
         run: |

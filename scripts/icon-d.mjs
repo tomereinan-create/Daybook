@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { deflateSync } from 'node:zlib';
+import { deflateSync, inflateSync } from 'node:zlib';
 
 /// A "D" drawn as geometry rather than type, so it rasterises cleanly at every
 /// size the system asks for. The letterform is a rectangle whose right side is
@@ -10,11 +10,12 @@ import { deflateSync } from 'node:zlib';
 /// The ground colour changes with every build, so the icon on the home screen
 /// says which one is installed without opening anything. The colour is not
 /// random: it is entry `index` of the palette below, and `index` is committed,
-/// so the same commit always produces the same icon. CI regenerates and
-/// compares, which is what stops the two drifting apart.
+/// so the same commit always produces the same icon. CI checks the committed
+/// icon against that index, which is what stops the two drifting apart.
 ///
 ///   node scripts/icon-d.mjs          regenerate at the committed index
 ///   node scripts/icon-d.mjs --next   advance one colour, then regenerate
+///   node scripts/icon-d.mjs --check  verify what is committed, write nothing
 
 // Every one of these is dark enough for the warm-paper letter to read at the
 // smallest size the system draws, and far enough from its neighbours in the
@@ -39,12 +40,65 @@ const ICON_FILE = 'App/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.pn
 const SWIFT_FILE = 'Core/Generated/BuildColor.swift';
 
 const advance = process.argv.includes('--next');
+const checkOnly = process.argv.includes('--check');
 const stored = JSON.parse(readFileSync(INDEX_FILE, 'utf8'));
 const index = (advance ? stored.index + 1 : stored.index) % PALETTE.length;
 const colour = PALETTE[index];
 
 const SIZE = 1024;
 const SS = 4; // supersampling per axis
+
+// Checking compares the colour, not the file's bytes. Two machines running
+// the same script produce the same picture but not the same PNG: zlib's
+// output varies between platforms and versions, so a byte comparison fails
+// on an icon that is perfectly correct. What matters is what is on screen.
+if (checkOnly) {
+  const fail = (message) => {
+    console.error(`${message}
+  Run: node scripts/icon-d.mjs`);
+    process.exit(1);
+  };
+
+  const png = readFileSync(ICON_FILE);
+  let at = 8;
+  let header = null;
+  const idat = [];
+  while (at < png.length) {
+    const length = png.readUInt32BE(at);
+    const type = png.subarray(at + 4, at + 8).toString('ascii');
+    const body = png.subarray(at + 8, at + 8 + length);
+    if (type === 'IHDR') header = body;
+    if (type === 'IDAT') idat.push(body);
+    at += 12 + length;
+  }
+  if (!header) fail(`${ICON_FILE} has no IHDR.`);
+
+  const width = header.readUInt32BE(0);
+  const height = header.readUInt32BE(4);
+  const colourType = header[9];
+  if (width !== SIZE || height !== SIZE) fail(`${ICON_FILE} is ${width}x${height}, expected ${SIZE}x${SIZE}.`);
+  if (colourType !== 2) fail(`${ICON_FILE} is colour type ${colourType}; the App Store needs RGB with no alpha.`);
+
+  // The first pixel of the first row is canvas, never letter, so it is the
+  // ground colour. Row byte 0 is the filter, which is 0 on every row here.
+  const raw = inflateSync(Buffer.concat(idat));
+  const found = [raw[1], raw[2], raw[3]];
+  const asHex = (c) => c.map((v) => v.toString(16).padStart(2, '0')).join('');
+  if (asHex(found) !== asHex(colour.rgb)) {
+    fail(
+      `${ICON_FILE} is #${asHex(found)} but index ${index} of the palette is ` +
+        `${colour.name} #${asHex(colour.rgb)}. The icon and the committed colour have drifted apart.`
+    );
+  }
+
+  const swift = readFileSync(SWIFT_FILE, 'utf8');
+  if (!swift.includes(`name = "${colour.name}"`) || !swift.includes(`hex = "${asHex(colour.rgb)}"`)) {
+    fail(`${SWIFT_FILE} does not name ${colour.name} #${asHex(colour.rgb)}.`);
+  }
+
+  console.log(`${colour.name} (#${asHex(colour.rgb)}) — index ${index}: icon and Settings agree.`);
+  process.exit(0);
+}
 
 const BG = colour.rgb;
 const FG = [0xfa, 0xf8, 0xf3]; // warm paper, the same on every colour
