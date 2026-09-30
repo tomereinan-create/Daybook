@@ -7,9 +7,9 @@
 import Foundation
 
 nonisolated enum BuildColor {
-    static let name = "Moss"
-    static let hex = "3f6b2b"
-    static let red = 0.2471
-    static let green = 0.4196
-    static let blue = 0.1686
+    static let name = "Slate"
+    static let hex = "3a4a5a"
+    static let red = 0.2275
+    static let green = 0.2902
+    static let blue = 0.3529
 }

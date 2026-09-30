@@ -80,14 +80,42 @@ nonisolated enum AppGroup {
 /// both surfaces are impossible: there is no widget to add and nothing to
 /// draw the lock-screen card with.
 nonisolated enum InstalledBundle {
-    static var hasWidgetExtension: Bool {
+    /// The bundle identifier of the widget extension inside this install, if
+    /// there is one at all.
+    static let widgetExtensionIdentifier: String? = {
         guard let plugIns = Bundle.main.builtInPlugInsURL,
               let contents = try? FileManager.default.contentsOfDirectory(
                   at: plugIns,
                   includingPropertiesForKeys: nil
               )
+        else { return nil }
+        for url in contents where url.pathExtension == "appex" {
+            if let identifier = Bundle(url: url)?.bundleIdentifier { return identifier }
+        }
+        return nil
+    }()
+
+    static var hasWidgetExtension: Bool { widgetExtensionIdentifier != nil }
+
+    /// Whether the extension's identifier still sits underneath the app's.
+    ///
+    /// iOS requires it: an extension is registered as a child of its host, and
+    /// one whose identifier is not `<app>.something` is refused outright. A
+    /// re-signing tool that gives the app a new identifier — which free
+    /// signing often does, to get a name it is allowed to register — and
+    /// leaves the extension's alone breaks exactly this. The app installs and
+    /// runs perfectly; the widget simply never appears in the gallery, with
+    /// nothing anywhere to say why.
+    static var widgetExtensionIsNested: Bool {
+        guard let app = Bundle.main.bundleIdentifier,
+              let extensionID = widgetExtensionIdentifier
         else { return false }
-        return contents.contains { $0.pathExtension == "appex" }
+        return extensionID.hasPrefix(app + ".")
+    }
+
+    /// The choice, apart from the bundle, so it can be tested.
+    static func isNested(app: String, extensionID: String) -> Bool {
+        extensionID.hasPrefix(app + ".")
     }
 }
 

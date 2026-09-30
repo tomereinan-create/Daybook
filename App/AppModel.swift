@@ -87,6 +87,9 @@ final class AppModel {
             pendingWithSystem: await coordinator.pendingCount(),
             hasSharedContainer: !store.isUsingFallbackStore,
             hasWidgetExtension: InstalledBundle.hasWidgetExtension,
+            widgetExtensionIsNested: InstalledBundle.widgetExtensionIsNested,
+            appIdentifier: Bundle.main.bundleIdentifier ?? "",
+            widgetIdentifier: InstalledBundle.widgetExtensionIdentifier,
             appGroup: AppGroup.identifier,
             grantedGroups: AppGroup.entitledGroups,
             liveActivitiesEnabled: LiveActivityController.shared.areActivitiesEnabled,
@@ -367,6 +370,12 @@ nonisolated struct Diagnostics: Sendable, Equatable {
     var pendingWithSystem = 0
     var hasSharedContainer = false
     var hasWidgetExtension = false
+    /// iOS only registers an extension whose identifier sits under the
+    /// app's. A re-signing tool that renames one and not the other
+    /// produces an app that runs and a widget that never appears.
+    var widgetExtensionIsNested = false
+    var appIdentifier = ""
+    var widgetIdentifier: String?
     /// The group the app settled on, and the ones its signature actually
     /// grants. When these disagree the widgets cannot see anything.
     var appGroup = ""

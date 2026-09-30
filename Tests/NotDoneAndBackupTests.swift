@@ -264,6 +264,7 @@ struct SetupNoticeTests {
             pendingWithSystem: 3,
             hasSharedContainer: true,
             hasWidgetExtension: true,
+            widgetExtensionIsNested: true,
             liveActivitiesEnabled: true,
             liveActivityRunning: true,
             onLockScreen: 2,
@@ -285,6 +286,7 @@ struct SetupNoticeTests {
         var d = healthy
         d.notifications = .notDetermined
         d.hasWidgetExtension = false
+        d.widgetExtensionIsNested = false
         d.liveActivitiesEnabled = false
         d.hasSharedContainer = false
         d.onLockScreen = 0
@@ -308,9 +310,14 @@ struct SetupNoticeTests {
         // could not help.
         var d = healthy
         d.hasWidgetExtension = false
+        d.widgetExtensionIsNested = false
         d.liveActivitiesEnabled = false
         d.hasSharedContainer = false
         #expect(SetupNotice.first(from: d) == .widgetExtensionMissing)
+
+        // Present but renamed is a different answer, and a different fix.
+        d.hasWidgetExtension = true
+        #expect(SetupNotice.first(from: d) == .widgetExtensionRenamed)
         #expect(SetupNotice.first(from: d)?.action == nil)
 
         // But a refusal still comes first: that one the app can talk about.
@@ -387,5 +394,37 @@ struct AppGroupResolutionTests {
         #expect(first == "group.aaa.daybook")
         #expect(AppGroup.resolve(declared: declared, granted: groups.reversed()) == first)
         #expect(AppGroup.resolve(declared: declared, granted: groups.shuffled()) == first)
+    }
+}
+
+@Suite("An extension iOS will actually register")
+struct ExtensionNestingTests {
+    @Test("The shipped pair nests")
+    func shippedIdentifiersNest() {
+        #expect(InstalledBundle.isNested(
+            app: "com.tomereinan.daybook",
+            extensionID: "com.tomereinan.daybook.widgets"
+        ))
+    }
+
+    @Test("A renamed app orphans its extension")
+    func renamingTheAppBreaksIt() {
+        // What free signing does: it gives the app an identifier it is allowed
+        // to register, and leaves the extension's alone. iOS then refuses the
+        // extension, and the widget never reaches the gallery.
+        #expect(!InstalledBundle.isNested(
+            app: "com.tomereinan.daybook.sideloaded",
+            extensionID: "com.tomereinan.daybook.widgets"
+        ))
+    }
+
+    @Test("A shared prefix is not the same as being nested")
+    func prefixAloneIsNotEnough() {
+        // `com.tomereinan.daybookwidgets` starts with the app's identifier as
+        // text but is a sibling, not a child. The separator is the point.
+        #expect(!InstalledBundle.isNested(
+            app: "com.tomereinan.daybook",
+            extensionID: "com.tomereinan.daybookwidgets"
+        ))
     }
 }

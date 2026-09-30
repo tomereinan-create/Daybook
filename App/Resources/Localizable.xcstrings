@@ -2194,6 +2194,40 @@
         }
       }
     },
+    "notice.renamed.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS only registers an extension whose identifier sits underneath the app’s, and this install’s do not match — the signing tool renamed one and not the other. The app runs perfectly and the widget never appears in the gallery. Settings › Diagnostics shows both names."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS רושם הרחבה רק אם המזהה שלה נמצא תחת זה של האפליקציה, ובהתקנה הזו הם לא תואמים — כלי החתימה שינה את השם של אחד ולא של השני. האפליקציה עובדת מצוין והווידג’ט פשוט לא מופיע בגלריה. במסך הגדרות › אבחון מוצגים שני השמות."
+          }
+        }
+      }
+    },
+    "notice.renamed.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The widget cannot be registered"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לא ניתן לרשום את הווידג’ט"
+          }
+        }
+      }
+    },
     "notice.surfaces.body": {
       "extractionState": "manual",
       "localizations": {
@@ -3537,6 +3571,23 @@
         }
       }
     },
+    "settings.diag.appIdentifier": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App identifier"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מזהה האפליקציה"
+          }
+        }
+      }
+    },
     "settings.diag.build": {
       "extractionState": "manual",
       "localizations": {
@@ -3856,6 +3907,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "הרחבת הווידג’ט מותקנת"
+          }
+        }
+      }
+    },
+    "settings.diag.widgetIdentifier": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widget identifier"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מזהה הווידג’ט"
+          }
+        }
+      }
+    },
+    "settings.diag.widgetIdentifierNone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "none — no extension in this install"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אין — לא קיימת הרחבה בהתקנה הזו"
           }
         }
       }

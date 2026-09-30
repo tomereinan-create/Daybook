@@ -333,6 +333,27 @@ struct SettingsView: View {
                 value: yesOrNo(diagnostics.hasWidgetExtension),
                 isGood: diagnostics.hasWidgetExtension
             )
+            // Printed whether or not anything is wrong: these two names are
+            // the evidence, and reading them back is quicker than describing
+            // a symptom.
+            VStack(alignment: .leading, spacing: 2) {
+                Text("settings.diag.appIdentifier")
+                Text(verbatim: diagnostics.appIdentifier)
+                    .foregroundStyle(.secondary)
+                Text("settings.diag.widgetIdentifier")
+                if let widgetIdentifier = diagnostics.widgetIdentifier {
+                    Text(verbatim: widgetIdentifier)
+                        .foregroundStyle(
+                            diagnostics.widgetExtensionIsNested ? Color.secondary : Color.orange
+                        )
+                } else {
+                    Text("settings.diag.widgetIdentifierNone")
+                        .foregroundStyle(Color.orange)
+                }
+            }
+            .font(.caption2.monospaced())
+            .textSelection(.enabled)
+
             DiagnosticRow(
                 title: "settings.diag.sharedContainer",
                 value: yesOrNo(diagnostics.hasSharedContainer),
