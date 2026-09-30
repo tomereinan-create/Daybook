@@ -12,6 +12,9 @@ enum SetupNotice: String, Identifiable, CaseIterable {
     /// by itself, and it gets exactly one chance.
     case notificationsNeverAsked
     case notificationsDenied
+    /// The extension never arrived on the phone, which makes both surfaces
+    /// impossible however well everything else is set up.
+    case widgetExtensionMissing
     case liveActivitiesOff
     case noSharedContainer
     case nothingOnSurfaces
@@ -21,6 +24,8 @@ enum SetupNotice: String, Identifiable, CaseIterable {
     static func first(from diagnostics: Diagnostics) -> SetupNotice? {
         if diagnostics.notifications == .notDetermined { return .notificationsNeverAsked }
         if diagnostics.notifications == .denied { return .notificationsDenied }
+        // Above the rest: with no extension there is nothing to switch on.
+        if !diagnostics.hasWidgetExtension { return .widgetExtensionMissing }
         if !diagnostics.liveActivitiesEnabled { return .liveActivitiesOff }
         if !diagnostics.hasSharedContainer { return .noSharedContainer }
         if diagnostics.itemsToday > 0,
@@ -35,6 +40,7 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         switch self {
         case .notificationsNeverAsked: "notice.notifications.title"
         case .notificationsDenied: "notice.denied.title"
+        case .widgetExtensionMissing: "notice.extension.title"
         case .liveActivitiesOff: "notice.liveActivities.title"
         case .noSharedContainer: "notice.container.title"
         case .nothingOnSurfaces: "notice.surfaces.title"
@@ -45,6 +51,7 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         switch self {
         case .notificationsNeverAsked: "notice.notifications.body"
         case .notificationsDenied: "notice.denied.body"
+        case .widgetExtensionMissing: "notice.extension.body"
         case .liveActivitiesOff: "notice.liveActivities.body"
         case .noSharedContainer: "notice.container.body"
         case .nothingOnSurfaces: "notice.surfaces.body"
@@ -54,6 +61,7 @@ enum SetupNotice: String, Identifiable, CaseIterable {
     var symbol: String {
         switch self {
         case .notificationsNeverAsked, .notificationsDenied: "bell.slash.fill"
+        case .widgetExtensionMissing: "square.slash"
         case .liveActivitiesOff: "lock.display"
         case .noSharedContainer: "square.grid.2x2"
         case .nothingOnSurfaces: "eye.slash"
@@ -68,7 +76,7 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         switch self {
         case .notificationsNeverAsked: .ask
         case .notificationsDenied, .liveActivitiesOff: .openSystemSettings
-        case .noSharedContainer, .nothingOnSurfaces: nil
+        case .widgetExtensionMissing, .noSharedContainer, .nothingOnSurfaces: nil
         }
     }
 

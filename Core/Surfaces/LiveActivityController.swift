@@ -24,6 +24,11 @@ final class LiveActivityController {
     private var startedAt: Date?
     private var tokenObservation: Task<Void, Never>?
 
+    /// Why the last request was refused, if it was. ActivityKit's reasons are
+    /// specific and useful — too many running, the switch is off, the app was
+    /// in the background — and swallowing them left no way to tell which.
+    private(set) var lastError: String?
+
     /// Set by the app when push updates are switched on. Given the token and
     /// the schedule; never given any item's content.
     var uploadRegistration: (@MainActor (PushRegistration) async -> Void)?
@@ -135,14 +140,17 @@ final class LiveActivityController {
                 pushType: uploadRegistration == nil ? nil : .token
             )
             startedAt = now
+            lastError = nil
             if uploadRegistration != nil {
                 observeToken(of: activity, items: items, progress: progress, now: now)
             }
         } catch {
             // Refused when the user has switched Live Activities off, or when
-            // too many are already running. Neither is worth interrupting them
-            // about: every other surface still works.
+            // too many are already running. Not worth interrupting them about
+            // — every other surface still works — but worth keeping, because
+            // it is the only account of why the lock screen is blank.
             startedAt = nil
+            lastError = error.localizedDescription
         }
     }
 

@@ -263,6 +263,7 @@ struct SetupNoticeTests {
             notifications: .authorized,
             pendingWithSystem: 3,
             hasSharedContainer: true,
+            hasWidgetExtension: true,
             liveActivitiesEnabled: true,
             liveActivityRunning: true,
             onLockScreen: 2,
@@ -283,6 +284,7 @@ struct SetupNoticeTests {
         // answering the second question first.
         var d = healthy
         d.notifications = .notDetermined
+        d.hasWidgetExtension = false
         d.liveActivitiesEnabled = false
         d.hasSharedContainer = false
         d.onLockScreen = 0
@@ -297,6 +299,23 @@ struct SetupNoticeTests {
         d.notifications = .denied
         #expect(SetupNotice.first(from: d) == .notificationsDenied)
         #expect(SetupNotice.first(from: d)?.action == .openSystemSettings)
+    }
+
+    @Test("A missing extension outranks everything it makes impossible")
+    func theExtensionComesBeforeItsSymptoms() {
+        // With no extension there is no widget to add and no card to draw, so
+        // saying "Live Activities are off" would send them to a switch that
+        // could not help.
+        var d = healthy
+        d.hasWidgetExtension = false
+        d.liveActivitiesEnabled = false
+        d.hasSharedContainer = false
+        #expect(SetupNotice.first(from: d) == .widgetExtensionMissing)
+        #expect(SetupNotice.first(from: d)?.action == nil)
+
+        // But a refusal still comes first: that one the app can talk about.
+        d.notifications = .denied
+        #expect(SetupNotice.first(from: d) == .notificationsDenied)
     }
 
     @Test("Then the card, then the container, then the items")

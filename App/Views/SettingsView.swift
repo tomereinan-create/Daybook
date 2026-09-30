@@ -307,6 +307,11 @@ struct SettingsView: View {
                 value: yesOrNo(diagnostics.liveActivityRunning),
                 isGood: diagnostics.liveActivityRunning || diagnostics.onLockScreen == 0
             )
+            if let error = diagnostics.liveActivityError {
+                Text(verbatim: error)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            }
             DiagnosticRow(
                 title: "settings.diag.onLockScreen",
                 value: Text(verbatim: "\(diagnostics.onLockScreen)"),
@@ -323,6 +328,11 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
+            DiagnosticRow(
+                title: "settings.diag.widgetExtension",
+                value: yesOrNo(diagnostics.hasWidgetExtension),
+                isGood: diagnostics.hasWidgetExtension
+            )
             DiagnosticRow(
                 title: "settings.diag.sharedContainer",
                 value: yesOrNo(diagnostics.hasSharedContainer),

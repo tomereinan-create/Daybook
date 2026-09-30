@@ -2058,6 +2058,40 @@
         }
       }
     },
+    "notice.extension.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The widget and the lock-screen card live in an app extension, and this install does not contain one — so there is no Daybook widget in the gallery and no card to draw. A sideloading tool using a free Apple account often drops extensions, because each one needs its own App ID and a free account gets ten in total. Look for an option about app extensions or plug-ins in the tool you installed with."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הווידג’ט וכרטיס מסך הנעילה חיים בהרחבת אפליקציה, ובהתקנה הזו אין כזו — ולכן אין ווידג’ט של Daybook בגלריה ואין כרטיס לצייר. כלי התקנה שמשתמש בחשבון Apple חינמי נוטה להשמיט הרחבות, כי כל אחת דורשת App ID משלה ולחשבון חינמי מגיעים עשרה בסך הכול. חפשו אפשרות בנוגע להרחבות או תוספים בכלי שאיתו התקנתם."
+          }
+        }
+      }
+    },
+    "notice.extension.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The widget was not installed"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הווידג’ט לא הותקן"
+          }
+        }
+      }
+    },
     "notice.liveActivities.body": {
       "extractionState": "manual",
       "localizations": {
@@ -3754,6 +3788,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "מה מתוזמן"
+          }
+        }
+      }
+    },
+    "settings.diag.widgetExtension": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widget extension installed"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הרחבת הווידג’ט מותקנת"
           }
         }
       }

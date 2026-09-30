@@ -86,8 +86,10 @@ final class AppModel {
             notifications: await coordinator.notificationStatus(),
             pendingWithSystem: await coordinator.pendingCount(),
             hasSharedContainer: !store.isUsingFallbackStore,
+            hasWidgetExtension: InstalledBundle.hasWidgetExtension,
             liveActivitiesEnabled: LiveActivityController.shared.areActivitiesEnabled,
             liveActivityRunning: LiveActivityController.shared.isRunning,
+            liveActivityError: LiveActivityController.shared.lastError,
             onLockScreen: SurfaceData.entries(for: .liveActivity, now: now).count,
             onHomeWidget: SurfaceData.entries(for: .homeWidget, now: now).count,
             itemsToday: SurfaceData.progress(now: now).total
@@ -362,8 +364,11 @@ nonisolated struct Diagnostics: Sendable, Equatable {
     var notifications: NotificationAuthorization = .notDetermined
     var pendingWithSystem = 0
     var hasSharedContainer = false
+    var hasWidgetExtension = false
     var liveActivitiesEnabled = false
     var liveActivityRunning = false
+    /// ActivityKit's own words for why the card was refused.
+    var liveActivityError: String?
     var onLockScreen = 0
     var onHomeWidget = 0
     /// Everything on today's plan, done or not. Without it there is no telling
