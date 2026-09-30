@@ -114,6 +114,17 @@ extension Weekday {
     }
 }
 
+extension SettingGroup {
+    var title: LocalizedStringKey {
+        switch self {
+        case .timing: "group.timing"
+        case .alerts: "group.alerts"
+        case .display: "group.display"
+        case .extras: "group.extras"
+        }
+    }
+}
+
 extension PresetKind {
     var title: LocalizedStringKey {
         switch self {

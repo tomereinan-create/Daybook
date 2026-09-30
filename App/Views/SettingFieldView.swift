@@ -13,6 +13,7 @@ struct SettingFieldView: View {
         case .quota: QuotaField(settings: $settings)
         case .location: LocationField(settings: $settings)
         case .relativeDuration: RelativeDurationField(settings: $settings)
+        case .timerStart: TimerStartField(settings: $settings)
         case .leadTime: LeadTimeField(settings: $settings)
         case .surfaces: SurfacesField(settings: $settings)
         case .intensity: IntensityField(settings: $settings)
@@ -363,6 +364,25 @@ private struct RelativeDurationField: View {
         Binding(
             get: { settings.trigger.relativeMinutes ?? 30 },
             set: { settings.trigger.relativeMinutes = max($0, 1) }
+        )
+    }
+}
+
+/// A countdown either runs on its own or waits to be started. Shown only for
+/// countdowns; for anything else there is nothing here to decide.
+private struct TimerStartField: View {
+    @Binding var settings: ItemSettings
+
+    var body: some View {
+        if settings.trigger.kind == .relative {
+            Toggle("field.startsImmediately", isOn: binding)
+        }
+    }
+
+    private var binding: Binding<Bool> {
+        Binding(
+            get: { settings.trigger.runsUnattended },
+            set: { settings.trigger.startsImmediately = $0 }
         )
     }
 }

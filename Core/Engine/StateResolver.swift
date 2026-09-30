@@ -37,6 +37,22 @@ nonisolated struct StateResolver: Sendable {
 
     // MARK: - Trigger
 
+    /// When a countdown's clock started.
+    ///
+    /// A timer the user tapped Start on counts from that tap. One set to run
+    /// on its own counts from when it came into being — the later of the
+    /// item's creation and the start of the occurrence's own slot, so that a
+    /// repeat does not count from the day the item was first made.
+    func relativeOrigin(
+        item: ItemSnapshot,
+        generated: GeneratedOccurrence,
+        record: OccurrenceStateRecord
+    ) -> Date? {
+        if let started = record.startedAt { return started }
+        guard item.settings.trigger.runsUnattended else { return nil }
+        return max(item.createdAt, generated.slot)
+    }
+
     /// The instant alerts hang off, after snoozing, manual starts and roll-over
     /// have been applied.
     func effectiveTrigger(
@@ -56,8 +72,9 @@ nonisolated struct StateResolver: Sendable {
         case .time:
             base = generated.triggerDate
         case .relative:
-            if let started = record.startedAt, let minutes = settings.trigger.relativeMinutes {
-                base = started.addingTimeInterval(TimeInterval(minutes) * 60)
+            if let origin = relativeOrigin(item: item, generated: generated, record: record),
+               let minutes = settings.trigger.relativeMinutes {
+                base = origin.addingTimeInterval(TimeInterval(minutes) * 60)
             } else {
                 base = nil
             }
@@ -136,11 +153,13 @@ nonisolated struct StateResolver: Sendable {
             return now < trigger.addingTimeInterval(configuration.dueGrace) ? .due : .overdue
         }
 
-        // A timer the user has started is running, whatever its lead time says.
-        // Lead time answers "how early should this appear"; a started timer is
-        // already here, and it should stay on screen counting down rather than
-        // vanish until it goes off.
-        if item.settings.trigger.kind == .relative, record.startedAt != nil {
+        // A running timer is running, whatever its lead time says. Lead time
+        // answers "how early should this appear"; a timer whose clock has
+        // started is already here, and it should stay on screen counting down
+        // rather than vanish until it goes off. Reaching this line at all
+        // means the countdown has an origin — an unstarted one has no trigger
+        // and left through the guard above.
+        if item.settings.trigger.kind == .relative {
             return .active
         }
 

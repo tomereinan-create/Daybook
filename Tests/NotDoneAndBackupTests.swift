@@ -183,6 +183,59 @@ struct PresetQuietnessTests {
         #expect(!settings.alerting.escalates)
     }
 
+    @Test("At most one reminder before the time, and snooze is opt-in",
+          arguments: PresetKind.allCases)
+    func alertsArriveSparingly(preset: PresetKind) {
+        let settings = preset.defaultSettings(reference: now, calendar: calendar)
+        #expect(settings.alerting.preAlertOffsets.count <= 1)
+        // A timer and an alarm are the two things whose whole point is going
+        // off, so "not yet" has to be on the screen when they do. Everything
+        // else starts without it.
+        if preset != .relativeTimer, preset != .wakeUp {
+            #expect(!settings.alerting.snoozeAllowed)
+        }
+    }
+
+    @Test("Every preset shows when, where and how loud up front",
+          arguments: PresetKind.allCases)
+    func basicsAreAlwaysVisible(preset: PresetKind) {
+        let prominent = preset.prominentFields
+        #expect(prominent.contains(.surfaces))
+        #expect(prominent.contains(.intensity))
+        // And, for anything meant to appear somewhere, something that says
+        // when: a time, a place, a quota or a duration. Someday and
+        // waiting-for are hidden on purpose and answer that question with
+        // "not yet", so they are the ones exempt.
+        let settings = preset.defaultSettings(reference: now, calendar: calendar)
+        let whens: Set<SettingField> = [.trigger, .location, .quota, .relativeDuration]
+        if !settings.visibility.surfaces.isEmpty {
+            #expect(!prominent.isDisjoint(with: whens))
+        }
+    }
+
+    @Test("Nothing falls out of the drawers")
+    func everyFieldIsFiledSomewhere() {
+        // Each field belongs to exactly one group, so a preset's advanced
+        // fields always add up to the fields it does not show up front.
+        for preset in PresetKind.allCases {
+            let advanced = SettingField.allCases.filter { !preset.prominentFields.contains($0) }
+            let filed = SettingGroup.allCases.flatMap { group in
+                advanced.filter { $0.group == group }
+            }
+            #expect(Set(filed) == Set(advanced))
+            #expect(filed.count == advanced.count)
+        }
+    }
+
+    @Test("A timer starts itself; a manual countdown waits")
+    func timerStartsOnItsOwn() {
+        let timer = PresetKind.relativeTimer.defaultSettings(reference: now, calendar: calendar)
+        #expect(timer.trigger.runsUnattended)
+        #expect(!Trigger.minutesAfterStart(20).runsUnattended)
+        // The flag means nothing for anything that is not a countdown.
+        #expect(!Trigger.at(now).runsUnattended)
+    }
+
     @Test("The five kinds the create flow offers")
     func offeredPresets() {
         #expect(PresetCatalog.available == [.task, .event, .recurringTask, .routine, .relativeTimer])

@@ -36,6 +36,14 @@ nonisolated struct Trigger: Codable, Sendable, Hashable {
     var timeOfDay: TimeOfDay?
     /// Used when `kind == .relative`.
     var relativeMinutes: Int?
+    /// Used when `kind == .relative`. A countdown normally runs from the
+    /// moment the item is made; setting this false makes it wait for a Start
+    /// tap instead.
+    ///
+    /// Optional, and deliberately so: settings written by an earlier build
+    /// carry no such key, and a missing key must decode rather than throw away
+    /// the whole item. `nil` means the same as true.
+    var startsImmediately: Bool?
     /// Used when `kind == .location`.
     var location: LocationTrigger?
 
@@ -49,8 +57,19 @@ nonisolated struct Trigger: Codable, Sendable, Hashable {
         Trigger(kind: .time, timeOfDay: timeOfDay)
     }
 
+    /// A countdown that waits to be started by hand.
     static func minutesAfterStart(_ minutes: Int) -> Trigger {
-        Trigger(kind: .relative, relativeMinutes: minutes)
+        Trigger(kind: .relative, relativeMinutes: minutes, startsImmediately: false)
+    }
+
+    /// A countdown that starts itself, which is what a timer does.
+    static func countdown(minutes: Int) -> Trigger {
+        Trigger(kind: .relative, relativeMinutes: minutes, startsImmediately: true)
+    }
+
+    /// True when a countdown's clock runs without anybody tapping Start.
+    var runsUnattended: Bool {
+        kind == .relative && startsImmediately != false
     }
 
     /// True when the engine can place this trigger on a calendar without

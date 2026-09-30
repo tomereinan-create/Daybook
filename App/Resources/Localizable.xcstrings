@@ -1242,6 +1242,23 @@
         }
       }
     },
+    "field.startsImmediately": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts on its own"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מתחיל מעצמו"
+          }
+        }
+      }
+    },
     "field.surface.homeWidget": {
       "extractionState": "manual",
       "localizations": {
@@ -1442,6 +1459,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "בימים מסוימים"
+          }
+        }
+      }
+    },
+    "group.alerts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerts"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "התראות"
+          }
+        }
+      }
+    },
+    "group.display": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where it shows"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "היכן מופיע"
+          }
+        }
+      }
+    },
+    "group.extras": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אחר"
+          }
+        }
+      }
+    },
+    "group.timing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timing"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "תזמון"
           }
         }
       }
@@ -2938,23 +3023,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "עדיין ממתינים למישהו"
-          }
-        }
-      }
-    },
-    "section.advanced": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Advanced"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "הגדרות מתקדמות"
           }
         }
       }

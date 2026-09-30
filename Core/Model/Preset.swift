@@ -38,7 +38,7 @@ nonisolated extension PresetKind {
             s.visibility = Visibility(leadTime: 4 * 3600, surfaces: .all)
             s.alerting = Alerting(
                 intensity: .standard,
-                preAlertOffsets: [3600, 600],
+                preAlertOffsets: [600],
                 nag: .off,
                 escalates: false,
                 snoozeAllowed: false,
@@ -57,10 +57,10 @@ nonisolated extension PresetKind {
             s.visibility = Visibility(leadTime: 24 * 3600, surfaces: .all)
             s.alerting = Alerting(
                 intensity: .standard,
-                preAlertOffsets: [24 * 3600, 4 * 3600, 3600],
+                preAlertOffsets: [3600],
                 nag: .off,
                 escalates: false,
-                snoozeAllowed: true,
+                snoozeAllowed: false,
                 snoozeMinutes: 15
             )
             s.dismissal = Dismissal(endCondition: .markedDone, onMissed: .becomeOpenTask)
@@ -74,7 +74,7 @@ nonisolated extension PresetKind {
                 preAlertOffsets: [],
                 nag: .off,
                 escalates: false,
-                snoozeAllowed: true,
+                snoozeAllowed: false,
                 snoozeMinutes: 10
             )
             s.dismissal = Dismissal(endCondition: .windowEnds(3 * 3600), onMissed: .logMissed)
@@ -87,7 +87,7 @@ nonisolated extension PresetKind {
                 preAlertOffsets: [],
                 nag: .off,
                 escalates: false,
-                snoozeAllowed: true,
+                snoozeAllowed: false,
                 snoozeMinutes: 30
             )
             s.dismissal = Dismissal(endCondition: .markedDone, onMissed: .becomeOpenTask)
@@ -105,7 +105,7 @@ nonisolated extension PresetKind {
                 preAlertOffsets: [],
                 nag: .off,
                 escalates: false,
-                snoozeAllowed: true,
+                snoozeAllowed: false,
                 snoozeMinutes: 60
             )
             s.dismissal = Dismissal(endCondition: .markedDone, onMissed: .logMissed)
@@ -124,7 +124,7 @@ nonisolated extension PresetKind {
             s.dismissal = Dismissal(endCondition: .windowEnds(3600), onMissed: .logMissed)
 
         case .relativeTimer:
-            s.trigger = .minutesAfterStart(45)
+            s.trigger = .countdown(minutes: 45)
             s.visibility = Visibility(leadTime: 0, surfaces: .all)
             s.alerting = Alerting(
                 intensity: .timeSensitive,
@@ -145,7 +145,7 @@ nonisolated extension PresetKind {
                 preAlertOffsets: [],
                 nag: .off,
                 escalates: false,
-                snoozeAllowed: true,
+                snoozeAllowed: false,
                 snoozeMinutes: 10
             )
             s.dismissal = Dismissal(endCondition: .windowEnds(2 * 3600), onMissed: .logMissed)
@@ -159,7 +159,7 @@ nonisolated extension PresetKind {
                 preAlertOffsets: [],
                 nag: .off,
                 escalates: false,
-                snoozeAllowed: true,
+                snoozeAllowed: false,
                 snoozeMinutes: 24 * 60
             )
             s.dismissal = Dismissal(endCondition: .markedDone, onMissed: .becomeOpenTask)
@@ -194,21 +194,29 @@ nonisolated extension PresetKind {
         return s
     }
 
-    /// Which setting groups the editor shows before the user opens "Advanced".
+    /// Which setting groups the editor shows before the user opens a drawer.
+    ///
+    /// Three of these are on every preset: when it happens, where it shows,
+    /// and whether it makes a sound. Those are the questions people actually
+    /// ask when they write something down, and burying them under Advanced
+    /// made the basics look like there was nothing to decide. What varies is
+    /// the one field that gives the preset its character — the quota, the
+    /// steps, the duration.
     var prominentFields: Set<SettingField> {
-        switch self {
-        case .event: [.trigger, .preAlerts]
-        case .task: [.priority]
-        case .deadlineTask: [.trigger, .preAlerts, .escalation]
-        case .recurringTask: [.trigger, .recurrence, .window]
-        case .locationReminder: [.location]
-        case .flexibleHabit: [.quota]
-        case .timeBlock: [.trigger, .window]
-        case .relativeTimer: [.relativeDuration]
-        case .routine: [.trigger, .recurrence, .steps]
-        case .waitingFor: [.followUpInterval]
-        case .someday: [.priority]
-        case .wakeUp: [.trigger, .recurrence, .snooze]
+        let basics: Set<SettingField> = [.surfaces, .intensity]
+        return switch self {
+        case .event: basics.union([.trigger])
+        case .task: basics.union([.trigger])
+        case .deadlineTask: basics.union([.trigger])
+        case .recurringTask: basics.union([.trigger, .recurrence])
+        case .locationReminder: basics.union([.location])
+        case .flexibleHabit: basics.union([.quota])
+        case .timeBlock: basics.union([.trigger, .window])
+        case .relativeTimer: basics.union([.relativeDuration])
+        case .routine: basics.union([.trigger, .recurrence, .steps])
+        case .waitingFor: basics.union([.followUpInterval])
+        case .someday: basics
+        case .wakeUp: basics.union([.trigger, .recurrence])
         }
     }
 }
@@ -220,6 +228,7 @@ nonisolated enum SettingField: String, Sendable, Hashable, CaseIterable {
     case quota
     case location
     case relativeDuration
+    case timerStart
     case leadTime
     case surfaces
     case intensity
@@ -233,4 +242,34 @@ nonisolated enum SettingField: String, Sendable, Hashable, CaseIterable {
     case quietHours
     case steps
     case followUpInterval
+}
+
+/// The drawers the editor files a preset's remaining settings into.
+///
+/// One "Advanced" list of eighteen rows reads as a wall; four named drawers,
+/// each shut until asked for, read as a place to look something up. Used only
+/// by the UI.
+nonisolated enum SettingGroup: String, Sendable, Hashable, CaseIterable, Identifiable {
+    case timing
+    case alerts
+    case display
+    case extras
+
+    var id: String { rawValue }
+}
+
+nonisolated extension SettingField {
+    var group: SettingGroup {
+        switch self {
+        case .trigger, .recurrence, .quota, .location, .relativeDuration, .timerStart,
+             .window, .onMissed:
+            .timing
+        case .intensity, .preAlerts, .nag, .escalation, .snooze, .quietHours:
+            .alerts
+        case .leadTime, .surfaces:
+            .display
+        case .priority, .steps, .followUpInterval:
+            .extras
+        }
+    }
 }

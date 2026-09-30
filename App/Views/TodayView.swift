@@ -244,9 +244,13 @@ struct OccurrenceRow: View {
 }
 
 extension ResolvedOccurrence {
-    /// A relative timer the user has not started yet.
+    /// A countdown waiting to be started by hand. One that starts itself never
+    /// offers the button, because there is nothing left to press.
     var canStart: Bool {
-        item.settings.trigger.kind == .relative && record.startedAt == nil && state.isOutstanding
+        item.settings.trigger.kind == .relative
+            && !item.settings.trigger.runsUnattended
+            && record.startedAt == nil
+            && state.isOutstanding
     }
 }
 

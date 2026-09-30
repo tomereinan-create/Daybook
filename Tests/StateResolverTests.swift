@@ -183,6 +183,40 @@ struct StateResolverTests {
         #expect(afterSnooze.state == .due)
     }
 
+    @Test("A countdown that starts itself is running from the moment it is made")
+    func countdownStartsWithoutBeingTold() {
+        let created = Fixture.date(2026, 3, 10, 8, 0, calendar: calendar)
+        var settings = ItemSettings.default
+        settings.trigger = .countdown(minutes: 45)
+        settings.visibility = Visibility(leadTime: 0, surfaces: .all)
+        let item = Fixture.item(preset: .relativeTimer, settings: settings, createdAt: created)
+        let occurrence = generated(item, on: created)
+
+        // No record at all: nobody has touched it, and it is already running.
+        let fresh = resolver.resolve(item: item, generated: occurrence, record: nil, now: created)
+        #expect(fresh.effectiveTrigger == Fixture.date(2026, 3, 10, 8, 45, calendar: calendar))
+        #expect(fresh.state == .active)
+
+        let due = resolver.resolve(
+            item: item,
+            generated: occurrence,
+            record: nil,
+            now: Fixture.date(2026, 3, 10, 8, 45, calendar: calendar)
+        )
+        #expect(due.state == .due)
+    }
+
+    @Test("Settings written before countdowns could start themselves still do")
+    func missingFlagMeansItStarts() {
+        // The key is absent from anything the earlier build saved. Absent has
+        // to mean "starts", or a timer restored from a backup would sit there
+        // waiting for a button that is no longer shown.
+        let encoded = Data(#"{"kind":"relative","relativeMinutes":10}"#.utf8)
+        let trigger = try! JSONDecoder().decode(Trigger.self, from: encoded)
+        #expect(trigger.startsImmediately == nil)
+        #expect(trigger.runsUnattended)
+    }
+
     @Test("A relative timer is visible until started, then counts down")
     func relativeTimerNeedsStarting() {
         let created = Fixture.date(2026, 3, 10, 8, 0, calendar: calendar)

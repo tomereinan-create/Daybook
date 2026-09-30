@@ -66,10 +66,15 @@ struct ItemEditorView: View {
                 }
             }
 
-            Section {
-                DisclosureGroup("section.advanced") {
-                    ForEach(advancedFields, id: \.self) { field in
-                        SettingFieldView(field: field, settings: $draft.settings)
+            ForEach(SettingGroup.allCases) { group in
+                let fields = advancedFields.filter { $0.group == group }
+                if !fields.isEmpty {
+                    Section {
+                        DisclosureGroup(group.title) {
+                            ForEach(fields, id: \.self) { field in
+                                SettingFieldView(field: field, settings: $draft.settings)
+                            }
+                        }
                     }
                 }
             }
