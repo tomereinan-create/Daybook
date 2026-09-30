@@ -268,9 +268,13 @@ struct OccurrenceRow: View {
         return "circle"
     }
 
-    @ViewBuilder
     private var answerPrompt: LocalizedStringKey {
-        occurrence.item.settings.answerKind == .number ? "answer.prompt.number" : "answer.prompt.text"
+        // Written out rather than as a ternary of two literals: that form can
+        // resolve to String and put the key itself on screen.
+        if occurrence.item.settings.answerKind == .number {
+            return "answer.prompt.number"
+        }
+        return "answer.prompt.text"
     }
 
     /// Done either finishes the thing or starts its clock; either way the tap
@@ -286,6 +290,7 @@ struct OccurrenceRow: View {
         askingForAnswer = true
     }
 
+    @ViewBuilder
     private var subtitle: some View {
         HStack(spacing: 6) {
             // A running hold is the only thing worth saying while it runs.
