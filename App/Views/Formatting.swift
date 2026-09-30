@@ -71,7 +71,9 @@ extension TriggerKind {
         case .time: "trigger.time"
         case .relative: "trigger.relative"
         case .afterPrevious: "trigger.afterPrevious"
-        case .none: "trigger.none"
+        // Withdrawn, but still a case anything already stored can hold. It
+        // reads as having no trigger, which is what it now behaves like.
+        case .location, .none: "trigger.none"
         }
     }
 }
