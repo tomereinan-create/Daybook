@@ -81,32 +81,51 @@ enum SetupNotice: String, Identifiable, CaseIterable {
 
     // Spelled out rather than relying on synthesis, because the tests compare
     // an optional of it.
-    enum Action: Equatable { case ask, openSystemSettings }
+    enum Action: Equatable {
+        case ask
+        case openSystemSettings
+        /// Nothing about the install can be fixed from here, but the day can
+        /// still reach the lock screen another way.
+        case useLockScreenSummary
+    }
 
     var action: Action? {
         switch self {
         case .notificationsNeverAsked: .ask
         case .notificationsDenied, .liveActivitiesOff: .openSystemSettings
+        // None of these can be put right from inside the app — they are
+        // decided by how the build was signed. What can be offered is the
+        // fallback that needs neither an extension nor a shared container.
         case .widgetExtensionMissing, .widgetExtensionRenamed, .widgetExtensionUnsigned,
-             .noSharedContainer, .nothingOnSurfaces: nil
+             .noSharedContainer:
+            .useLockScreenSummary
+        case .nothingOnSurfaces: nil
         }
     }
 
     var actionTitle: LocalizedStringKey {
         switch action {
         case .ask: "notice.notifications.action"
+        case .useLockScreenSummary: "notice.useNotifications"
         default: "notice.openSettings"
         }
     }
 
-    /// True for the ones the user cannot act on from here. Those can be put
-    /// away; the rest stay until they are actually fixed.
-    var isDismissible: Bool { action == nil }
+    /// True for the ones nothing in the app can put right. Those can be put
+    /// away; the ones that describe something still fixable stay until it is.
+    var isDismissible: Bool {
+        switch self {
+        case .notificationsNeverAsked, .notificationsDenied, .liveActivitiesOff: false
+        case .widgetExtensionMissing, .widgetExtensionRenamed, .widgetExtensionUnsigned,
+             .noSharedContainer, .nothingOnSurfaces: true
+        }
+    }
 }
 
 struct SetupNoticeBanner: View {
     let notice: SetupNotice
     let onAsk: () async -> Void
+    let onUseLockScreen: () -> Void
     let onDismiss: () -> Void
     let onInspect: () -> Void
 
@@ -147,6 +166,8 @@ struct SetupNoticeBanner: View {
                             if let url = URL(string: UIApplication.openSettingsURLString) {
                                 UIApplication.shared.open(url)
                             }
+                        case .useLockScreenSummary:
+                            onUseLockScreen()
                         }
                     }
                     .buttonStyle(.borderedProminent)

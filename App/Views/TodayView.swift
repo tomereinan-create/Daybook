@@ -37,6 +37,13 @@ struct TodayView: View {
                             await model.requestPermissions()
                             await loadDiagnostics()
                         },
+                        onUseLockScreen: {
+                            SharedDefaults.lockScreenSummary = true
+                            Task {
+                                await model.reschedule()
+                                await loadDiagnostics()
+                            }
+                        },
                         onDismiss: { dismiss(notice) },
                         onInspect: { showsDiagnostics = true }
                     )

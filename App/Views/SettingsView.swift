@@ -11,11 +11,13 @@ struct SettingsView: View {
     @State private var transferMessage: String?
     @State private var diagnostics = Diagnostics()
     @State private var showsDiagnostics = false
+    @State private var lockScreenSummary = SharedDefaults.lockScreenSummary
 
     var body: some View {
         NavigationStack {
             Form {
                 quietHoursSection
+                lockScreenSection
                 permissionsSection
                 widgetSection
                 pushSection
@@ -82,6 +84,30 @@ struct SettingsView: View {
 
     private func commitQuietHours() {
         model.updateQuietHours(quietHours)
+    }
+
+    /// The fallback for an install whose widgets cannot work. Offered here as
+    /// well as from the notice on Today, because somebody who turned it off
+    /// needs a way back to it.
+    private var lockScreenSection: some View {
+        Section {
+            Toggle("settings.summary.toggle", isOn: summaryBinding)
+        } header: {
+            Text("settings.summary.title")
+        } footer: {
+            Text("settings.summary.footer")
+        }
+    }
+
+    private var summaryBinding: Binding<Bool> {
+        Binding(
+            get: { lockScreenSummary },
+            set: { newValue in
+                lockScreenSummary = newValue
+                SharedDefaults.lockScreenSummary = newValue
+                Task { await model.reschedule() }
+            }
+        )
     }
 
     // MARK: - Permissions

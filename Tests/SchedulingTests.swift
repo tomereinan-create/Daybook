@@ -48,6 +48,13 @@ actor FakeNotificationScheduler: NotificationScheduling {
 
     private(set) var testsSent = 0
     func sendTest() async throws { testsSent += 1 }
+
+    private(set) var summary: DaySummary?
+    private(set) var summaryPosts = 0
+    func postSummary(_ summary: DaySummary?) async {
+        self.summary = summary
+        summaryPosts += 1
+    }
 }
 
 actor FakeAlarmScheduler: AlarmScheduling {
@@ -371,5 +378,110 @@ struct NotificationContentTests {
             let text = builder.body(for: notification(role: role, lead: 3600))
             #expect(!text.isEmpty)
         }
+    }
+}
+
+@Suite("The day held on the lock screen")
+struct DaySummaryTests {
+    let calendar = Fixture.calendar()
+    let engine = ScheduleEngine(
+        calendar: Fixture.calendar(),
+        configuration: .default,
+        quietHours: .default
+    )
+    private var now: Date { Fixture.date(2026, 3, 10, 9, 0, calendar: calendar) }
+
+    private func plan(_ items: [ItemSnapshot], records: [OccurrenceKey: OccurrenceStateRecord] = [:]) -> DayPlan {
+        engine.dayPlan(items: items, records: records, on: now, now: now)
+    }
+
+    private func task(_ title: String, at hour: Int? = nil) -> ItemSnapshot {
+        var settings = ItemSettings.default
+        settings.visibility = Visibility(leadTime: 24 * 3600, surfaces: .all)
+        if let hour {
+            settings.trigger = .at(Fixture.date(2026, 3, 10, hour, 0, calendar: calendar))
+        }
+        return Fixture.item(title: title, settings: settings, createdAt: now)
+    }
+
+    @Test("Nothing outstanding means nothing on the lock screen")
+    func anEmptyDayTakesItDown() {
+        #expect(DaySummaryBuilder().summary(for: plan([]), now: now) == nil)
+    }
+
+    @Test("It counts what is done and lists what is not")
+    func itListsTheDay() {
+        let items = [task("Weigh in"), task("Brush teeth", at: 8), task("Call the bank", at: 14)]
+        let summary = DaySummaryBuilder().summary(for: plan(items), now: now)
+
+        #expect(summary != nil)
+        #expect(summary?.body.contains("Call the bank") == true)
+        #expect(summary?.body.contains("Weigh in") == true)
+        // Something to finish from the lock screen without opening the app.
+        #expect(summary?.next != nil)
+    }
+
+    @Test("A long day is truncated honestly rather than silently")
+    func itSaysHowManyItLeftOut() {
+        let items = (1...10).map { task("Item \($0)") }
+        var builder = DaySummaryBuilder()
+        builder.maximumLines = 4
+        let summary = builder.summary(for: plan(items), now: now)
+
+        let lines = summary?.body.split(separator: "\n") ?? []
+        // Four items and one line accounting for the rest.
+        #expect(lines.count == 5)
+        #expect(lines.last?.contains("6") == true)
+    }
+
+    @Test("Switched off, it takes down whatever is there")
+    func disablingRemovesIt() async {
+        let notifications = FakeNotificationScheduler()
+        let coordinator = ScheduleCoordinator(
+            engine: engine,
+            notifications: notifications,
+            alarms: FakeAlarmScheduler()
+        )
+        await coordinator.refreshDaySummary(
+            plan: plan([task("Weigh in")]),
+            enabled: false,
+            now: now
+        )
+        #expect(await notifications.summaryPosts == 1)
+        #expect(await notifications.summary == nil)
+    }
+
+    @Test("Without permission it is not posted at all")
+    func noPermissionMeansNoSummary() async {
+        let notifications = FakeNotificationScheduler(authorization: .denied)
+        let coordinator = ScheduleCoordinator(
+            engine: engine,
+            notifications: notifications,
+            alarms: FakeAlarmScheduler()
+        )
+        await coordinator.refreshDaySummary(
+            plan: plan([task("Weigh in")]),
+            enabled: true,
+            now: now
+        )
+        #expect(await notifications.summary == nil)
+    }
+
+    @Test("Switched on, the day is posted")
+    func enablingPostsIt() async {
+        let notifications = FakeNotificationScheduler()
+        let coordinator = ScheduleCoordinator(
+            engine: engine,
+            notifications: notifications,
+            alarms: FakeAlarmScheduler()
+        )
+        await coordinator.refreshDaySummary(
+            plan: plan([task("Weigh in"), task("Brush teeth", at: 8)]),
+            enabled: true,
+            now: now
+        )
+        let summary = await notifications.summary
+        #expect(summary != nil)
+        #expect(summary?.body.contains("Weigh in") == true)
     }
 }

@@ -353,10 +353,20 @@ struct SetupNoticeTests {
         #expect(SetupNotice.first(from: d) == nil)
     }
 
-    @Test("Only what cannot be acted on here can be put away")
-    func onlyUnactionableNoticesDismiss() {
+    @Test("Only what the app cannot put right can be put away")
+    func onlyUnfixableNoticesDismiss() {
+        // Permission and the Live Activities switch are fixable, so those
+        // stay until they are fixed. How the build was signed is not, so
+        // those can be dismissed — but they still offer the fallback, which
+        // is why this is not simply "has no action".
+        let fixable: Set<SetupNotice> = [
+            .notificationsNeverAsked, .notificationsDenied, .liveActivitiesOff,
+        ]
         for notice in SetupNotice.allCases {
-            #expect(notice.isDismissible == (notice.action == nil))
+            #expect(notice.isDismissible == !fixable.contains(notice))
+        }
+        for notice in SetupNotice.allCases where notice.isDismissible && notice != .nothingOnSurfaces {
+            #expect(notice.action == .useLockScreenSummary)
         }
     }
 }

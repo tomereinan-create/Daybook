@@ -25,6 +25,8 @@ nonisolated protocol NotificationScheduling: Sendable {
     func authorizationStatus() async -> NotificationAuthorization
     func requestAuthorization() async -> NotificationAuthorization
     func registerCategories() async
+    /// Posts the standing day summary, or takes it down when given `nil`.
+    func postSummary(_ summary: DaySummary?) async
     func sendTest() async throws
 }
 
@@ -73,6 +75,44 @@ nonisolated struct SystemNotificationScheduler: NotificationScheduling {
                 UNNotificationRequest(identifier: notification.id, content: mutable, trigger: trigger)
             )
         }
+    }
+
+    func postSummary(_ summary: DaySummary?) async {
+        guard let summary else {
+            center.removeDeliveredNotifications(withIdentifiers: [DaySummary.identifier])
+            center.removePendingNotificationRequests(withIdentifiers: [DaySummary.identifier])
+            return
+        }
+
+        let content = UNMutableNotificationContent()
+        content.title = summary.title
+        content.body = summary.body
+        // Passive and silent: this is a standing note, not an interruption.
+        // It belongs in the list the moment the screen comes on, and it must
+        // never buzz — it is reposted every time anything changes.
+        content.interruptionLevel = .passive
+        content.sound = nil
+        content.threadIdentifier = DaySummary.identifier
+        content.relevanceScore = 1
+        if let next = summary.next {
+            content.categoryIdentifier = summary.nextSnoozeMinutes == nil
+                ? NotificationCategory.actionable.rawValue
+                : NotificationCategory.actionableWithSnooze.rawValue
+            var info = [
+                NotificationUserInfoKey.itemID: next.itemID.uuidString,
+                NotificationUserInfoKey.slot: String(Int(next.slot.timeIntervalSince1970))
+            ]
+            if let minutes = summary.nextSnoozeMinutes {
+                info[NotificationUserInfoKey.snoozeMinutes] = String(minutes)
+            }
+            content.userInfo = info
+        }
+
+        // No trigger at all: delivered now, and replacing whatever is already
+        // on the lock screen under this identifier.
+        try? await center.add(
+            UNNotificationRequest(identifier: DaySummary.identifier, content: content, trigger: nil)
+        )
     }
 
     /// Posts one alert a few seconds from now, so "did I allow notifications?"

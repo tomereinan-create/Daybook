@@ -187,6 +187,7 @@ nonisolated enum SharedDefaults {
         static let defaultLeadTime = "defaultLeadTime"
         static let onboardingComplete = "onboardingComplete"
         static let lastScheduleRefresh = "lastScheduleRefresh"
+        static let lockScreenSummary = "lockScreenSummary"
     }
 
     static var quietHours: QuietHours {
@@ -200,6 +201,14 @@ nonisolated enum SharedDefaults {
             guard let data = try? JSONEncoder().encode(newValue) else { return }
             store.set(data, forKey: Key.quietHours)
         }
+    }
+
+    /// Whether to hold the day on the lock screen as a standing notification.
+    /// Off unless asked for: it is the fallback for an install whose widgets
+    /// cannot work, not a second copy of them.
+    static var lockScreenSummary: Bool {
+        get { store.bool(forKey: Key.lockScreenSummary) }
+        set { store.set(newValue, forKey: Key.lockScreenSummary) }
     }
 
     static var onboardingComplete: Bool {

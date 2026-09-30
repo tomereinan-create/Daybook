@@ -2381,6 +2381,23 @@
         }
       }
     },
+    "notice.useNotifications": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use the lock screen instead"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "להשתמש במסך הנעילה במקום"
+          }
+        }
+      }
+    },
     "onMissed.log": {
       "extractionState": "manual",
       "localizations": {
@@ -4438,6 +4455,57 @@
         }
       }
     },
+    "settings.summary.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Holds the day as one standing notification. It needs no widget and no shared container, so it works where the lock-screen card cannot. It does not tick like the card does, and its Done button needs a long press rather than a tap."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מחזיק את היום כהתראה אחת קבועה. לא נדרש ווידג’ט ולא מכל משותף, ולכן זה עובד גם היכן שכרטיס מסך הנעילה לא יכול. זה לא מתעדכן בזמן אמת כמו הכרטיס, וכפתור \"בוצע\" דורש לחיצה ארוכה ולא הקשה."
+          }
+        }
+      }
+    },
+    "settings.summary.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On the lock screen"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "במסך הנעילה"
+          }
+        }
+      }
+    },
+    "settings.summary.toggle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep today on the lock screen"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "להשאיר את היום במסך הנעילה"
+          }
+        }
+      }
+    },
     "settings.test.blocked": {
       "extractionState": "manual",
       "localizations": {
@@ -4774,6 +4842,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "כל %lld ימים"
+          }
+        }
+      }
+    },
+    "summary.notification.more %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%lld more"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ועוד %lld"
+          }
+        }
+      }
+    },
+    "summary.notification.title %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today — %1$lld of %2$lld done"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "היום — %1$lld מתוך %2$lld"
           }
         }
       }

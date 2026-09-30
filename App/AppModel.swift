@@ -165,6 +165,11 @@ final class AppModel {
         // The card, the widgets and the notifications all describe the same
         // day, so they are brought into line together or not at all.
         await LiveActivityController.shared.refresh(now: now)
+        await coordinator.refreshDaySummary(
+            plan: dayPlan(for: now, now: now),
+            enabled: SharedDefaults.lockScreenSummary,
+            now: now
+        )
         await SurfaceRefresh.reloadAll()
     }
 

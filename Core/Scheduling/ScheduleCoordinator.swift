@@ -33,6 +33,7 @@ nonisolated struct ScheduleCoordinator: Sendable {
     var alarms: any AlarmScheduling
     var reconciler = NotificationReconciler()
     var builder = NotificationContentBuilder()
+    var summaries = DaySummaryBuilder()
 
     init(
         engine: ScheduleEngine,
@@ -115,6 +116,17 @@ nonisolated struct ScheduleCoordinator: Sendable {
 
     func prepare() async {
         await notifications.registerCategories()
+    }
+
+    /// Puts the day on the lock screen as a standing notification, or takes
+    /// it down. Off unless asked for: it is the fallback for an install whose
+    /// widgets cannot work, not a second copy of them.
+    func refreshDaySummary(plan: DayPlan, enabled: Bool, now: Date) async {
+        guard enabled, await notifications.authorizationStatus().canPost else {
+            await notifications.postSummary(nil)
+            return
+        }
+        await notifications.postSummary(summaries.summary(for: plan, now: now))
     }
 
     /// The system's own answer, not the one cached from the last reschedule.
