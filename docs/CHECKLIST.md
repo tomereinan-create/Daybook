@@ -24,7 +24,7 @@ account, a decision or a credential I should not handle.
 - [x] Engine covered by 13 test suites, green on every push.
 - [x] Push updater is opt-in and content-free by construction, with tests
       asserting no task title appears in the wire format.
-- [x] App icon: a clay-and-paper "D", 1024x1024, opaque RGB with no alpha
+- [x] App icon: a paper "D" on a coloured ground, 1024x1024, opaque RGB, no alpha
       channel (the App Store rejects icons that have one). Drawn as geometry
       by `scripts/icon-d.mjs`, so it re-renders cleanly at any size.
 
@@ -66,6 +66,10 @@ follows the documented contracts, which is a weaker claim than "it works".
       issues a specific entitlement for it; Apple's own documentation mentions
       only `NSAlarmKitUsageDescription`, which is already in place. Find out
       before review rather than during it.
+- [ ] **Pin the icon colour before submitting.** It currently changes with
+      every build so you can see which one is on the phone. An App Store app
+      should keep one identity: pick a colour, stop advancing the index, and
+      drop the CI step that enforces it.
 - [ ] **Host the privacy policy** from `docs/PRIVACY.md` at a public URL and
       put your contact email in it. Apple requires a reachable link.
 - [ ] **Screenshots** — the plan is in `docs/APP_STORE.md`. Shoot on a device;

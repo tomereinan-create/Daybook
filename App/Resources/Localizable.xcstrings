@@ -3282,6 +3282,23 @@
         }
       }
     },
+    "settings.diag.build": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הגרסה הזו"
+          }
+        }
+      }
+    },
     "settings.diag.cardRunning": {
       "extractionState": "manual",
       "localizations": {

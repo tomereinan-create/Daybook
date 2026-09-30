@@ -256,6 +256,23 @@ struct SettingsView: View {
 
     private var diagnosticsSection: some View {
         Section {
+            // Which build this is. The icon on the home screen is the same
+            // colour, so this row and a glance at the app agree or the
+            // install did not take.
+            LabeledContent("settings.diag.build") {
+                HStack(spacing: 7) {
+                    Circle()
+                        .fill(Color(
+                            red: BuildColor.red,
+                            green: BuildColor.green,
+                            blue: BuildColor.blue
+                        ))
+                        .frame(width: 14, height: 14)
+                        .overlay(Circle().strokeBorder(.separator, lineWidth: 0.5))
+                    Text(verbatim: BuildColor.name)
+                }
+            }
+
             // Read from iOS, not from what the last reschedule believed. When
             // a surface is silent the useful question is which link in the
             // chain gave way, and each row here is one link.

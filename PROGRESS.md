@@ -35,8 +35,16 @@ Four values, all in `project.yml` under `settings.base`:
 | `DEVELOPMENT_TEAM` | empty — your Apple Team ID |
 
 Change them, run `xcodegen generate`, and everything follows. The app icon is a
-clay-and-paper "D", drawn as geometry in `scripts/icon-d.mjs` so it can be
-regenerated at any size without a design tool.
+paper "D" on a coloured ground, drawn as geometry in `scripts/icon-d.mjs` so
+it can be regenerated at any size without a design tool.
+
+The ground colour changes with every build, so the home screen says which
+build is installed without opening anything — and Settings names the same
+colour in words. `scripts/icon-color.json` holds the index into the palette;
+`node scripts/icon-d.mjs --next` advances it and regenerates both the icon and
+`Core/Generated/BuildColor.swift`. CI regenerates at the committed index and
+fails if anything differs, because an icon that lies about which build it is
+would be worse than no colour at all.
 
 ## What is built
 

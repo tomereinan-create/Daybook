@@ -12,6 +12,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The icon's colour is how the installed build is told apart from the
+      # last one, so a stale PNG is worse than no colour at all: the home
+      # screen would say "this is the new one" when it is not. Regenerate
+      # from the committed index and refuse the build if anything moved.
+      - name: The icon matches its committed colour
+        run: |
+          node scripts/icon-d.mjs
+          git diff --exit-code -- App/Resources/Assets.xcassets Core/Generated
+
       - name: Show what this runner has
         run: |
           sw_vers
