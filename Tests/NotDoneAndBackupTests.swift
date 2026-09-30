@@ -236,15 +236,18 @@ struct PresetQuietnessTests {
         #expect(!Trigger.at(now).runsUnattended)
     }
 
-    @Test("Everything the create flow offers can reach both surfaces",
-          arguments: PresetCatalog.available)
-    func offeredPresetsReachTheSurfaces(preset: PresetKind) {
+    // The catalog is main-actor isolated, so it is read inside the body
+    // rather than passed as `arguments:`, which is evaluated outside it.
+    @Test("Everything the create flow offers can reach both surfaces")
+    func offeredPresetsReachTheSurfaces() {
         // The app is where things are written down; the lock screen and the
         // widget are where they are meant to be seen. A preset that reaches
         // neither looks like a broken surface rather than a choice.
-        let settings = preset.defaultSettings(reference: now, calendar: calendar)
-        #expect(settings.visibility.surfaces.contains(.liveActivity))
-        #expect(settings.visibility.surfaces.contains(.homeWidget))
+        for preset in PresetCatalog.available {
+            let settings = preset.defaultSettings(reference: now, calendar: calendar)
+            #expect(settings.visibility.surfaces.contains(.liveActivity))
+            #expect(settings.visibility.surfaces.contains(.homeWidget))
+        }
     }
 
     @Test("The five kinds the create flow offers")
