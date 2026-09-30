@@ -102,6 +102,53 @@ jobs:
           path: raw-xcodebuild.log
           retention-days: 7
 
+      # The installable build is made in this same job rather than a second
+      # one. macOS runners bill at ten times the rate of Linux, and a separate
+      # job pays for a whole second machine plus its Xcode selection and its
+      # Homebrew installs before it archives anything. Same output, close to
+      # half the cost. Tests run first either way, so a broken build still
+      # never produces an installable one.
+      # Unsigned on purpose: the signature is applied on your machine, with
+      # your Apple ID, by the sideloading tool. The entitlements are stripped
+      # too — a free Apple ID cannot grant App Groups, and leaving them in
+      # makes the re-signing fail rather than degrade.
+      - name: Archive
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project Daybook.xcodeproj \
+            -scheme Daybook \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/Daybook.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            | xcbeautify
+
+      # An .ipa is a zip with the .app inside a folder called Payload. There is
+      # no more to it than that, and xcodebuild's exporter refuses to help
+      # without a signing identity.
+      - name: Wrap it as an .ipa
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          APP="build/Daybook.xcarchive/Products/Applications/Daybook.app"
+          test -d "$APP" || { echo "No .app in the archive:"; find build/Daybook.xcarchive -maxdepth 4; exit 1; }
+          mkdir -p build/Payload
+          cp -R "$APP" build/Payload/
+          cd build && zip -qry Daybook.ipa Payload
+          echo "Built $(du -h Daybook.ipa | cut -f1) — contents:"
+          unzip -l Daybook.ipa | grep -E "\.app/|\.appex/" | head -5
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: Daybook-unsigned-ipa
+          path: build/Daybook.ipa
+          retention-days: 30
+
   server:
     runs-on: ubuntu-latest
     defaults:
@@ -123,64 +170,3 @@ jobs:
       - run: npx wrangler types
       - run: npx tsc --noEmit
       - run: npm test
-
-  # An unsigned .ipa you can re-sign with your own Apple ID and install from
-  # Windows with Sideloadly or AltStore. Needs no Apple Developer membership.
-  # Runs after the tests, so a broken build never produces an installable one.
-  ipa:
-    needs: test
-    runs-on: macos-26
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Select the newest Xcode on the image
-        run: |
-          LATEST=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
-          if [ -n "$LATEST" ]; then sudo xcode-select -switch "$LATEST"; fi
-          xcodebuild -version
-
-      - name: Install tools
-        run: |
-          brew install xcodegen
-          command -v xcbeautify >/dev/null 2>&1 || brew install xcbeautify
-
-      - name: Generate the project
-        run: xcodegen generate
-
-      # Unsigned on purpose: the signature is applied on your machine, with
-      # your Apple ID, by the sideloading tool. The entitlements are stripped
-      # too — a free Apple ID cannot grant App Groups, and leaving them in
-      # makes the re-signing fail rather than degrade.
-      - name: Archive
-        run: |
-          set -o pipefail
-          xcodebuild archive \
-            -project Daybook.xcodeproj \
-            -scheme Daybook \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath build/Daybook.xcarchive \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGN_ENTITLEMENTS="" \
-            | xcbeautify
-
-      # An .ipa is a zip with the .app inside a folder called Payload. There is
-      # no more to it than that, and xcodebuild's exporter refuses to help
-      # without a signing identity.
-      - name: Wrap it as an .ipa
-        run: |
-          APP="build/Daybook.xcarchive/Products/Applications/Daybook.app"
-          test -d "$APP" || { echo "No .app in the archive:"; find build/Daybook.xcarchive -maxdepth 4; exit 1; }
-          mkdir -p build/Payload
-          cp -R "$APP" build/Payload/
-          cd build && zip -qry Daybook.ipa Payload
-          echo "Built $(du -h Daybook.ipa | cut -f1) — contents:"
-          unzip -l Daybook.ipa | grep -E "\.app/|\.appex/" | head -5
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Daybook-unsigned-ipa
-          path: build/Daybook.ipa
-          retention-days: 30
