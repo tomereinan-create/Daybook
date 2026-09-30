@@ -35,7 +35,8 @@ Four values, all in `project.yml` under `settings.base`:
 | `DEVELOPMENT_TEAM` | empty — your Apple Team ID |
 
 Change them, run `xcodegen generate`, and everything follows. The app icon is a
-flat indigo square generated as a stand-in — replace it.
+clay-and-paper "D", drawn as geometry in `scripts/icon-d.mjs` so it can be
+regenerated at any size without a design tool.
 
 ## What is built
 
@@ -253,7 +254,6 @@ pins them); reinstall with `npx skills add emilkowalski/skills`. The
 - [ ] Decide the app name and bundle ID, and give me your Apple Team ID.
 - [ ] Register the App Group in the Apple developer portal and enable the App
       Groups capability for the app ID.
-- [ ] Replace `icon-1024.png` with a real icon.
 - [ ] Enable three capabilities on the app ID and target: **App Groups**,
       **Background Modes** (Background fetch), **Time Sensitive Notifications**.
 - [ ] Check whether AlarmKit needs a request-only entitlement from Apple. One
