@@ -350,3 +350,42 @@ struct SetupNoticeTests {
         }
     }
 }
+
+@Suite("Choosing which app group to open")
+struct AppGroupResolutionTests {
+    private let declared = "group.com.tomereinan.daybook"
+
+    @Test("With nothing granted, the compiled-in name stands")
+    func noSignatureKeepsTheDeclaredName() {
+        // A simulator build is signed with nothing at all. An empty list is
+        // not evidence that the name is wrong.
+        #expect(AppGroup.resolve(declared: declared, granted: []) == declared)
+    }
+
+    @Test("A signature that grants the name it was asked for changes nothing")
+    func grantedDeclaredNameWins() {
+        #expect(
+            AppGroup.resolve(declared: declared, granted: ["group.other", declared]) == declared
+        )
+    }
+
+    @Test("A substituted name is used instead of one that opens nothing")
+    func substitutedNameIsAdopted() {
+        // What a re-signing tool does on a free account: it cannot register
+        // the name in the project, so it grants one of its own.
+        let substitute = "group.ABCDE12345.com.tomereinan.daybook"
+        #expect(AppGroup.resolve(declared: declared, granted: [substitute]) == substitute)
+    }
+
+    @Test("Several granted groups resolve the same way every time")
+    func theChoiceIsDeterministic() {
+        // The app and the extension resolve this separately. If they disagreed
+        // they would open different containers, which is the bug this is meant
+        // to fix rather than cause.
+        let groups = ["group.zzz.daybook", "group.aaa.daybook", "group.mmm.daybook"]
+        let first = AppGroup.resolve(declared: declared, granted: groups)
+        #expect(first == "group.aaa.daybook")
+        #expect(AppGroup.resolve(declared: declared, granted: groups.reversed()) == first)
+        #expect(AppGroup.resolve(declared: declared, granted: groups.shuffled()) == first)
+    }
+}

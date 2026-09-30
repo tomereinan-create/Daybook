@@ -1996,13 +1996,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The widget and the lock-screen card run in a separate process, and this build was not granted the shared container they read through. They will look empty however many items you have. Everything inside the app still works."
+            "value": "The widget and the lock-screen card run in a separate process and read through a shared App Group container, which this install cannot open. Everything inside the app still works. Settings › Diagnostics names the group it is trying to open and the ones this build was actually signed with — if the sideloading tool has an option about App Groups, turning it on is what fixes this."
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "הווידג’ט וכרטיס מסך הנעילה רצים בתהליך נפרד, ולבנייה הזו לא ניתן המכל המשותף שדרכו הם קוראים. הם ייראו ריקים לא משנה כמה פריטים יש. כל השאר באפליקציה עובד."
+            "value": "הווידג’ט וכרטיס מסך הנעילה רצים בתהליך נפרד וקוראים דרך מכל App Group משותף, שההתקנה הזו לא מצליחה לפתוח. כל השאר באפליקציה עובד. במסך הגדרות › אבחון מופיעים שם הקבוצה שהאפליקציה מנסה לפתוח ושמות הקבוצות שאיתן הבנייה נחתמה בפועל — אם לכלי ההתקנה יש אפשרות בנוגע ל-App Groups, הפעלתה היא מה שפותר את זה."
           }
         }
       }
@@ -3618,6 +3618,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "iOS מחזיק 64 התראות ממתינות לאפליקציה, ולכן הקרובות נכנסות לתור והשאר אחריהן."
+          }
+        }
+      }
+    },
+    "settings.diag.groupGranted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed with: %@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "חתום עם: %@"
+          }
+        }
+      }
+    },
+    "settings.diag.groupNone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed with no app group at all."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "חתום ללא קבוצת אפליקציות כלל."
+          }
+        }
+      }
+    },
+    "settings.diag.groupWanted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opening: %@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נפתח: %@"
           }
         }
       }

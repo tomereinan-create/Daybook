@@ -32,6 +32,7 @@ final class DataStore {
         // Preferred: the App Group container, which the widgets and the Live
         // Activity intents can also open.
         if let url = AppGroup.storeURL, ensureDirectoryExists(url.deletingLastPathComponent()) {
+            adoptLocalStore(into: url)
             let config = ModelConfiguration(schema: schema, url: url)
             if let container = try? ModelContainer(for: schema, configurations: config) {
                 return (container, false)
@@ -64,6 +65,36 @@ final class DataStore {
         // A failure here means the schema itself is invalid, which the tests
         // would have caught long before a user ever ran this.
         preconditionFailure("Could not open a model container for the Daybook schema.")
+    }
+
+    /// Carries a process-local store into the shared container the first time
+    /// one becomes available.
+    ///
+    /// Everything written while there was no App Group lives in Application
+    /// Support. The day the container appears — a different signing, a tool
+    /// that grants a group this one did not — opening it would otherwise look
+    /// exactly like every item having been deleted. Copied rather than moved,
+    /// so a half-finished attempt loses nothing.
+    private static func adoptLocalStore(into shared: URL) {
+        let manager = FileManager.default
+        guard !manager.fileExists(atPath: shared.path) else { return }
+        guard let support = try? manager.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: false
+        ) else { return }
+
+        let local = support.appending(path: "Daybook.store")
+        guard manager.fileExists(atPath: local.path) else { return }
+
+        // SQLite's write-ahead log and shared-memory files belong with it;
+        // copying the store alone can lose the most recent writes.
+        for suffix in ["", "-wal", "-shm"] {
+            let from = URL(fileURLWithPath: local.path + suffix)
+            guard manager.fileExists(atPath: from.path) else { continue }
+            try? manager.copyItem(at: from, to: URL(fileURLWithPath: shared.path + suffix))
+        }
     }
 
     @discardableResult

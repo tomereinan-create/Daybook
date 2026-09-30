@@ -87,6 +87,8 @@ final class AppModel {
             pendingWithSystem: await coordinator.pendingCount(),
             hasSharedContainer: !store.isUsingFallbackStore,
             hasWidgetExtension: InstalledBundle.hasWidgetExtension,
+            appGroup: AppGroup.identifier,
+            grantedGroups: AppGroup.entitledGroups,
             liveActivitiesEnabled: LiveActivityController.shared.areActivitiesEnabled,
             liveActivityRunning: LiveActivityController.shared.isRunning,
             liveActivityError: LiveActivityController.shared.lastError,
@@ -365,6 +367,10 @@ nonisolated struct Diagnostics: Sendable, Equatable {
     var pendingWithSystem = 0
     var hasSharedContainer = false
     var hasWidgetExtension = false
+    /// The group the app settled on, and the ones its signature actually
+    /// grants. When these disagree the widgets cannot see anything.
+    var appGroup = ""
+    var grantedGroups: [String] = []
     var liveActivitiesEnabled = false
     var liveActivityRunning = false
     /// ActivityKit's own words for why the card was refused.

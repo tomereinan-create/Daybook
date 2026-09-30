@@ -342,6 +342,21 @@ struct SettingsView: View {
                 Text("settings.diag.fallbackStore")
                     .font(.caption)
                     .foregroundStyle(.orange)
+                // The exact names, because the interesting case is a signature
+                // that grants a group under a name nobody expected.
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("settings.diag.groupWanted \(diagnostics.appGroup)")
+                    Text(
+                        diagnostics.grantedGroups.isEmpty
+                            ? String(localized: "settings.diag.groupNone")
+                            : String(
+                                localized: "settings.diag.groupGranted \(diagnostics.grantedGroups.joined(separator: ", "))"
+                            )
+                    )
+                }
+                .font(.caption2.monospaced())
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
             }
         } header: {
             Text("settings.diag.title")
