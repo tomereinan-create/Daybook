@@ -113,13 +113,16 @@ nonisolated struct SystemNotificationScheduler: NotificationScheduling {
     }
 
     func requestAuthorization() async -> NotificationAuthorization {
-        do {
-            // Time-sensitive is requested here; without it, an item set to
-            // break through a Focus quietly would not.
-            _ = try await center.requestAuthorization(options: [.alert, .sound, .badge, .timeSensitive])
-        } catch {
-            return await authorizationStatus()
-        }
+        // Only the three options every build is allowed to ask for.
+        //
+        // This used to include `.timeSensitive`, which has been deprecated
+        // since iOS 15 in favour of an entitlement — and a sideloaded build
+        // holds no entitlements at all. Asking for something the build cannot
+        // have put the one call that gates every alert in the app at risk of
+        // failing before the prompt was ever shown. Breaking through a Focus
+        // is decided by the interruption level on each alert, which already
+        // degrades on its own when the entitlement is missing.
+        _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge])
         return await authorizationStatus()
     }
 

@@ -3282,6 +3282,23 @@
         }
       }
     },
+    "settings.diag.cardRunning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Card on the lock screen"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "כרטיס במסך הנעילה"
+          }
+        }
+      }
+    },
     "settings.diag.dropped": {
       "extractionState": "manual",
       "localizations": {
@@ -3305,13 +3322,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Widgets cannot see your data"
+            "value": "The widget and the lock-screen card run in a separate process and read your data through a shared container. This build was not granted one, so they will look empty however many items you have. It needs a paid Apple developer account, or a sideloading tool that registers the app group."
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "הווידג׳טים לא רואים את הנתונים"
+            "value": "הווידג’ט וכרטיס מסך הנעילה רצים בתהליך נפרד וקוראים את הנתונים דרך מכל משותף. לבנייה הזו לא ניתן מכל כזה, ולכן הם ייראו ריקים לא משנה כמה פריטים יש. נדרש חשבון מפתח בתשלום, או כלי התקנה שרושם את קבוצת האפליקציות."
           }
         }
       }
@@ -3333,19 +3350,155 @@
         }
       }
     },
-    "settings.diag.scheduled": {
+    "settings.diag.heldByIOS": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Alerts queued"
+            "value": "Alerts iOS is holding"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "התראות בתור"
+            "value": "התראות ש-iOS מחזיק"
+          }
+        }
+      }
+    },
+    "settings.diag.liveActivities": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live Activities"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פעילויות בזמן אמת"
+          }
+        }
+      }
+    },
+    "settings.diag.no": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לא"
+          }
+        }
+      }
+    },
+    "settings.diag.noneHeld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are allowed but nothing is scheduled. Items need a time, and an alert set to more than display only."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ההתראות מאושרות אבל לא מתוזמן דבר. לפריטים נדרשת שעה, והתראה שאינה תצוגה בלבד."
+          }
+        }
+      }
+    },
+    "settings.diag.nothingShared": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing today is set to appear anywhere. Open an item and turn on Lock screen or Home widget."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שום דבר מהיום לא מוגדר להופיע במקום כלשהו. פתחו פריט והפעילו \"מסך נעילה\" או \"ווידג’ט\"."
+          }
+        }
+      }
+    },
+    "settings.diag.onHomeWidget": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Items set for the widget"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פריטים המיועדים לווידג’ט"
+          }
+        }
+      }
+    },
+    "settings.diag.onLockScreen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Items set for the lock screen"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פריטים המיועדים למסך הנעילה"
+          }
+        }
+      }
+    },
+    "settings.diag.permission": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "התראות"
+          }
+        }
+      }
+    },
+    "settings.diag.sharedContainer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets can read your data"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הווידג’טים יכולים לקרוא את הנתונים"
           }
         }
       }
@@ -3363,6 +3516,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "מה מתוזמן"
+          }
+        }
+      }
+    },
+    "settings.diag.yes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "כן"
           }
         }
       }
@@ -3397,6 +3567,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "פריטי השכמה יהפכו להתראות רגילות."
+          }
+        }
+      }
+    },
+    "settings.permission.ask": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow notifications"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אישור התראות"
           }
         }
       }

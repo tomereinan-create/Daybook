@@ -9,6 +9,7 @@ struct SettingsView: View {
     @State private var exportURL: URL?
     @State private var showsImporter = false
     @State private var transferMessage: String?
+    @State private var diagnostics = Diagnostics()
 
     var body: some View {
         NavigationStack {
@@ -22,6 +23,8 @@ struct SettingsView: View {
                 privacySection
             }
             .navigationTitle("settings.title")
+            .task { await loadDiagnostics() }
+            .refreshable { await loadDiagnostics() }
             .sheet(isPresented: $showsWidgetHelp) { WidgetSetupView() }
             .sheet(isPresented: $showsPushSetup) { PushSetupView() }
             .fileImporter(
@@ -89,8 +92,8 @@ struct SettingsView: View {
         Section {
             PermissionRow(
                 title: "settings.permission.notifications",
-                status: model.lastSchedule.notificationAuthorization.label,
-                isGranted: model.lastSchedule.notificationAuthorization.canPost,
+                status: diagnostics.notifications.label,
+                isGranted: diagnostics.notifications.canPost,
                 consequence: "settings.permission.notifications.denied"
             )
             PermissionRow(
@@ -121,12 +124,27 @@ struct SettingsView: View {
                 }
             }
 
+            // iOS shows the prompt once, ever. Until it has been shown the
+            // app does not appear in the system's notification list at all,
+            // so "open iOS Settings" is advice that leads nowhere — which is
+            // exactly where anyone who skipped the welcome screen ended up.
+            if diagnostics.notifications == .notDetermined {
+                Button("settings.permission.ask") {
+                    Task {
+                        await model.requestPermissions()
+                        await loadDiagnostics()
+                    }
+                }
+                .fontWeight(.semibold)
+            }
+
             Button("settings.test.send") {
                 Task {
                     let status = await model.sendTestNotification()
-                    transferMessage = status.canPost
-                        ? String(localized: "settings.test.sent")
-                        : String(localized: "settings.test.blocked")
+                    transferMessage = String(
+                        localized: status.canPost ? "settings.test.sent" : "settings.test.blocked"
+                    )
+                    await loadDiagnostics()
                 }
             }
 
@@ -238,16 +256,64 @@ struct SettingsView: View {
 
     private var diagnosticsSection: some View {
         Section {
-            LabeledContent("settings.diag.scheduled") {
-                Text(verbatim: "\(model.lastSchedule.added + model.lastSchedule.kept)")
+            // Read from iOS, not from what the last reschedule believed. When
+            // a surface is silent the useful question is which link in the
+            // chain gave way, and each row here is one link.
+            DiagnosticRow(
+                title: "settings.diag.permission",
+                value: Text(diagnostics.notifications.label),
+                isGood: diagnostics.notifications.canPost
+            )
+            DiagnosticRow(
+                title: "settings.diag.heldByIOS",
+                value: Text(verbatim: "\(diagnostics.pendingWithSystem)"),
+                isGood: diagnostics.pendingWithSystem > 0 || !diagnostics.notifications.canPost
+            )
+            if diagnostics.notifications.canPost && diagnostics.pendingWithSystem == 0 {
+                Text("settings.diag.noneHeld")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             if model.lastSchedule.droppedByBudget > 0 {
                 LabeledContent("settings.diag.dropped") {
                     Text(verbatim: "\(model.lastSchedule.droppedByBudget)")
                 }
             }
-            if model.store.isUsingFallbackStore {
-                Label("settings.diag.fallbackStore", systemImage: "exclamationmark.triangle.fill")
+
+            DiagnosticRow(
+                title: "settings.diag.liveActivities",
+                value: allowedOrNot(diagnostics.liveActivitiesEnabled),
+                isGood: diagnostics.liveActivitiesEnabled
+            )
+            DiagnosticRow(
+                title: "settings.diag.cardRunning",
+                value: yesOrNo(diagnostics.liveActivityRunning),
+                isGood: diagnostics.liveActivityRunning || diagnostics.onLockScreen == 0
+            )
+            DiagnosticRow(
+                title: "settings.diag.onLockScreen",
+                value: Text(verbatim: "\(diagnostics.onLockScreen)"),
+                isGood: diagnostics.onLockScreen > 0
+            )
+            DiagnosticRow(
+                title: "settings.diag.onHomeWidget",
+                value: Text(verbatim: "\(diagnostics.onHomeWidget)"),
+                isGood: diagnostics.onHomeWidget > 0
+            )
+            if diagnostics.onLockScreen == 0 && diagnostics.onHomeWidget == 0 {
+                Text("settings.diag.nothingShared")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            DiagnosticRow(
+                title: "settings.diag.sharedContainer",
+                value: yesOrNo(diagnostics.hasSharedContainer),
+                isGood: diagnostics.hasSharedContainer
+            )
+            if !diagnostics.hasSharedContainer {
+                Text("settings.diag.fallbackStore")
+                    .font(.caption)
                     .foregroundStyle(.orange)
             }
         } header: {
@@ -257,12 +323,47 @@ struct SettingsView: View {
         }
     }
 
+    private func loadDiagnostics() async {
+        diagnostics = await model.diagnostics()
+    }
+
+    // Spelled out rather than written as a ternary of two string literals:
+    // that form can resolve to `String`, which puts the key itself on screen.
+    private func yesOrNo(_ value: Bool) -> Text {
+        value ? Text("settings.diag.yes") : Text("settings.diag.no")
+    }
+
+    private func allowedOrNot(_ value: Bool) -> Text {
+        value ? Text("permission.allowed") : Text("permission.denied")
+    }
+
     private var privacySection: some View {
         Section {
             Label("settings.privacy.body", systemImage: "lock")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
+    }
+}
+
+/// One fact, with a tick or a cross. Deliberately plain: this screen exists to
+/// be read out to somebody who cannot see the phone.
+private struct DiagnosticRow: View {
+    let title: LocalizedStringKey
+    let value: Text
+    let isGood: Bool
+
+    var body: some View {
+        LabeledContent {
+            HStack(spacing: 6) {
+                value
+                Image(systemName: isGood ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .foregroundStyle(isGood ? Color.green : Color.orange)
+            }
+        } label: {
+            Text(title)
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 

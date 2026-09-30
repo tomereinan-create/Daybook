@@ -38,6 +38,11 @@ final class LiveActivityController {
         Activity<DaybookActivityAttributes>.activities.first
     }
 
+    /// Whether a card is on the lock screen right now. For diagnostics: the
+    /// difference between "not started" and "started and invisible" is the
+    /// difference between a bug here and a setting on the phone.
+    var isRunning: Bool { running != nil }
+
     /// Bring the card into line with the day. Safe to call as often as you like.
     func refresh(now: Date = .now, calendar: Calendar = .current) async {
         guard areActivitiesEnabled else { return }

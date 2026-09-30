@@ -48,7 +48,10 @@ nonisolated extension PresetKind {
 
         case .task:
             s.trigger = .none
-            s.visibility = Visibility(leadTime: 0, surfaces: .homeWidget)
+            // Both surfaces, not just the widget. A plain task was the one
+            // thing that could never reach the lock screen, which made the
+            // card look broken when the day was made of tasks.
+            s.visibility = Visibility(leadTime: 0, surfaces: .all)
             s.alerting = .silentDisplayOnly
             s.dismissal = Dismissal(endCondition: .markedDone, onMissed: .becomeOpenTask)
 

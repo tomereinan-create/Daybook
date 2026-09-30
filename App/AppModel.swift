@@ -76,6 +76,23 @@ final class AppModel {
         (try? await coordinator.sendTestAlert()) ?? .denied
     }
 
+    /// Everything needed to tell which of the surfaces is actually broken.
+    ///
+    /// Each of these is read from the system rather than from what the app
+    /// last intended, because the whole point is to find the place where the
+    /// two stopped agreeing.
+    func diagnostics(now: Date = .now) async -> Diagnostics {
+        Diagnostics(
+            notifications: await coordinator.notificationStatus(),
+            pendingWithSystem: await coordinator.pendingCount(),
+            hasSharedContainer: !store.isUsingFallbackStore,
+            liveActivitiesEnabled: LiveActivityController.shared.areActivitiesEnabled,
+            liveActivityRunning: LiveActivityController.shared.isRunning,
+            onLockScreen: SurfaceData.entries(for: .liveActivity, now: now).count,
+            onHomeWidget: SurfaceData.entries(for: .homeWidget, now: now).count
+        )
+    }
+
     func weekReview(now: Date) -> WeekReview {
         engine.weekReview(
             items: store.snapshots(),
@@ -336,4 +353,16 @@ final class AppModel {
             await self?.reschedule()
         }
     }
+}
+
+/// A snapshot of what the system says, for the Settings screen. Nothing here
+/// is derived: every field is asked of iOS at the moment it is read.
+nonisolated struct Diagnostics: Sendable, Equatable {
+    var notifications: NotificationAuthorization = .notDetermined
+    var pendingWithSystem = 0
+    var hasSharedContainer = false
+    var liveActivitiesEnabled = false
+    var liveActivityRunning = false
+    var onLockScreen = 0
+    var onHomeWidget = 0
 }

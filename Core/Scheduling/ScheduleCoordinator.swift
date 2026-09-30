@@ -153,6 +153,17 @@ nonisolated struct ScheduleCoordinator: Sendable {
         await notifications.registerCategories()
     }
 
+    /// The system's own answer, not the one cached from the last reschedule.
+    func notificationStatus() async -> NotificationAuthorization {
+        await notifications.authorizationStatus()
+    }
+
+    /// What iOS is holding right now, as opposed to what the last plan meant
+    /// to put there. When the two disagree the plan is not the problem.
+    func pendingCount() async -> Int {
+        await notifications.pendingIdentifiers().count
+    }
+
     /// Answers "is the problem permission, or is it my schedule?" directly.
     func sendTestAlert() async throws -> NotificationAuthorization {
         let status = await notifications.authorizationStatus()
