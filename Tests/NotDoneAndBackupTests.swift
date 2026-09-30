@@ -314,14 +314,24 @@ struct SetupNoticeTests {
         var d = healthy
         d.hasWidgetExtension = false
         d.widgetExtensionIsNested = false
+        d.widgetExtensionIsSigned = false
         d.liveActivitiesEnabled = false
         d.hasSharedContainer = false
         #expect(SetupNotice.first(from: d) == .widgetExtensionMissing)
+        // Nothing here can be put right from inside the app, so what each of
+        // them offers is the way round it.
+        #expect(SetupNotice.first(from: d)?.action == .useLockScreenSummary)
 
         // Present but renamed is a different answer, and a different fix.
         d.hasWidgetExtension = true
         #expect(SetupNotice.first(from: d) == .widgetExtensionRenamed)
-        #expect(SetupNotice.first(from: d)?.action == nil)
+
+        // Correctly named but never signed is a third, and iOS refuses it
+        // just as completely. This is the one Tomer's install turned out to
+        // be: signed app, unsigned extension.
+        d.widgetExtensionIsNested = true
+        #expect(SetupNotice.first(from: d) == .widgetExtensionUnsigned)
+        #expect(SetupNotice.first(from: d)?.action == .useLockScreenSummary)
 
         // But a refusal still comes first: that one the app can talk about.
         d.notifications = .denied
