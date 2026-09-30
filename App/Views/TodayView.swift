@@ -14,6 +14,7 @@ struct TodayView: View {
     /// Notices the user has put away, kept across launches. Only the ones
     /// they cannot act on from here can end up in this list.
     @AppStorage("dismissedNotices") private var dismissedNotices = ""
+    @State private var showsDiagnostics = false
 
     private let sectionOrder: [DaySection] = [.now, .upcoming, .undated, .done, .missed]
 
@@ -36,7 +37,8 @@ struct TodayView: View {
                             await model.requestPermissions()
                             await loadDiagnostics()
                         },
-                        onDismiss: { dismiss(notice) }
+                        onDismiss: { dismiss(notice) },
+                        onInspect: { showsDiagnostics = true }
                     )
                 }
 
@@ -57,6 +59,9 @@ struct TodayView: View {
             }
             .sheet(item: $editing) { item in
                 ItemEditorView(item: item)
+            }
+            .sheet(isPresented: $showsDiagnostics) {
+                DiagnosticsSheet()
             }
         }
         .task {

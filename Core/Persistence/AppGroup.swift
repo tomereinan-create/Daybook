@@ -40,20 +40,7 @@ nonisolated enum AppGroup {
     /// profile is a signed blob wrapping an XML plist; only the plist is
     /// wanted, and reading your own bundle needs no permission.
     static let entitledGroups: [String] = {
-        guard let url = Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision"),
-              let data = try? Data(contentsOf: url),
-              let start = data.range(of: Data("<?xml".utf8)),
-              let end = data.range(of: Data("</plist>".utf8))
-        else { return [] }
-
-        let plistData = data[start.lowerBound..<end.upperBound]
-        guard let plist = try? PropertyListSerialization.propertyList(
-                  from: plistData, options: [], format: nil
-              ) as? [String: Any],
-              let entitlements = plist["Entitlements"] as? [String: Any],
-              let groups = entitlements["com.apple.security.application-groups"] as? [String]
-        else { return [] }
-        return groups
+        ProvisioningProfile.read(in: Bundle.main.bundleURL)?.appGroups ?? []
     }()
 
     /// Used by the test bundle, which has no app Info.plist of its own.
@@ -71,6 +58,45 @@ nonisolated enum AppGroup {
     }
 }
 
+/// One bundle's embedded provisioning profile.
+///
+/// The profile is a signed blob wrapping an XML plist; only the plist is
+/// wanted, and reading it out of a bundle the process already owns needs no
+/// permission. The app and its extension each carry their own, and when a
+/// re-signing tool gets one of them wrong this is the only place that says so.
+nonisolated struct ProvisioningProfile: Sendable, Hashable {
+    /// `TEAMID.com.example.app`. The prefix is the team the bundle was signed
+    /// by; an extension signed by a different team than its host is refused.
+    var applicationIdentifier: String?
+    var appGroups: [String]
+    var teamIdentifier: String?
+    var expiresAt: Date?
+
+    var hasExpired: Bool {
+        guard let expiresAt else { return false }
+        return expiresAt < .now
+    }
+
+    static func read(in bundleURL: URL) -> ProvisioningProfile? {
+        let url = bundleURL.appending(path: "embedded.mobileprovision")
+        guard let data = try? Data(contentsOf: url),
+              let start = data.range(of: Data("<?xml".utf8)),
+              let end = data.range(of: Data("</plist>".utf8)),
+              let plist = try? PropertyListSerialization.propertyList(
+                  from: data[start.lowerBound..<end.upperBound], options: [], format: nil
+              ) as? [String: Any]
+        else { return nil }
+
+        let entitlements = plist["Entitlements"] as? [String: Any]
+        return ProvisioningProfile(
+            applicationIdentifier: entitlements?["application-identifier"] as? String,
+            appGroups: entitlements?["com.apple.security.application-groups"] as? [String] ?? [],
+            teamIdentifier: (plist["TeamIdentifier"] as? [String])?.first,
+            expiresAt: plist["ExpirationDate"] as? Date
+        )
+    }
+}
+
 /// What this particular install actually contains.
 ///
 /// Not everything that was built necessarily arrives on the phone. A
@@ -83,19 +109,50 @@ nonisolated enum InstalledBundle {
     /// The bundle identifier of the widget extension inside this install, if
     /// there is one at all.
     static let widgetExtensionIdentifier: String? = {
+        widgetExtensionURL.flatMap { Bundle(url: $0)?.bundleIdentifier }
+    }()
+
+    static var hasWidgetExtension: Bool { widgetExtensionURL != nil }
+
+    static let widgetExtensionURL: URL? = {
         guard let plugIns = Bundle.main.builtInPlugInsURL,
               let contents = try? FileManager.default.contentsOfDirectory(
                   at: plugIns,
                   includingPropertiesForKeys: nil
               )
         else { return nil }
-        for url in contents where url.pathExtension == "appex" {
-            if let identifier = Bundle(url: url)?.bundleIdentifier { return identifier }
-        }
-        return nil
+        return contents.first { $0.pathExtension == "appex" }
     }()
 
-    static var hasWidgetExtension: Bool { widgetExtensionIdentifier != nil }
+    /// Whether the extension carries a code signature at all.
+    ///
+    /// A re-signing tool can leave an extension in the bundle and sign only
+    /// the app around it. The file is then plainly there — which is all the
+    /// check above can see — and iOS refuses to register it, so there is no
+    /// widget in the gallery and no lock-screen card, with the app itself
+    /// working perfectly.
+    static var widgetExtensionIsSigned: Bool {
+        guard let url = widgetExtensionURL else { return false }
+        return FileManager.default.fileExists(
+            atPath: url.appending(path: "_CodeSignature/CodeResources").path
+        )
+    }
+
+    static let appProfile: ProvisioningProfile? = ProvisioningProfile.read(in: Bundle.main.bundleURL)
+
+    static let widgetProfile: ProvisioningProfile? = {
+        guard let url = widgetExtensionURL else { return nil }
+        return ProvisioningProfile.read(in: url)
+    }()
+
+    /// An extension signed by a different team than its host is refused, and
+    /// so is one with no profile of its own.
+    static var widgetProfileMatchesApp: Bool {
+        guard let app = appProfile?.teamIdentifier,
+              let widget = widgetProfile?.teamIdentifier
+        else { return false }
+        return app == widget
+    }
 
     /// Whether the extension's identifier still sits underneath the app's.
     ///

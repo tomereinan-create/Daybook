@@ -17,6 +17,8 @@ enum SetupNotice: String, Identifiable, CaseIterable {
     case widgetExtensionMissing
     /// Present, but under an identifier iOS will not register.
     case widgetExtensionRenamed
+    /// Present and correctly named, but carrying no signature of its own.
+    case widgetExtensionUnsigned
     case liveActivitiesOff
     case noSharedContainer
     case nothingOnSurfaces
@@ -29,6 +31,7 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         // Above the rest: with no extension there is nothing to switch on.
         if !diagnostics.hasWidgetExtension { return .widgetExtensionMissing }
         if !diagnostics.widgetExtensionIsNested { return .widgetExtensionRenamed }
+        if !diagnostics.widgetExtensionIsSigned { return .widgetExtensionUnsigned }
         if !diagnostics.liveActivitiesEnabled { return .liveActivitiesOff }
         if !diagnostics.hasSharedContainer { return .noSharedContainer }
         if diagnostics.itemsToday > 0,
@@ -45,6 +48,7 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         case .notificationsDenied: "notice.denied.title"
         case .widgetExtensionMissing: "notice.extension.title"
         case .widgetExtensionRenamed: "notice.renamed.title"
+        case .widgetExtensionUnsigned: "notice.unsigned.title"
         case .liveActivitiesOff: "notice.liveActivities.title"
         case .noSharedContainer: "notice.container.title"
         case .nothingOnSurfaces: "notice.surfaces.title"
@@ -57,6 +61,7 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         case .notificationsDenied: "notice.denied.body"
         case .widgetExtensionMissing: "notice.extension.body"
         case .widgetExtensionRenamed: "notice.renamed.body"
+        case .widgetExtensionUnsigned: "notice.unsigned.body"
         case .liveActivitiesOff: "notice.liveActivities.body"
         case .noSharedContainer: "notice.container.body"
         case .nothingOnSurfaces: "notice.surfaces.body"
@@ -66,7 +71,8 @@ enum SetupNotice: String, Identifiable, CaseIterable {
     var symbol: String {
         switch self {
         case .notificationsNeverAsked, .notificationsDenied: "bell.slash.fill"
-        case .widgetExtensionMissing, .widgetExtensionRenamed: "square.slash"
+        case .widgetExtensionMissing, .widgetExtensionRenamed, .widgetExtensionUnsigned:
+            "square.slash"
         case .liveActivitiesOff: "lock.display"
         case .noSharedContainer: "square.grid.2x2"
         case .nothingOnSurfaces: "eye.slash"
@@ -81,7 +87,7 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         switch self {
         case .notificationsNeverAsked: .ask
         case .notificationsDenied, .liveActivitiesOff: .openSystemSettings
-        case .widgetExtensionMissing, .widgetExtensionRenamed,
+        case .widgetExtensionMissing, .widgetExtensionRenamed, .widgetExtensionUnsigned,
              .noSharedContainer, .nothingOnSurfaces: nil
         }
     }
@@ -102,6 +108,7 @@ struct SetupNoticeBanner: View {
     let notice: SetupNotice
     let onAsk: () async -> Void
     let onDismiss: () -> Void
+    let onInspect: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -124,19 +131,27 @@ struct SetupNoticeBanner: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            if let action = notice.action {
-                Button(notice.actionTitle) {
-                    switch action {
-                    case .ask:
-                        Task { await onAsk() }
-                    case .openSystemSettings:
-                        if let url = URL(string: UIApplication.openSettingsURLString) {
-                            UIApplication.shared.open(url)
+            HStack(spacing: 10) {
+                // Whatever the notice says, the facts behind it are one tap
+                // away rather than four screens away in Settings.
+                Button("notice.details") { onInspect() }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+
+                if let action = notice.action {
+                    Button(notice.actionTitle) {
+                        switch action {
+                        case .ask:
+                            Task { await onAsk() }
+                        case .openSystemSettings:
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
                         }
                     }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
             }
         }
         .padding(14)

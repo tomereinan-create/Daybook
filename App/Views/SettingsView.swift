@@ -10,6 +10,7 @@ struct SettingsView: View {
     @State private var showsImporter = false
     @State private var transferMessage: String?
     @State private var diagnostics = Diagnostics()
+    @State private var showsDiagnostics = false
 
     var body: some View {
         NavigationStack {
@@ -26,6 +27,7 @@ struct SettingsView: View {
             .task { await loadDiagnostics() }
             .refreshable { await loadDiagnostics() }
             .sheet(isPresented: $showsWidgetHelp) { WidgetSetupView() }
+            .sheet(isPresented: $showsDiagnostics) { DiagnosticsSheet() }
             .sheet(isPresented: $showsPushSetup) { PushSetupView() }
             .fileImporter(
                 isPresented: $showsImporter,
@@ -357,6 +359,11 @@ struct SettingsView: View {
                 .font(.caption2.monospaced())
                 .foregroundStyle(.secondary)
                 .textSelection(.enabled)
+            }
+            Button {
+                showsDiagnostics = true
+            } label: {
+                Label("diag.copy", systemImage: "doc.on.doc")
             }
         } header: {
             Text("settings.diag.title")

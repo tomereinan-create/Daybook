@@ -545,6 +545,108 @@
         }
       }
     },
+    "diag.build": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הגרסה הזו"
+          }
+        }
+      }
+    },
+    "diag.build.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app icon is this colour. If the icon on your home screen is a different one, the install did not take."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "סמל האפליקציה בצבע הזה. אם הסמל במסך הבית בצבע אחר, ההתקנה לא נקלטה."
+          }
+        }
+      }
+    },
+    "diag.copied": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הועתק"
+          }
+        }
+      }
+    },
+    "diag.copy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy this report"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "העתקת הדוח"
+          }
+        }
+      }
+    },
+    "diag.report": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything the app can tell"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "כל מה שהאפליקציה יודעת"
+          }
+        }
+      }
+    },
+    "diag.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What this install is"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מהי ההתקנה הזו"
+          }
+        }
+      }
+    },
     "duration.minutes %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -2024,6 +2126,23 @@
         }
       }
     },
+    "notice.details": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Details"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פרטים"
+          }
+        }
+      }
+    },
     "notice.extension.body": {
       "extractionState": "manual",
       "localizations": {
@@ -2224,6 +2343,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "שום דבר לא מוגדר להופיע"
+          }
+        }
+      }
+    },
+    "notice.unsigned.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The widget extension is in this install but carries no signature of its own, so iOS will not register it — no Daybook in the widget gallery, and no lock-screen card. The app itself is unaffected. The signing tool signed the app and skipped what was inside it."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הרחבת הווידג’ט נמצאת בהתקנה אבל ללא חתימה משלה, ולכן iOS לא ירשום אותה — אין Daybook בגלריית הווידג’טים ואין כרטיס במסך הנעילה. האפליקציה עצמה לא מושפעת. כלי החתימה חתם על האפליקציה ודילג על מה שבתוכה."
+          }
+        }
+      }
+    },
+    "notice.unsigned.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The widget was not signed"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הווידג’ט לא נחתם"
           }
         }
       }

@@ -88,6 +88,10 @@ final class AppModel {
             hasSharedContainer: !store.isUsingFallbackStore,
             hasWidgetExtension: InstalledBundle.hasWidgetExtension,
             widgetExtensionIsNested: InstalledBundle.widgetExtensionIsNested,
+            widgetExtensionIsSigned: InstalledBundle.widgetExtensionIsSigned,
+            widgetProfileMatchesApp: InstalledBundle.widgetProfileMatchesApp,
+            appProfile: InstalledBundle.appProfile,
+            widgetProfile: InstalledBundle.widgetProfile,
             appIdentifier: Bundle.main.bundleIdentifier ?? "",
             widgetIdentifier: InstalledBundle.widgetExtensionIdentifier,
             appGroup: AppGroup.identifier,
@@ -350,6 +354,12 @@ nonisolated struct Diagnostics: Sendable, Equatable {
     /// app's. A re-signing tool that renames one and not the other
     /// produces an app that runs and a widget that never appears.
     var widgetExtensionIsNested = false
+    /// Present in the bundle is not the same as signed. iOS refuses to
+    /// register an unsigned extension, and the app around it runs perfectly.
+    var widgetExtensionIsSigned = false
+    var widgetProfileMatchesApp = false
+    var appProfile: ProvisioningProfile?
+    var widgetProfile: ProvisioningProfile?
     var appIdentifier = ""
     var widgetIdentifier: String?
     /// The group the app settled on, and the ones its signature actually

@@ -265,6 +265,8 @@ struct SetupNoticeTests {
             hasSharedContainer: true,
             hasWidgetExtension: true,
             widgetExtensionIsNested: true,
+            widgetExtensionIsSigned: true,
+            widgetProfileMatchesApp: true,
             liveActivitiesEnabled: true,
             liveActivityRunning: true,
             onLockScreen: 2,
@@ -287,6 +289,7 @@ struct SetupNoticeTests {
         d.notifications = .notDetermined
         d.hasWidgetExtension = false
         d.widgetExtensionIsNested = false
+        d.widgetExtensionIsSigned = false
         d.liveActivitiesEnabled = false
         d.hasSharedContainer = false
         d.onLockScreen = 0
@@ -426,5 +429,37 @@ struct ExtensionNestingTests {
             app: "com.tomereinan.daybook",
             extensionID: "com.tomereinan.daybookwidgets"
         ))
+    }
+}
+
+@Suite("The report that gets pasted back")
+struct DiagnosticsReportTests {
+    @Test("It names the build and every link in the chain")
+    func theReportIsComplete() {
+        var d = Diagnostics()
+        d.notifications = .authorized
+        d.appIdentifier = "com.tomereinan.daybook"
+        d.widgetIdentifier = "com.tomereinan.daybook.widgets"
+        d.appGroup = "group.com.tomereinan.daybook"
+
+        let report = DiagnosticsReport.text(d)
+        // Which build it is, first: every other answer depends on it.
+        #expect(report.hasPrefix("Daybook — \(BuildColor.name)"))
+        for fact in [
+            "notifications:", "widget extension:", "signed:", "nested under app:",
+            "same team as app:", "app bundle id:", "widget bundle id:",
+            "shared container:", "opening:", "signed with:", "on lock screen:",
+        ] {
+            #expect(report.contains(fact), "the report should mention \(fact)")
+        }
+        #expect(report.contains("com.tomereinan.daybook.widgets"))
+    }
+
+    @Test("A bundle with no profile says so rather than looking fine")
+    func anAbsentProfileIsVisible() {
+        let report = DiagnosticsReport.text(Diagnostics())
+        #expect(report.contains("widget profile:     none"))
+        // And the booleans shout, so a scan of the text finds the failures.
+        #expect(report.contains("NO"))
     }
 }
