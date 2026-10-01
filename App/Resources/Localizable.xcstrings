@@ -2347,6 +2347,40 @@
         }
       }
     },
+    "notice.unprovisioned.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS registers an app extension only when it carries its own provisioning profile, and this one carries none — the signing tool gave one to the app and not to what was inside it. So there is no Daybook in the widget gallery and no lock-screen card, however well the rest of the app works. This cannot be fixed from inside the app."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS רושם הרחבת אפליקציה רק אם יש לה פרופיל הקצאה משלה, ולזו אין אף אחד — כלי החתימה נתן פרופיל לאפליקציה ולא למה שבתוכה. לכן אין Daybook בגלריית הווידג’טים ואין כרטיס במסך הנעילה, לא משנה כמה טוב פועל שאר האפליקציה. לא ניתן לתקן את זה מתוך האפליקציה."
+          }
+        }
+      }
+    },
+    "notice.unprovisioned.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The widget has no profile of its own"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לווידג’ט אין פרופיל משלו"
+          }
+        }
+      }
+    },
     "notice.unsigned.body": {
       "extractionState": "manual",
       "localizations": {
@@ -2394,6 +2428,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "להשתמש במסך הנעילה במקום"
+          }
+        }
+      }
+    },
+    "notice.usingLockScreen.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The widget cannot work on this install, so the day is posted as a notification instead. It appears as soon as there is something to show — add an item, then lock the phone."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הווידג’ט לא יכול לעבוד בהתקנה הזו, ולכן היום נשלח כהתראה במקום. הוא יופיע ברגע שיהיה מה להראות — הוסיפו פריט, ואז נעלו את הטלפון."
+          }
+        }
+      }
+    },
+    "notice.usingLockScreen.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today is on your lock screen"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "היום נמצא במסך הנעילה"
           }
         }
       }

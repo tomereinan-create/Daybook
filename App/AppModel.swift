@@ -101,7 +101,8 @@ final class AppModel {
             liveActivityError: LiveActivityController.shared.lastError,
             onLockScreen: SurfaceData.entries(for: .liveActivity, now: now).count,
             onHomeWidget: SurfaceData.entries(for: .homeWidget, now: now).count,
-            itemsToday: SurfaceData.progress(now: now).total
+            itemsToday: SurfaceData.progress(now: now).total,
+            lockScreenSummary: SharedDefaults.lockScreenSummary
         )
     }
 
@@ -380,4 +381,6 @@ nonisolated struct Diagnostics: Sendable, Equatable {
     /// Everything on today's plan, done or not. Without it there is no telling
     /// "nothing is set to show" from "there is nothing today".
     var itemsToday = 0
+    /// Whether the day is being held on the lock screen as a notification.
+    var lockScreenSummary = false
 }

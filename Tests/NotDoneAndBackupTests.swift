@@ -354,6 +354,36 @@ struct SetupNoticeTests {
         #expect(SetupNotice.first(from: d) == .nothingOnSurfaces)
     }
 
+    @Test("Turning the fallback on changes what the notice says")
+    func acceptingTheFallbackIsVisible() {
+        // The button that turns it on has to do something you can see, or it
+        // reads as broken — which is exactly how it read.
+        var d = healthy
+        d.hasSharedContainer = false
+        #expect(SetupNotice.first(from: d) == .noSharedContainer)
+
+        d.lockScreenSummary = true
+        #expect(SetupNotice.first(from: d) == .usingLockScreen)
+        #expect(SetupNotice.first(from: d)?.isGoodNews == true)
+
+        // It answers the signing problems and nothing else: a refusal of
+        // notifications is still a refusal, and the summary needs them.
+        d.notifications = .denied
+        #expect(SetupNotice.first(from: d) == .notificationsDenied)
+    }
+
+    @Test("An extension with no profile is named, not its symptom")
+    func theProfileIsTheCause() {
+        // What Tomer's install actually is: everything in place except a
+        // provisioning profile for the extension. Before this, the app
+        // reported the shared container failing — which is true, and is
+        // downstream of the same cause.
+        var d = healthy
+        d.widgetProfileMatchesApp = false
+        d.hasSharedContainer = false
+        #expect(SetupNotice.first(from: d) == .widgetExtensionUnprovisioned)
+    }
+
     @Test("An empty day is not a misconfigured one")
     func noItemsIsNotAProblem() {
         var d = healthy
@@ -375,7 +405,8 @@ struct SetupNoticeTests {
         for notice in SetupNotice.allCases {
             #expect(notice.isDismissible == !fixable.contains(notice))
         }
-        for notice in SetupNotice.allCases where notice.isDismissible && notice != .nothingOnSurfaces {
+        // Every signing problem offers the same way round it.
+        for notice in SetupNotice.signingProblems {
             #expect(notice.action == .useLockScreenSummary)
         }
     }

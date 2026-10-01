@@ -19,19 +19,48 @@ enum SetupNotice: String, Identifiable, CaseIterable {
     case widgetExtensionRenamed
     /// Present and correctly named, but carrying no signature of its own.
     case widgetExtensionUnsigned
+    /// Signed, but with no provisioning profile of its own — or one issued to
+    /// a different team than the app's. iOS registers neither.
+    case widgetExtensionUnprovisioned
+    /// Nothing above can be fixed, and the fallback has been turned on. Said
+    /// out loud because turning it on has to visibly do something.
+    case usingLockScreen
     case liveActivitiesOff
     case noSharedContainer
     case nothingOnSurfaces
 
     var id: String { rawValue }
 
+    /// The ones no amount of using the app can fix, because they were decided
+    /// when the build was signed. All of them have the same answer.
+    static let signingProblems: Set<SetupNotice> = [
+        .widgetExtensionMissing, .widgetExtensionRenamed,
+        .widgetExtensionUnsigned, .widgetExtensionUnprovisioned, .noSharedContainer,
+    ]
+
     static func first(from diagnostics: Diagnostics) -> SetupNotice? {
+        guard let notice = diagnose(diagnostics) else { return nil }
+        // Once the fallback is on, going on about the thing it works around
+        // is nagging about a decision already taken. Say what is true now
+        // instead — which also means the button that turned it on visibly
+        // did something.
+        if diagnostics.lockScreenSummary, signingProblems.contains(notice) {
+            return .usingLockScreen
+        }
+        return notice
+    }
+
+    private static func diagnose(_ diagnostics: Diagnostics) -> SetupNotice? {
         if diagnostics.notifications == .notDetermined { return .notificationsNeverAsked }
         if diagnostics.notifications == .denied { return .notificationsDenied }
         // Above the rest: with no extension there is nothing to switch on.
         if !diagnostics.hasWidgetExtension { return .widgetExtensionMissing }
         if !diagnostics.widgetExtensionIsNested { return .widgetExtensionRenamed }
         if !diagnostics.widgetExtensionIsSigned { return .widgetExtensionUnsigned }
+        // The cause, not its symptom: an extension with no profile of its own
+        // is refused, and the app then reports the shared container failing,
+        // which is downstream of the same thing.
+        if !diagnostics.widgetProfileMatchesApp { return .widgetExtensionUnprovisioned }
         if !diagnostics.liveActivitiesEnabled { return .liveActivitiesOff }
         if !diagnostics.hasSharedContainer { return .noSharedContainer }
         if diagnostics.itemsToday > 0,
@@ -49,6 +78,8 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         case .widgetExtensionMissing: "notice.extension.title"
         case .widgetExtensionRenamed: "notice.renamed.title"
         case .widgetExtensionUnsigned: "notice.unsigned.title"
+        case .widgetExtensionUnprovisioned: "notice.unprovisioned.title"
+        case .usingLockScreen: "notice.usingLockScreen.title"
         case .liveActivitiesOff: "notice.liveActivities.title"
         case .noSharedContainer: "notice.container.title"
         case .nothingOnSurfaces: "notice.surfaces.title"
@@ -62,6 +93,8 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         case .widgetExtensionMissing: "notice.extension.body"
         case .widgetExtensionRenamed: "notice.renamed.body"
         case .widgetExtensionUnsigned: "notice.unsigned.body"
+        case .widgetExtensionUnprovisioned: "notice.unprovisioned.body"
+        case .usingLockScreen: "notice.usingLockScreen.body"
         case .liveActivitiesOff: "notice.liveActivities.body"
         case .noSharedContainer: "notice.container.body"
         case .nothingOnSurfaces: "notice.surfaces.body"
@@ -71,8 +104,10 @@ enum SetupNotice: String, Identifiable, CaseIterable {
     var symbol: String {
         switch self {
         case .notificationsNeverAsked, .notificationsDenied: "bell.slash.fill"
-        case .widgetExtensionMissing, .widgetExtensionRenamed, .widgetExtensionUnsigned:
+        case .widgetExtensionMissing, .widgetExtensionRenamed, .widgetExtensionUnsigned,
+             .widgetExtensionUnprovisioned:
             "square.slash"
+        case .usingLockScreen: "lock.display"
         case .liveActivitiesOff: "lock.display"
         case .noSharedContainer: "square.grid.2x2"
         case .nothingOnSurfaces: "eye.slash"
@@ -97,9 +132,9 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         // decided by how the build was signed. What can be offered is the
         // fallback that needs neither an extension nor a shared container.
         case .widgetExtensionMissing, .widgetExtensionRenamed, .widgetExtensionUnsigned,
-             .noSharedContainer:
+             .widgetExtensionUnprovisioned, .noSharedContainer:
             .useLockScreenSummary
-        case .nothingOnSurfaces: nil
+        case .nothingOnSurfaces, .usingLockScreen: nil
         }
     }
 
@@ -113,11 +148,15 @@ enum SetupNotice: String, Identifiable, CaseIterable {
 
     /// True for the ones nothing in the app can put right. Those can be put
     /// away; the ones that describe something still fixable stay until it is.
+    /// Not everything worth saying is a complaint.
+    var isGoodNews: Bool { self == .usingLockScreen }
+
     var isDismissible: Bool {
         switch self {
         case .notificationsNeverAsked, .notificationsDenied, .liveActivitiesOff: false
         case .widgetExtensionMissing, .widgetExtensionRenamed, .widgetExtensionUnsigned,
-             .noSharedContainer, .nothingOnSurfaces: true
+             .widgetExtensionUnprovisioned, .noSharedContainer, .nothingOnSurfaces,
+             .usingLockScreen: true
         }
     }
 }
@@ -129,11 +168,13 @@ struct SetupNoticeBanner: View {
     let onDismiss: () -> Void
     let onInspect: () -> Void
 
+    private var tint: Color { notice.isGoodNews ? .green : .orange }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Image(systemName: notice.symbol)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(notice.isGoodNews ? Color.green : Color.orange)
                 Text(notice.title)
                     .font(.subheadline.weight(.semibold))
                 Spacer(minLength: 0)
@@ -177,10 +218,10 @@ struct SetupNoticeBanner: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.orange.opacity(0.10), in: .rect(cornerRadius: 14))
+        .background(tint.opacity(0.10), in: .rect(cornerRadius: 14))
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(.orange.opacity(0.35), lineWidth: 0.5)
+                .strokeBorder(tint.opacity(0.35), lineWidth: 0.5)
         )
         .padding(.horizontal, 16)
         .padding(.bottom, 10)
