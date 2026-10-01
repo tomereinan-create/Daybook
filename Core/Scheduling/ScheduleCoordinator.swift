@@ -146,6 +146,15 @@ nonisolated struct ScheduleCoordinator: Sendable {
         return fingerprint
     }
 
+    /// Whether the day summary is on the lock screen right now.
+    ///
+    /// Delivered, not pending: a standing note is posted immediately and then
+    /// sits there, so it never appears in the pending list. Without this the
+    /// only way to know was to lock the phone and look.
+    func summaryIsShowing() async -> Bool {
+        await notifications.deliveredIdentifiers().contains(DaySummary.identifier)
+    }
+
     /// The system's own answer, not the one cached from the last reschedule.
     func notificationStatus() async -> NotificationAuthorization {
         await notifications.authorizationStatus()

@@ -72,6 +72,16 @@ final class AppModel {
 
     /// Fires a notification five seconds from now. If this does not arrive,
     /// the problem is permission, not scheduling.
+    /// Posts the day summary again whether or not it has changed.
+    ///
+    /// The reschedule leaves an unchanged day alone, which is right, but it
+    /// also means there is no way to make the thing appear on demand — and
+    /// "nothing happened" is indistinguishable from "it was already there".
+    func postDaySummaryNow(now: Date = .now) async {
+        SharedDefaults.lastPostedSummary = nil
+        await reschedule(now: now)
+    }
+
     func sendTestNotification() async -> NotificationAuthorization {
         (try? await coordinator.sendTestAlert()) ?? .denied
     }
@@ -102,7 +112,8 @@ final class AppModel {
             onLockScreen: SurfaceData.entries(for: .liveActivity, now: now).count,
             onHomeWidget: SurfaceData.entries(for: .homeWidget, now: now).count,
             itemsToday: SurfaceData.progress(now: now).total,
-            lockScreenSummary: SharedDefaults.lockScreenSummary
+            lockScreenSummary: SharedDefaults.lockScreenSummary,
+            summaryIsShowing: await coordinator.summaryIsShowing()
         )
     }
 
@@ -384,4 +395,6 @@ nonisolated struct Diagnostics: Sendable, Equatable {
     var itemsToday = 0
     /// Whether the day is being held on the lock screen as a notification.
     var lockScreenSummary = false
+    /// Whether iOS is actually showing it, rather than whether we meant it to.
+    var summaryIsShowing = false
 }

@@ -19,6 +19,8 @@ nonisolated enum NotificationAuthorization: String, Sendable, Hashable {
 /// from value types on the other side.
 nonisolated protocol NotificationScheduling: Sendable {
     func pendingIdentifiers() async -> Set<String>
+    /// What iOS is currently showing, as opposed to holding for later.
+    func deliveredIdentifiers() async -> Set<String>
     func add(_ notification: PlannedNotification, content: NotificationContent) async throws
     func removePending(identifiers: [String]) async
     func removeDelivered(identifiers: [String]) async
@@ -39,6 +41,11 @@ nonisolated struct SystemNotificationScheduler: NotificationScheduling {
     func pendingIdentifiers() async -> Set<String> {
         let requests = await center.pendingNotificationRequests()
         return Set(requests.map(\.identifier))
+    }
+
+    func deliveredIdentifiers() async -> Set<String> {
+        let delivered = await center.deliveredNotifications()
+        return Set(delivered.map(\.request.identifier))
     }
 
     func add(_ notification: PlannedNotification, content: NotificationContent) async throws {

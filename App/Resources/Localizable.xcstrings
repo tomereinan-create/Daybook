@@ -2438,13 +2438,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The widget cannot work on this install, so the day is posted as a notification instead. It appears as soon as there is something to show — add an item, then lock the phone."
+            "value": "The widget cannot work on this install, so the day is posted as a notification instead. Look for it with your notifications at the foot of the lock screen — not in the widget area at the top, where it will never appear. Add an item, then lock the phone."
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "הווידג’ט לא יכול לעבוד בהתקנה הזו, ולכן היום נשלח כהתראה במקום. הוא יופיע ברגע שיהיה מה להראות — הוסיפו פריט, ואז נעלו את הטלפון."
+            "value": "הווידג’ט לא יכול לעבוד בהתקנה הזו, ולכן היום נשלח כהתראה במקום. חפשו אותו יחד עם ההתראות בתחתית מסך הנעילה — ולא באזור הווידג’טים למעלה, שם הוא לעולם לא יופיע. הוסיפו פריט, ואז נעלו את הטלפון."
           }
         }
       }
@@ -4540,6 +4540,40 @@
         }
       }
     },
+    "settings.summary.postNow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Post it to the lock screen now"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לשלוח למסך הנעילה עכשיו"
+          }
+        }
+      }
+    },
+    "settings.summary.showing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On the lock screen now"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מופיע כעת במסך הנעילה"
+          }
+        }
+      }
+    },
     "settings.summary.title": {
       "extractionState": "manual",
       "localizations": {
@@ -4570,6 +4604,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "להשאיר את היום במסך הנעילה"
+          }
+        }
+      }
+    },
+    "settings.summary.where": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It sits with your notifications at the foot of the lock screen, not in the widget area at the top. If your lock screen is set to show notifications as a count or a stack, swipe up from the bottom to open them."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הוא יושב יחד עם ההתראות בתחתית מסך הנעילה, לא באזור הווידג’טים למעלה. אם מסך הנעילה מוגדר להציג התראות כמספר או כערימה, החליקו מלמטה למעלה כדי לפתוח אותן."
           }
         }
       }

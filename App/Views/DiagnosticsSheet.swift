@@ -102,6 +102,7 @@ nonisolated enum DiagnosticsReport {
         lines.append("  signed with:      \(d.grantedGroups.isEmpty ? "none" : d.grantedGroups.joined(separator: ", "))")
         lines.append("")
         lines.append("lock-screen summary:\(d.lockScreenSummary ? "on" : "off")")
+        lines.append("  showing now:      \(yes(d.summaryIsShowing))")
         lines.append("")
         lines.append("today:              \(d.itemsToday) items")
         lines.append("  on lock screen:   \(d.onLockScreen)")

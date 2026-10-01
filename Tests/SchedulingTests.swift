@@ -23,6 +23,9 @@ actor FakeNotificationScheduler: NotificationScheduling {
 
     func pendingIdentifiers() async -> Set<String> { pending }
 
+    private(set) var delivered: Set<String> = []
+    func deliveredIdentifiers() async -> Set<String> { delivered }
+
     func add(_ notification: PlannedNotification, content: NotificationContent) async throws {
         pending.insert(notification.id)
         contents[notification.id] = content
@@ -54,6 +57,8 @@ actor FakeNotificationScheduler: NotificationScheduling {
     func postSummary(_ summary: DaySummary?) async {
         self.summary = summary
         summaryPosts += 1
+        if summary == nil { delivered.remove(DaySummary.identifier) }
+        else { delivered.insert(DaySummary.identifier) }
     }
 }
 
@@ -569,5 +574,50 @@ struct DaySummaryRepostTests {
         )
         #expect(afterOn == posted)
         #expect(await notifications.summaryPosts == 3)
+    }
+}
+
+@Suite("Knowing whether it is actually showing")
+struct DaySummaryVisibilityTests {
+    let calendar = Fixture.calendar()
+    let engine = ScheduleEngine(
+        calendar: Fixture.calendar(),
+        configuration: .default,
+        quietHours: .default
+    )
+    private var now: Date { Fixture.date(2026, 3, 10, 9, 0, calendar: calendar) }
+
+    @Test("Delivered, not pending — a standing note never waits in the queue")
+    func itIsReportedAsDelivered() async {
+        // Everything else the app schedules is pending until it fires. This
+        // one is posted at once and then sits there, so asking the pending
+        // list about it always answers no, however well it is working.
+        let notifications = FakeNotificationScheduler()
+        let coordinator = ScheduleCoordinator(
+            engine: engine, notifications: notifications, alarms: FakeAlarmScheduler()
+        )
+        var settings = ItemSettings.default
+        settings.visibility = Visibility(leadTime: 24 * 3600, surfaces: .all)
+        let item = Fixture.item(title: "Weigh in", settings: settings, createdAt: now)
+
+        #expect(await coordinator.summaryIsShowing() == false)
+
+        await coordinator.refreshDaySummary(
+            plan: engine.dayPlan(items: [item], records: [:], on: now, now: now),
+            enabled: true,
+            now: now,
+            lastPosted: nil
+        )
+        #expect(await coordinator.summaryIsShowing())
+        #expect(await notifications.pendingIdentifiers().contains(DaySummary.identifier) == false)
+
+        // Switching it off takes it down again.
+        await coordinator.refreshDaySummary(
+            plan: engine.dayPlan(items: [item], records: [:], on: now, now: now),
+            enabled: false,
+            now: now,
+            lastPosted: "whatever was there"
+        )
+        #expect(await coordinator.summaryIsShowing() == false)
     }
 }

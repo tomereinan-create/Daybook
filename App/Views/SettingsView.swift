@@ -92,6 +92,22 @@ struct SettingsView: View {
     private var lockScreenSection: some View {
         Section {
             Toggle("settings.summary.toggle", isOn: summaryBinding)
+            if lockScreenSummary {
+                DiagnosticRow(
+                    title: "settings.summary.showing",
+                    value: yesOrNo(diagnostics.summaryIsShowing),
+                    isGood: diagnostics.summaryIsShowing
+                )
+                Text("settings.summary.where")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button("settings.summary.postNow") {
+                    Task {
+                        await model.postDaySummaryNow()
+                        await loadDiagnostics()
+                    }
+                }
+            }
         } header: {
             Text("settings.summary.title")
         } footer: {
