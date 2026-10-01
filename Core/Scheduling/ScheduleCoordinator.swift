@@ -121,12 +121,29 @@ nonisolated struct ScheduleCoordinator: Sendable {
     /// Puts the day on the lock screen as a standing notification, or takes
     /// it down. Off unless asked for: it is the fallback for an install whose
     /// widgets cannot work, not a second copy of them.
-    func refreshDaySummary(plan: DayPlan, enabled: Bool, now: Date) async {
+    @discardableResult
+    func refreshDaySummary(
+        plan: DayPlan,
+        enabled: Bool,
+        now: Date,
+        lastPosted: String?
+    ) async -> String? {
         guard enabled, await notifications.authorizationStatus().canPost else {
+            // Take down whatever is there, and forget it, so switching back
+            // on posts again rather than deciding nothing has changed.
             await notifications.postSummary(nil)
-            return
+            return nil
         }
-        await notifications.postSummary(summaries.summary(for: plan, now: now))
+
+        let summary = summaries.summary(for: plan, now: now)
+        let fingerprint = summary?.fingerprint
+        // Posting lights the screen, and this runs on every change, every
+        // launch and every background refresh. Only an actual change to the
+        // day is worth doing that for.
+        guard fingerprint != lastPosted else { return lastPosted }
+
+        await notifications.postSummary(summary)
+        return fingerprint
     }
 
     /// The system's own answer, not the one cached from the last reschedule.

@@ -188,6 +188,7 @@ nonisolated enum SharedDefaults {
         static let onboardingComplete = "onboardingComplete"
         static let lastScheduleRefresh = "lastScheduleRefresh"
         static let lockScreenSummary = "lockScreenSummary"
+        static let lastPostedSummary = "lastPostedSummary"
     }
 
     static var quietHours: QuietHours {
@@ -209,6 +210,15 @@ nonisolated enum SharedDefaults {
     static var lockScreenSummary: Bool {
         get { store.bool(forKey: Key.lockScreenSummary) }
         set { store.set(newValue, forKey: Key.lockScreenSummary) }
+    }
+
+    /// What the lock screen is currently showing, so an unchanged day is not
+    /// posted again. The post lights the screen, so doing it on every
+    /// reschedule — which is every change, every launch and every background
+    /// refresh — would be its own kind of broken.
+    static var lastPostedSummary: String? {
+        get { store.string(forKey: Key.lastPostedSummary) }
+        set { store.set(newValue, forKey: Key.lastPostedSummary) }
     }
 
     static var onboardingComplete: Bool {

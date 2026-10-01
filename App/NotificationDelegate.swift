@@ -20,7 +20,14 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        [.banner, .list, .sound]
+        // The standing day summary is not an event; it is reposted whenever
+        // the day changes, and a banner over the screen each time somebody
+        // ticks something off would be its own problem. It goes quietly into
+        // the list, which is where it is read from anyway.
+        if notification.request.identifier == DaySummary.identifier {
+            return [.list]
+        }
+        return [.banner, .list, .sound]
     }
 
     func userNotificationCenter(

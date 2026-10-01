@@ -22,6 +22,11 @@ nonisolated struct DaySummary: Sendable, Hashable {
     /// something real instead of just opening the app.
     var next: OccurrenceKey?
     var nextSnoozeMinutes: Int?
+
+    /// What is actually on screen, as a string that survives a relaunch.
+    /// Swift's hash values are seeded per process, so they cannot be compared
+    /// across launches; the words themselves can.
+    var fingerprint: String { title + "\n" + body }
 }
 
 nonisolated struct DaySummaryBuilder: Sendable {

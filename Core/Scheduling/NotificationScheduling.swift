@@ -87,10 +87,14 @@ nonisolated struct SystemNotificationScheduler: NotificationScheduling {
         let content = UNMutableNotificationContent()
         content.title = summary.title
         content.body = summary.body
-        // Passive and silent: this is a standing note, not an interruption.
-        // It belongs in the list the moment the screen comes on, and it must
-        // never buzz — it is reposted every time anything changes.
-        content.interruptionLevel = .passive
+        // Active and silent. Passive was the obvious choice for a standing
+        // note and it was wrong: Apple's own words for it are "adds the
+        // notification to the notification list without lighting up the
+        // screen", so locking the phone showed nothing and the whole feature
+        // looked dead. Active lights the screen; `sound = nil` keeps it
+        // quiet. What stops it becoming a nuisance is that it is only
+        // reposted when the day actually changed, which the caller decides.
+        content.interruptionLevel = .active
         content.sound = nil
         content.threadIdentifier = DaySummary.identifier
         content.relevanceScore = 1

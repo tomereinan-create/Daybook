@@ -445,7 +445,8 @@ struct DaySummaryTests {
         await coordinator.refreshDaySummary(
             plan: plan([task("Weigh in")]),
             enabled: false,
-            now: now
+            now: now,
+            lastPosted: "something that was there before"
         )
         #expect(await notifications.summaryPosts == 1)
         #expect(await notifications.summary == nil)
@@ -462,7 +463,8 @@ struct DaySummaryTests {
         await coordinator.refreshDaySummary(
             plan: plan([task("Weigh in")]),
             enabled: true,
-            now: now
+            now: now,
+            lastPosted: nil
         )
         #expect(await notifications.summary == nil)
     }
@@ -478,10 +480,94 @@ struct DaySummaryTests {
         await coordinator.refreshDaySummary(
             plan: plan([task("Weigh in"), task("Brush teeth", at: 8)]),
             enabled: true,
-            now: now
+            now: now,
+            lastPosted: nil
         )
         let summary = await notifications.summary
         #expect(summary != nil)
         #expect(summary?.body.contains("Weigh in") == true)
+    }
+}
+
+@Suite("Reposting only when the day actually changed")
+struct DaySummaryRepostTests {
+    let calendar = Fixture.calendar()
+    let engine = ScheduleEngine(
+        calendar: Fixture.calendar(),
+        configuration: .default,
+        quietHours: .default
+    )
+    private var now: Date { Fixture.date(2026, 3, 10, 9, 0, calendar: calendar) }
+
+    private func task(_ title: String) -> ItemSnapshot {
+        var settings = ItemSettings.default
+        settings.visibility = Visibility(leadTime: 24 * 3600, surfaces: .all)
+        return Fixture.item(title: title, settings: settings, createdAt: now)
+    }
+
+    private func coordinator(_ notifications: FakeNotificationScheduler) -> ScheduleCoordinator {
+        ScheduleCoordinator(engine: engine, notifications: notifications, alarms: FakeAlarmScheduler())
+    }
+
+    @Test("An unchanged day is not posted twice")
+    func unchangedDaysAreLeftAlone() async {
+        // Posting lights the screen, and a reschedule happens on every change,
+        // every launch and every background refresh. Doing it each time would
+        // be worse than not doing it at all.
+        let notifications = FakeNotificationScheduler()
+        let plan = engine.dayPlan(items: [task("Weigh in")], records: [:], on: now, now: now)
+        let coordinator = coordinator(notifications)
+
+        let first = await coordinator.refreshDaySummary(
+            plan: plan, enabled: true, now: now, lastPosted: nil
+        )
+        #expect(first != nil)
+        #expect(await notifications.summaryPosts == 1)
+
+        let second = await coordinator.refreshDaySummary(
+            plan: plan, enabled: true, now: now, lastPosted: first
+        )
+        #expect(second == first)
+        #expect(await notifications.summaryPosts == 1)
+    }
+
+    @Test("A changed day is")
+    func changesArePosted() async {
+        let notifications = FakeNotificationScheduler()
+        let coordinator = coordinator(notifications)
+
+        let first = await coordinator.refreshDaySummary(
+            plan: engine.dayPlan(items: [task("Weigh in")], records: [:], on: now, now: now),
+            enabled: true, now: now, lastPosted: nil
+        )
+        let second = await coordinator.refreshDaySummary(
+            plan: engine.dayPlan(
+                items: [task("Weigh in"), task("Call the bank")], records: [:], on: now, now: now
+            ),
+            enabled: true, now: now, lastPosted: first
+        )
+        #expect(second != first)
+        #expect(await notifications.summaryPosts == 2)
+    }
+
+    @Test("Switching off forgets what was posted, so switching on posts again")
+    func disablingForgets() async {
+        let notifications = FakeNotificationScheduler()
+        let coordinator = coordinator(notifications)
+        let plan = engine.dayPlan(items: [task("Weigh in")], records: [:], on: now, now: now)
+
+        let posted = await coordinator.refreshDaySummary(
+            plan: plan, enabled: true, now: now, lastPosted: nil
+        )
+        let afterOff = await coordinator.refreshDaySummary(
+            plan: plan, enabled: false, now: now, lastPosted: posted
+        )
+        #expect(afterOff == nil)
+
+        let afterOn = await coordinator.refreshDaySummary(
+            plan: plan, enabled: true, now: now, lastPosted: afterOff
+        )
+        #expect(afterOn == posted)
+        #expect(await notifications.summaryPosts == 3)
     }
 }
