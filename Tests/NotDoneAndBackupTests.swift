@@ -422,6 +422,7 @@ struct SetupNoticeTests {
         // is why this is not simply "has no action".
         let fixable: Set<SetupNotice> = [
             .notificationsNeverAsked, .notificationsDenied, .liveActivitiesOff,
+            .lockScreenPlacementOff,
         ]
         for notice in SetupNotice.allCases {
             #expect(notice.isDismissible == !fixable.contains(notice))
