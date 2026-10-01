@@ -11,6 +11,27 @@ nonisolated enum NotificationAuthorization: String, Sendable, Hashable {
     var canPost: Bool { self == .authorized || self == .provisional }
 }
 
+/// Where iOS has been told this app's notifications may appear.
+///
+/// Permission is not one switch but several. An app can be fully authorized
+/// and still be kept off the lock screen, in which case everything arrives,
+/// everything is delivered, and the lock screen stays empty — which looks
+/// exactly like a broken app and is not one.
+nonisolated enum NotificationPlacement: String, Sendable, Hashable {
+    case enabled
+    case disabled
+    case notSupported
+}
+
+nonisolated struct NotificationPlacements: Sendable, Hashable {
+    var lockScreen: NotificationPlacement = .notSupported
+    var notificationCentre: NotificationPlacement = .notSupported
+    var banners: NotificationPlacement = .notSupported
+
+    /// The one that matters for a standing day summary.
+    var reachesLockScreen: Bool { lockScreen == .enabled }
+}
+
 /// The surface the scheduler needs from iOS.
 ///
 /// A protocol so the reconciliation can be tested without a notification
@@ -25,6 +46,7 @@ nonisolated protocol NotificationScheduling: Sendable {
     func removePending(identifiers: [String]) async
     func removeDelivered(identifiers: [String]) async
     func authorizationStatus() async -> NotificationAuthorization
+    func placements() async -> NotificationPlacements
     func requestAuthorization() async -> NotificationAuthorization
     func registerCategories() async
     /// Posts the standing day summary, or takes it down when given `nil`.
@@ -119,8 +141,15 @@ nonisolated struct SystemNotificationScheduler: NotificationScheduling {
             content.userInfo = info
         }
 
-        // No trigger at all: delivered now, and replacing whatever is already
-        // on the lock screen under this identifier.
+        // Taken down first, then posted again. Adding under an existing
+        // identifier replaces the notification, but iOS still treats it as
+        // the one already seen — it stays wherever it was filed instead of
+        // arriving. Removing it first makes what follows genuinely new, which
+        // is what puts it on the lock screen rather than three swipes into
+        // Notification Centre.
+        center.removeDeliveredNotifications(withIdentifiers: [DaySummary.identifier])
+
+        // No trigger at all: delivered now.
         try? await center.add(
             UNNotificationRequest(identifier: DaySummary.identifier, content: content, trigger: nil)
         )
@@ -161,6 +190,23 @@ nonisolated struct SystemNotificationScheduler: NotificationScheduling {
         case .notDetermined: .notDetermined
         @unknown default: .notDetermined
         }
+    }
+
+    func placements() async -> NotificationPlacements {
+        let settings = await center.notificationSettings()
+        func map(_ setting: UNNotificationSetting) -> NotificationPlacement {
+            switch setting {
+            case .enabled: .enabled
+            case .disabled: .disabled
+            case .notSupported: .notSupported
+            @unknown default: .notSupported
+            }
+        }
+        return NotificationPlacements(
+            lockScreen: map(settings.lockScreenSetting),
+            notificationCentre: map(settings.notificationCenterSetting),
+            banners: map(settings.alertSetting)
+        )
     }
 
     func requestAuthorization() async -> NotificationAuthorization {

@@ -98,6 +98,11 @@ struct SettingsView: View {
                     value: yesOrNo(diagnostics.summaryIsShowing),
                     isGood: diagnostics.summaryIsShowing
                 )
+                DiagnosticRow(
+                    title: "settings.summary.allowed",
+                    value: yesOrNo(diagnostics.placements.reachesLockScreen),
+                    isGood: diagnostics.placements.reachesLockScreen
+                )
                 Text("settings.summary.where")
                     .font(.caption)
                     .foregroundStyle(.secondary)

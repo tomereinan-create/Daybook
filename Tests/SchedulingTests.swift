@@ -41,6 +41,12 @@ actor FakeNotificationScheduler: NotificationScheduling {
 
     func authorizationStatus() async -> NotificationAuthorization { authorization }
 
+    var placementsToReturn = NotificationPlacements(
+        lockScreen: .enabled, notificationCentre: .enabled, banners: .enabled
+    )
+    func placements() async -> NotificationPlacements { placementsToReturn }
+    func setPlacements(_ new: NotificationPlacements) { placementsToReturn = new }
+
     func requestAuthorization() async -> NotificationAuthorization {
         authorizationRequests += 1
         if authorization == .notDetermined { authorization = .authorized }

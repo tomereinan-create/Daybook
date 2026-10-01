@@ -2279,6 +2279,40 @@
         }
       }
     },
+    "notice.placement.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are allowed, but their placement on the lock screen is switched off — so they arrive, land in Notification Centre, and the lock screen stays empty. Open Settings › Notifications › Daybook and tick Lock Screen."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ההתראות מאושרות, אבל ההצגה שלהן במסך הנעילה כבויה — ולכן הן מגיעות, נכנסות למרכז ההתראות, ומסך הנעילה נשאר ריק. פתחו הגדרות › התראות › Daybook וסמנו \"מסך נעילה\"."
+          }
+        }
+      }
+    },
+    "notice.placement.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS is keeping Daybook off the lock screen"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS מונע מ-Daybook להופיע במסך הנעילה"
+          }
+        }
+      }
+    },
     "notice.renamed.body": {
       "extractionState": "manual",
       "localizations": {
@@ -4519,6 +4553,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "עד"
+          }
+        }
+      }
+    },
+    "settings.summary.allowed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS allows it on the lock screen"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS מתיר אותו במסך הנעילה"
           }
         }
       }

@@ -146,6 +146,11 @@ nonisolated struct ScheduleCoordinator: Sendable {
         return fingerprint
     }
 
+    /// Where iOS allows this app's notifications to appear.
+    func placements() async -> NotificationPlacements {
+        await notifications.placements()
+    }
+
     /// Whether the day summary is on the lock screen right now.
     ///
     /// Delivered, not pending: a standing note is posted immediately and then

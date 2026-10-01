@@ -36,10 +36,22 @@ struct DaybookApp: App {
                 }
         }
         .onChange(of: scenePhase) { _, phase in
-            // Coming back from the background is the cheapest chance to catch
-            // up on a day that rolled over while the app was closed.
-            guard phase == .active else { return }
-            Task { await model.reschedule() }
+            switch phase {
+            case .active:
+                // Coming back from the background is the cheapest chance to
+                // catch up on a day that rolled over while the app was closed.
+                Task { await model.reschedule() }
+            case .background:
+                // Leaving the app is usually locking the phone, and that is
+                // the moment the day summary has to be freshly delivered. One
+                // posted while the app was open has already been seen, so the
+                // lock screen files it away rather than showing it — which is
+                // exactly the state it was found in: delivered, and nowhere
+                // to be seen.
+                Task { await model.postDaySummaryNow() }
+            default:
+                break
+            }
         }
     }
 }

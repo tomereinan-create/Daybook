@@ -271,7 +271,10 @@ struct SetupNoticeTests {
             liveActivityRunning: true,
             onLockScreen: 2,
             onHomeWidget: 2,
-            itemsToday: 2
+            itemsToday: 2,
+            placements: NotificationPlacements(
+                lockScreen: .enabled, notificationCentre: .enabled, banners: .enabled
+            )
         )
     }
 
@@ -352,6 +355,24 @@ struct SetupNoticeTests {
         d.onLockScreen = 0
         d.onHomeWidget = 0
         #expect(SetupNotice.first(from: d) == .nothingOnSurfaces)
+    }
+
+    @Test("Being kept off the lock screen is named, not left to be guessed")
+    func placementIsChecked() {
+        // Authorized, delivered, and invisible: iOS allows the notification
+        // but not on the lock screen, which is the only place a day summary
+        // is for. Everything looks healthy and the lock screen is empty.
+        var d = healthy
+        d.lockScreenSummary = true
+        d.placements = NotificationPlacements(
+            lockScreen: .disabled, notificationCentre: .enabled, banners: .enabled
+        )
+        #expect(SetupNotice.first(from: d) == .lockScreenPlacementOff)
+        #expect(SetupNotice.first(from: d)?.action == .openSystemSettings)
+
+        // Only worth saying when the summary is the thing being relied on.
+        d.lockScreenSummary = false
+        #expect(SetupNotice.first(from: d) != .lockScreenPlacementOff)
     }
 
     @Test("Turning the fallback on changes what the notice says")

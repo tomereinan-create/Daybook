@@ -113,7 +113,8 @@ final class AppModel {
             onHomeWidget: SurfaceData.entries(for: .homeWidget, now: now).count,
             itemsToday: SurfaceData.progress(now: now).total,
             lockScreenSummary: SharedDefaults.lockScreenSummary,
-            summaryIsShowing: await coordinator.summaryIsShowing()
+            summaryIsShowing: await coordinator.summaryIsShowing(),
+            placements: await coordinator.placements()
         )
     }
 
@@ -397,4 +398,6 @@ nonisolated struct Diagnostics: Sendable, Equatable {
     var lockScreenSummary = false
     /// Whether iOS is actually showing it, rather than whether we meant it to.
     var summaryIsShowing = false
+    /// Authorized is not the same as allowed on the lock screen.
+    var placements = NotificationPlacements()
 }

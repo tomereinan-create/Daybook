@@ -33,6 +33,9 @@ const PALETTE = [
   { name: 'Vine',   rgb: [0x5b, 0x2e, 0x86] },
   { name: 'Pine',   rgb: [0x1f, 0x5f, 0x45] },
   { name: 'Brick',  rgb: [0x8e, 0x2f, 0x3c] },
+  // Sits between Brick and the wrap back to Clay, which are both reds and
+  // too close to tell apart at the size an icon is actually looked at.
+  { name: 'Graphite', rgb: [0x3f, 0x3f, 0x46] },
 ];
 
 const INDEX_FILE = 'scripts/icon-color.json';

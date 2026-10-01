@@ -25,6 +25,9 @@ enum SetupNotice: String, Identifiable, CaseIterable {
     /// Nothing above can be fixed, and the fallback has been turned on. Said
     /// out loud because turning it on has to visibly do something.
     case usingLockScreen
+    /// Allowed to notify, but iOS has been told to keep this app off the
+    /// lock screen. Everything arrives and the lock screen stays empty.
+    case lockScreenPlacementOff
     case liveActivitiesOff
     case noSharedContainer
     case nothingOnSurfaces
@@ -53,6 +56,13 @@ enum SetupNotice: String, Identifiable, CaseIterable {
     private static func diagnose(_ diagnostics: Diagnostics) -> SetupNotice? {
         if diagnostics.notifications == .notDetermined { return .notificationsNeverAsked }
         if diagnostics.notifications == .denied { return .notificationsDenied }
+        // Authorized is not the same as allowed on the lock screen, and the
+        // day summary has nowhere else to be. Everything else can wait: the
+        // lock screen is the whole point of it.
+        if diagnostics.lockScreenSummary,
+           diagnostics.placements.lockScreen == .disabled {
+            return .lockScreenPlacementOff
+        }
         // Above the rest: with no extension there is nothing to switch on.
         if !diagnostics.hasWidgetExtension { return .widgetExtensionMissing }
         if !diagnostics.widgetExtensionIsNested { return .widgetExtensionRenamed }
@@ -80,6 +90,7 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         case .widgetExtensionUnsigned: "notice.unsigned.title"
         case .widgetExtensionUnprovisioned: "notice.unprovisioned.title"
         case .usingLockScreen: "notice.usingLockScreen.title"
+        case .lockScreenPlacementOff: "notice.placement.title"
         case .liveActivitiesOff: "notice.liveActivities.title"
         case .noSharedContainer: "notice.container.title"
         case .nothingOnSurfaces: "notice.surfaces.title"
@@ -95,6 +106,7 @@ enum SetupNotice: String, Identifiable, CaseIterable {
         case .widgetExtensionUnsigned: "notice.unsigned.body"
         case .widgetExtensionUnprovisioned: "notice.unprovisioned.body"
         case .usingLockScreen: "notice.usingLockScreen.body"
+        case .lockScreenPlacementOff: "notice.placement.body"
         case .liveActivitiesOff: "notice.liveActivities.body"
         case .noSharedContainer: "notice.container.body"
         case .nothingOnSurfaces: "notice.surfaces.body"
@@ -108,6 +120,7 @@ enum SetupNotice: String, Identifiable, CaseIterable {
              .widgetExtensionUnprovisioned:
             "square.slash"
         case .usingLockScreen: "lock.display"
+        case .lockScreenPlacementOff: "lock.slash"
         case .liveActivitiesOff: "lock.display"
         case .noSharedContainer: "square.grid.2x2"
         case .nothingOnSurfaces: "eye.slash"
@@ -127,7 +140,8 @@ enum SetupNotice: String, Identifiable, CaseIterable {
     var action: Action? {
         switch self {
         case .notificationsNeverAsked: .ask
-        case .notificationsDenied, .liveActivitiesOff: .openSystemSettings
+        case .notificationsDenied, .liveActivitiesOff, .lockScreenPlacementOff:
+            .openSystemSettings
         // None of these can be put right from inside the app — they are
         // decided by how the build was signed. What can be offered is the
         // fallback that needs neither an extension nor a shared container.
@@ -153,7 +167,8 @@ enum SetupNotice: String, Identifiable, CaseIterable {
 
     var isDismissible: Bool {
         switch self {
-        case .notificationsNeverAsked, .notificationsDenied, .liveActivitiesOff: false
+        case .notificationsNeverAsked, .notificationsDenied, .liveActivitiesOff,
+             .lockScreenPlacementOff: false
         case .widgetExtensionMissing, .widgetExtensionRenamed, .widgetExtensionUnsigned,
              .widgetExtensionUnprovisioned, .noSharedContainer, .nothingOnSurfaces,
              .usingLockScreen: true
