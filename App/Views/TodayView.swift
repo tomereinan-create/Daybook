@@ -71,6 +71,12 @@ struct TodayView: View {
                 DiagnosticsSheet()
             }
         }
+        // The + on the home screen widget.
+        .onOpenURL { url in
+            if url.scheme == "daybook", url.host() == "new" {
+                creating = true
+            }
+        }
         .task {
             await loadDiagnostics()
             // One cheap tick keeps countdowns and state transitions honest

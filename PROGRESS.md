@@ -191,6 +191,28 @@ needs a device, and what needs your Apple account.
 **The screens that were missing** — Settings, the weekly review and onboarding.
 The review's numbers are engine work with six tests of their own.
 
+## Home widget restyled to the Daybook design
+
+The large and medium Today widget now follows the full-page widget design
+(claude.ai artifact 0cf91f33…): a navy ground with the weekday, date and a
+rolling done count, and a paper card holding the next thing big with **Done**
+and **Snooze**, the rest of the list below, and quota habits as tiles with
+dots. The `+` opens the app on the new-item sheet through `daybook://new`.
+
+Where the widget differs from the design, and why:
+
+- **Fewer rows.** The design canvas (352×580) is taller than any iPhone
+  widget. A large widget fits the hero, three rows and the habit tiles (five
+  rows with no habits), then "N more".
+- **"Overdue since 8:00"**, not "Missed at 8:00": in this engine *missed*
+  means the window closed, and a missed item is not on the widget.
+- **Snooze hides the item** rather than showing "Snoozed until …", because
+  snoozed occurrences do not appear on live surfaces.
+- **No colour option yet.** The design's ground colours would need a
+  parameter on `TodayWidgetConfiguration`, which the lock screen widgets share.
+
+Never run on a device; the CI build is the only check so far.
+
 ## Decisions made
 
 1. **Settings are stored as one JSON blob** on `Item`, not thirty SwiftData

@@ -44,6 +44,19 @@
 	<key>UIUserInterfaceStyle</key>
 	<string>Automatic</string>
 
+	<!-- daybook://new, from the + on the home screen widget. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>daybook</string>
+			</array>
+		</dict>
+	</array>
+
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
