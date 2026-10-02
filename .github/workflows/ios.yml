@@ -9,8 +9,44 @@ on:
 jobs:
   test:
     runs-on: macos-26
+    # Write access is only used by the colour step below, to commit the
+    # advanced colour back to main.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The colour step compares against the commit before the push.
+          fetch-depth: 0
+
+      # Ido's pushes advance the icon colour by themselves, so every build he
+      # installs looks different on the home screen without anyone running
+      # --next by hand. It happens before anything is built, so the .ipa
+      # below carries the new colour, and it is committed back so the repo and
+      # the installed build agree. Skipped when the push already moved the
+      # colour, and for everyone else's pushes, which keep the manual flow.
+      # The commit is pushed with the workflow's own token, which never
+      # triggers another run.
+      - name: Advance the icon colour
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor == 'idoeinan-source'
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$BEFORE" != "0000000000000000000000000000000000000000" ] \
+            && ! git diff --quiet "$BEFORE" HEAD -- scripts/icon-color.json; then
+            echo "This push already moved the colour; leaving it."
+            exit 0
+          fi
+          COLOUR=$(node scripts/icon-d.mjs --next | head -1)
+          echo "$COLOUR"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/icon-color.json \
+            App/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png \
+            Core/Generated/BuildColor.swift
+          git commit -m "Icon colour: ${COLOUR%% (*} [skip ci]"
+          # Another push may have landed meanwhile; go on top of it.
+          git push origin HEAD:main || { git pull --rebase origin main && git push origin HEAD:main; }
 
       # The icon's colour is how the installed build is told apart from the
       # last one, so a stale PNG is worse than no colour at all: the home

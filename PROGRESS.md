@@ -46,6 +46,13 @@ colour in words. `scripts/icon-color.json` holds the index into the palette;
 fails if anything differs, because an icon that lies about which build it is
 would be worse than no colour at all.
 
+Pushes to `main` by `idoeinan-source` advance the colour automatically: the
+first CI step runs `--next` and commits the result back as "Icon colour: …
+[skip ci]" before anything is built. Pull before the next push, since that
+commit lands on `main` after yours. A push that already moved the colour is
+left alone. To do the same for everyone, drop the `github.actor` condition
+in `.github/workflows/ios.yml`.
+
 ## What is built
 
 **Data model** (`Core/Model`) — orthogonal settings value types gathered in
