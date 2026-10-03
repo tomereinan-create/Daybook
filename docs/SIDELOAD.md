@@ -1,8 +1,76 @@
 # Putting Daybook on your iPhone without an Apple Developer account
 
-This gets the app onto your phone from Windows, for nothing. The trade is that
-the install expires after seven days and **the widgets and lock screen card
-will not work**. Read "What you will not get" before spending time on it.
+This gets the app onto your phone from Windows, for nothing. The install
+expires after seven days either way. Which tool you use decides whether the
+**home screen widget** works:
+
+| Tool | Widget | Build to download |
+|---|---|---|
+| **AltStore** (or Impactor) | Should work — not yet confirmed on a device | `Daybook-altstore-ipa` |
+| Sideloadly | Does not work | `Daybook-unsigned-ipa` |
+
+## Why Sideloadly cannot do the widget
+
+The widget is a second small program inside the app, and it reads your day
+from storage it shares with the app (an *App Group*). Two things have to be
+right, and the Diagnostics sheet in Settings shows both:
+
+- `widget profile` must not be `none`, and `same team as app` must be `yes`.
+  Sideloadly signs the app but leaves the widget without a profile, so iOS
+  will not run it.
+- `shared container` must be `yes`. Sideloadly does not register App Groups,
+  so there is no shared storage even when the widget does run.
+
+A free Apple ID **can** have App Groups; Apple just does not let you have
+*our* name for one. AltStore and Impactor register one under a name of their
+own (`group.com.tomereinan.daybook.<your team ID>`), sign the app and the
+widget with it, and Daybook picks up whatever name it was given. They learn
+which group to ask for from the app file itself, which is why they need the
+`Daybook-altstore-ipa` build: the plain one has that information stripped
+out for Sideloadly's sake.
+
+## With AltStore (for the widget)
+
+Once, on the PC (about fifteen minutes):
+
+1. Install **iTunes** and **iCloud** from apple.com — the downloads on
+   Apple's site, *not* the Microsoft Store versions; AltServer cannot use
+   those.
+2. Install **AltServer** for Windows from [altstore.io](https://altstore.io).
+   It lives in the system tray.
+3. Plug in the iPhone, trust the computer, and in iTunes turn on **Sync with
+   this iPhone over Wi-Fi**.
+4. Tray icon → **Install AltStore** → your iPhone. Enter your Apple ID.
+5. On the phone: **Settings → General → VPN & Device Management** → your
+   Apple ID → **Trust**. On iOS 16 and later also turn on **Settings →
+   Privacy & Security → Developer Mode** and restart.
+
+Each time:
+
+1. From the newest green run on `main` in the repository's **Actions** tab,
+   download **Daybook-altstore-ipa**, unzip it, and get
+   `Daybook-sideload.ipa` onto the phone (AirDrop, iCloud Drive, or email it
+   to yourself and save it to Files).
+2. If an older Daybook is installed with Sideloadly, delete it first. The two
+   tools sign under different names and will not replace each other.
+3. Open AltStore → **My Apps** → **+** → pick `Daybook-sideload.ipa`.
+4. Open Daybook once, then add the widget to the home screen.
+5. Check **Settings → Diagnostics**: `shared container` should say `yes`.
+
+AltStore refreshes the seven-day signature by itself over Wi-Fi while
+AltServer is running on the PC and both are on the same network.
+
+Limits of a free Apple ID: three sideloaded apps at once (AltStore itself is
+one of them), and ten App IDs a week. Daybook uses two — the app and the
+widget — and reinstalling reuses them.
+
+**Impactor** ([github.com/khcrysalis/Impactor](https://github.com/khcrysalis/Impactor))
+is the alternative that needs only iTunes, not iCloud or a tray app. Its
+documentation says it registers App Groups and signs extensions the same
+way; use the same `Daybook-altstore-ipa` build with it. It does not refresh
+in the background, so it is reinstall-weekly like Sideloadly.
+
+## With Sideloadly (no widget)
 
 ## What you need
 
@@ -33,11 +101,12 @@ A free Apple ID can have **three** sideloaded apps at once and can register ten
 app IDs a week. Daybook plus its widget extension is two of those ten each time
 you reinstall, so weekly is fine and several reinstalls a day is not.
 
-## What you will not get
+## What you will not get with Sideloadly
 
-Free provisioning cannot grant the **App Groups** entitlement. The app and its
-widget extension are separate processes that share your data through an App
-Group container, so without it they cannot see each other's data.
+Sideloadly does not grant the **App Groups** entitlement, and leaves the
+widget extension unsigned. The app and its widget extension are separate
+processes that share your data through an App Group container, so without it
+they cannot see each other's data.
 
 The app handles this rather than breaking: the store falls back to a
 process-local one, the widget shows *"Cannot read your day"*, and Settings
@@ -51,9 +120,8 @@ flags it under **What is scheduled**.
 | Place reminders, if you allow Always location | |
 | Wake-up alarms, probably — AlarmKit needs only a usage string | |
 
-So this is worth doing to try the app and find bugs in the parts that exist.
-It is not worth doing to evaluate the product, because the product is the
-widget and the lock screen card, and neither will run.
+So Sideloadly is fine for trying the app and finding bugs in it. For the
+widget and the lock screen card, which are the product, use AltStore above.
 
 ## When you do pay the $99
 
