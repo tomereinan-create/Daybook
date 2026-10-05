@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Daybook Demo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024'%3E%3Crect width='1024' height='1024' rx='225' fill='%23b4531f'/%3E%3Cpath fill='%23faf8f3' fill-rule='evenodd' d='M297 242 L457 242 A270 270 0 0 1 457 782 L297 782 Z M395 340 L457 340 A172 172 0 0 1 457 684 L395 684 Z'/%3E%3C/svg%3E">
 <style>
 /* A demo of the iPhone app, runnable on a desktop browser. It is a mock:
    nothing here is the real engine, but every screen, setting and gesture is
@@ -42,6 +43,7 @@ body {
 }
 
 .masthead { color: #d8d8e0; text-align: center; max-width: 440px; }
+.mark-svg { width: 54px; height: 54px; border-radius: 12px; display: block; margin: 0 auto 10px; }
 .masthead h1 { margin: 0 0 4px; font-size: 19px; font-weight: 650; letter-spacing: -0.2px; }
 .masthead p { margin: 0; font-size: 13px; color: #90909c; }
 
@@ -299,12 +301,14 @@ pre.report {
 }
 
 .legend { color: #8a8a96; font-size: 12px; max-width: 380px; text-align: center; }
+.legend .mark-svg { width: 34px; height: 34px; border-radius: 8px; margin: 0 auto 8px; }
 .legend b { color: #c9c9d4; font-weight: 600; }
 </style>
 </head>
 <body>
 
 <div class="masthead">
+  <svg class="mark-svg" viewBox="0 0 1024 1024" aria-hidden="true"><rect width="1024" height="1024" rx="225" fill="#b4531f"/><path fill="#faf8f3" fill-rule="evenodd" d="M297 242 L457 242 A270 270 0 0 1 457 782 L297 782 Z M395 340 L457 340 A172 172 0 0 1 457 684 L395 684 Z"/></svg>
   <h1>Daybook</h1>
   <p>A demo of the iPhone app. Every screen and setting is the one the app has — tap around.</p>
 </div>
