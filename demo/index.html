@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daybook Demo</title>
+<style>
+/* A demo of the iPhone app, runnable on a desktop browser. It is a mock:
+   nothing here is the real engine, but every screen, setting and gesture is
+   the one the app actually has, so the shape of the thing can be felt without
+   a phone in your hand. */
+
+:root {
+  --ink: #16161a;
+  --muted: #6c6c74;
+  --faint: #8e8e96;
+  --line: #e4e4e9;
+  --field: #f2f2f6;
+  --paper: #ffffff;
+  --page: #f2f2f6;
+  --accent: #3a5bd9;
+  --green: #2e9e5b;
+  --orange: #d2731a;
+  --orange-bg: #fdefe0;
+  --red: #c7362f;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 15px/1.45 -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  background: #15151a;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 26px 16px 50px;
+  min-height: 100vh;
+}
+
+.masthead { color: #d8d8e0; text-align: center; max-width: 440px; }
+.masthead h1 { margin: 0 0 4px; font-size: 19px; font-weight: 650; letter-spacing: -0.2px; }
+.masthead p { margin: 0; font-size: 13px; color: #90909c; }
+
+/* ---- the phone -------------------------------------------------------- */
+
+.phone {
+  width: 380px;
+  height: 790px;
+  background: var(--paper);
+  border-radius: 46px;
+  border: 10px solid #000;
+  box-shadow: 0 24px 60px rgba(0,0,0,.55);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.statusbar {
+  height: 42px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.statusbar .right { letter-spacing: 1px; }
+
+.screen { flex: 1; overflow-y: auto; background: var(--paper); }
+.screen.grouped { background: var(--page); }
+
+.tabbar {
+  flex: none;
+  display: flex;
+  border-top: 1px solid var(--line);
+  background: rgba(255,255,255,.94);
+  backdrop-filter: blur(8px);
+}
+.tabbar button {
+  flex: 1;
+  background: none;
+  border: 0;
+  padding: 9px 0 16px;
+  font: inherit;
+  font-size: 10.5px;
+  color: var(--faint);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.tabbar button .glyph { font-size: 18px; line-height: 1; }
+.tabbar button[aria-selected="true"] { color: var(--accent); }
+
+/* ---- common bits ------------------------------------------------------ */
+
+.pagehead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 10px 20px 4px;
+}
+h2.title { margin: 0; font-size: 31px; font-weight: 700; letter-spacing: -0.6px; }
+.round {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 0; background: var(--field); color: var(--ink);
+  font-size: 19px; line-height: 1; cursor: pointer;
+}
+
+.notice {
+  margin: 10px 16px 6px;
+  padding: 13px;
+  border-radius: var(--radius);
+  background: var(--orange-bg);
+  border: 1px solid rgba(210,115,26,.3);
+}
+.notice.good { background: #e6f4ea; border-color: rgba(46,158,91,.3); }
+.notice h3 { margin: 0 0 5px; font-size: 14px; font-weight: 650; display: flex; gap: 7px; align-items: center; }
+.notice p { margin: 0 0 9px; font-size: 12.5px; color: var(--muted); }
+.notice .row { display: flex; gap: 8px; }
+.notice .x { margin-left: auto; background: none; border: 0; color: var(--faint); cursor: pointer; font-size: 15px; }
+
+button.pill {
+  border: 0; border-radius: 999px; padding: 6px 13px;
+  font: inherit; font-size: 13px; font-weight: 550; cursor: pointer;
+  background: var(--accent); color: #fff;
+}
+button.pill.quiet { background: rgba(0,0,0,.07); color: var(--ink); }
+
+.section-label {
+  font-size: 11.5px; font-weight: 650; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--faint);
+  padding: 16px 20px 6px;
+}
+
+.row-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 11px 20px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+.row-item:last-child { border-bottom: 1px solid var(--line); }
+.circle {
+  width: 23px; height: 23px; border-radius: 50%;
+  border: 1.8px solid #c3c3cb; flex: none; margin-top: 1px;
+  background: none; cursor: pointer; position: relative;
+}
+.circle.done { background: var(--green); border-color: var(--green); }
+.circle.done::after {
+  content: "✓"; position: absolute; inset: 0; color: #fff;
+  font-size: 13px; line-height: 20px; text-align: center;
+}
+.row-main { flex: 1; min-width: 0; }
+.row-title { font-size: 15px; }
+.row-item.is-done .row-title { text-decoration: line-through; color: var(--faint); }
+.row-sub { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+.row-sub .hold { color: var(--accent); font-weight: 600; }
+.row-sub .answer { color: var(--ink); font-weight: 600; }
+.row-sub .late { color: var(--orange); }
+.row-actions { display: flex; gap: 6px; align-items: center; }
+.mini {
+  border: 0; background: var(--field); border-radius: 8px;
+  padding: 4px 8px; font: inherit; font-size: 11.5px; cursor: pointer; color: var(--muted);
+}
+.mini.danger { color: var(--red); }
+
+.empty { text-align: center; padding: 90px 30px; color: var(--muted); }
+.empty .mark { font-size: 42px; color: #c3c3cb; }
+.empty h3 { margin: 10px 0 5px; font-size: 20px; color: var(--ink); }
+.empty p { margin: 0 0 16px; font-size: 13.5px; }
+
+/* ---- grouped forms ---------------------------------------------------- */
+
+.group { margin: 14px 16px; background: var(--paper); border-radius: var(--radius); overflow: hidden; }
+.group h4 {
+  margin: 0; padding: 11px 15px 5px; font-size: 11.5px; font-weight: 650;
+  letter-spacing: .5px; text-transform: uppercase; color: var(--faint);
+  background: var(--page);
+}
+.group-foot { padding: 7px 18px 0; font-size: 12px; color: var(--muted); }
+.field {
+  display: flex; align-items: center; gap: 10px; justify-content: space-between;
+  padding: 11px 15px; border-top: 1px solid var(--line); font-size: 14.5px;
+}
+.group > .field:first-of-type { border-top: 0; }
+.field label { color: var(--ink); }
+.field .value { color: var(--muted); font-size: 14px; }
+.field select, .field input[type="text"], .field input[type="time"], .field input[type="number"] {
+  font: inherit; font-size: 14px; border: 0; background: none;
+  color: var(--muted); text-align: right; max-width: 60%;
+  padding: 2px 4px; border-radius: 6px;
+}
+.field input[type="text"] { text-align: left; color: var(--ink); width: 100%; }
+.field select { cursor: pointer; }
+.field input:focus, .field select:focus { outline: 2px solid var(--accent); background: #fff; }
+.switch { width: 44px; height: 26px; border-radius: 999px; background: #d6d6dd; border: 0; cursor: pointer; position: relative; flex: none; }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: left .14s; }
+.switch[aria-checked="true"] { background: var(--green); }
+.switch[aria-checked="true"]::after { left: 21px; }
+
+.drawer > summary {
+  padding: 12px 15px; font-size: 14.5px; cursor: pointer; list-style: none;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.drawer > summary::-webkit-details-marker { display: none; }
+.drawer > summary::after { content: "⌄"; color: var(--faint); font-size: 16px; }
+.drawer[open] > summary::after { content: "⌃"; }
+.drawer[open] > summary { border-bottom: 1px solid var(--line); }
+
+.navbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 16px; border-bottom: 1px solid var(--line); background: var(--paper);
+  position: sticky; top: 0; z-index: 5;
+}
+.navbar .mid { font-size: 15px; font-weight: 650; }
+.navbar button { background: none; border: 0; font: inherit; font-size: 15px; color: var(--accent); cursor: pointer; padding: 0; }
+.navbar button[disabled] { color: #b9b9c2; cursor: default; }
+
+.preset {
+  display: flex; gap: 12px; align-items: flex-start; padding: 13px 16px;
+  border-top: 1px solid var(--line); cursor: pointer; background: var(--paper);
+}
+.preset:first-of-type { border-top: 0; }
+.preset .glyph { font-size: 20px; width: 26px; text-align: center; }
+.preset b { font-weight: 600; font-size: 15px; }
+.preset span { display: block; font-size: 12.5px; color: var(--muted); }
+
+/* ---- the lock screen -------------------------------------------------- */
+
+.lock {
+  position: absolute; inset: 0; z-index: 30;
+  background: linear-gradient(160deg, #4a4f86 0%, #7d5f8e 45%, #c58aa0 100%);
+  color: #fff; display: flex; flex-direction: column; padding: 46px 18px 22px;
+}
+.lock .clock { text-align: center; }
+.lock .clock .date { font-size: 14px; opacity: .92; }
+.lock .clock .time { font-size: 70px; font-weight: 250; letter-spacing: -2px; line-height: 1.05; }
+.lock .spacer { flex: 1; }
+.lock .note {
+  background: rgba(255,255,255,.22);
+  backdrop-filter: blur(16px);
+  border-radius: 16px; padding: 12px 14px; color: #fff;
+  border: 1px solid rgba(255,255,255,.25);
+}
+.lock .note .app { font-size: 11px; text-transform: uppercase; letter-spacing: .7px; opacity: .85; display: flex; justify-content: space-between; }
+.lock .note .headline { font-weight: 650; margin: 4px 0 3px; font-size: 14.5px; }
+.lock .note pre { margin: 0; font: inherit; font-size: 13px; white-space: pre-wrap; opacity: .95; }
+.lock .note .hint { margin-top: 9px; font-size: 11.5px; opacity: .8; }
+.lock .none { text-align: center; font-size: 13px; opacity: .8; padding: 20px; }
+.lock .close {
+  margin-top: 14px; align-self: center; background: rgba(255,255,255,.22);
+  border: 0; color: #fff; border-radius: 999px; padding: 8px 18px; font: inherit;
+  font-size: 13px; cursor: pointer;
+}
+
+/* ---- sheets ----------------------------------------------------------- */
+
+.sheet-backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,.3); z-index: 20;
+  display: flex; align-items: flex-end;
+}
+.sheet {
+  background: var(--page); width: 100%; max-height: 92%;
+  border-radius: 20px 20px 0 0; overflow-y: auto;
+}
+.sheet.plain { background: var(--paper); }
+
+.dialog-backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,.3); z-index: 25;
+  display: flex; align-items: center; justify-content: center; padding: 30px;
+}
+.dialog {
+  background: #fbfbfd; border-radius: 16px; width: 100%; padding: 18px 16px 10px; text-align: center;
+}
+.dialog h3 { margin: 0 0 4px; font-size: 16px; }
+.dialog p { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+.dialog input {
+  width: 100%; font: inherit; font-size: 16px; padding: 9px 11px;
+  border: 1px solid var(--line); border-radius: 9px; text-align: center; margin-bottom: 12px;
+}
+.dialog .row { display: flex; border-top: 1px solid var(--line); margin: 0 -16px; }
+.dialog .row button {
+  flex: 1; background: none; border: 0; padding: 12px; font: inherit; font-size: 15px;
+  color: var(--accent); cursor: pointer;
+}
+.dialog .row button + button { border-left: 1px solid var(--line); font-weight: 650; }
+
+pre.report {
+  font: 11px/1.5 "SF Mono", Consolas, monospace; white-space: pre-wrap;
+  margin: 0; padding: 13px 15px; color: var(--muted);
+}
+
+.legend { color: #8a8a96; font-size: 12px; max-width: 380px; text-align: center; }
+.legend b { color: #c9c9d4; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <h1>Daybook</h1>
+  <p>A demo of the iPhone app. Every screen and setting is the one the app has — tap around.</p>
+</div>
+
+<div class="phone">
+  <div class="statusbar">
+    <span id="clock">9:41</span>
+    <span class="right">▮▮▮ ⌃ ▮</span>
+  </div>
+  <div class="screen" id="screen"></div>
+  <nav class="tabbar" id="tabbar"></nav>
+  <div id="overlay"></div>
+</div>
+
+<p class="legend">
+  Tap <b>the circle</b> to finish something. Tap <b>a row</b> to edit it.
+  Settings has the lock-screen switch and the diagnostics report.
+</p>
+
+<script>
+"use strict";
+
+/* ---------------------------------------------------------------------- */
+/* State. A mock of the real model: the same settings, with none of the
+   engine behind them. Item types are only presets that fill these in — the
+   demo keeps that honest, so changing a preset's field changes nothing but
+   that item.                                                              */
+/* ---------------------------------------------------------------------- */
+
+const PRESETS = {
+  task:          { name: "Task",           glyph: "✓", caption: "Something to do, whenever you get to it." },
+  event:         { name: "Event",          glyph: "▣", caption: "Happens at a time, whether you act or not." },
+  recurringTask: { name: "Recurring task", glyph: "↻", caption: "Comes back on a schedule." },
+  routine:       { name: "Routine",        glyph: "≡", caption: "A list of steps you work through." },
+  relativeTimer: { name: "Timer",          glyph: "◷", caption: "Counts down from the moment you make it." },
+};
+
+const defaults = {
+  task:          { time: null,    repeat: "once",  alert: "none",      lock: true, home: true },
+  event:         { time: "19:30", repeat: "once",  alert: "standard",  lock: true, home: true },
+  recurringTask: { time: "08:00", repeat: "daily", alert: "standard",  lock: true, home: true },
+  routine:       { time: "07:00", repeat: "daily", alert: "standard",  lock: true, home: true },
+  relativeTimer: { time: null,    repeat: "once",  alert: "urgent",    lock: true, home: true },
+};
+
+let nextId = 1;
+function makeItem(preset, title, extra) {
+  return Object.assign(
+    { id: nextId++, preset, title, notes: "", state: "open", answer: null,
+      holdUntil: null, response: "none", holdMinutes: null, minutes: 45 },
+    defaults[preset], extra || {}
+  );
+}
+
+const state = {
+  tab: "today",
+  items: [
+    makeItem("recurringTask", "Brush teeth", { time: "07:30", holdMinutes: 2 }),
+    makeItem("task", "Weight", { response: "number" }),
+    makeItem("event", "Call the bank", { time: "14:00" }),
+    makeItem("task", "Book the dentist", { state: "done" }),
+  ],
+  lockScreenSummary: false,
+  noticeDismissed: false,
+  editing: null,
+  picking: false,
+  asking: null,
+  showingLock: false,
+  showingReport: false,
+  // Which editor drawers are open, so flipping a switch inside one does not
+  // shut it — the sheet is rebuilt on every change.
+  openDrawers: new Set(),
+};
+
+/* ---------------------------------------------------------------------- */
+/* Helpers                                                                 */
+/* ---------------------------------------------------------------------- */
+
+const el = (tag, attrs, kids) => {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") node.className = v;
+    else if (k === "text") node.textContent = v;
+    else if (k.startsWith("on")) node.addEventListener(k.slice(2), v);
+    else if (v !== null && v !== undefined) node.setAttribute(k, v);
+  }
+  for (const kid of [].concat(kids || [])) {
+    if (kid) node.appendChild(typeof kid === "string" ? document.createTextNode(kid) : kid);
+  }
+  return node;
+};
+
+const outstanding = () => state.items.filter((i) => i.state === "open");
+const finished = () => state.items.filter((i) => i.state === "done");
+
+function sectionOf(item) {
+  if (item.state === "done") return "done";
+  if (item.holdUntil) return "now";
+  if (!item.time) return "undated";
+  return item.time <= "12:00" ? "now" : "upcoming";
+}
+
+function subtitleOf(item) {
+  const bits = [];
+  if (item.holdUntil) {
+    const left = Math.max(0, Math.ceil((item.holdUntil - Date.now()) / 1000));
+    bits.push(`<span class="hold">stop in ${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}</span>`);
+  } else if (item.answer) {
+    bits.push(`<span class="answer">${item.answer}</span>`);
+  } else if (item.time) {
+    bits.push(item.time);
+    if (item.repeat !== "once") bits.push(item.repeat);
+  } else if (item.state === "open") {
+    bits.push("anytime");
+  }
+  if (item.response !== "none" && !item.answer && item.state === "open") bits.push("asks for an answer");
+  if (item.holdMinutes && !item.holdUntil) bits.push(`${item.holdMinutes} min on Done`);
+  return bits.join(" · ");
+}
+
+/* ---------------------------------------------------------------------- */
+/* Actions                                                                 */
+/* ---------------------------------------------------------------------- */
+
+function finish(item) {
+  // Done either records an answer, starts a clock, or finishes the thing —
+  // the same three paths the app has.
+  if (item.holdUntil) { item.holdUntil = null; item.state = "done"; return render(); }
+  if (item.response !== "none") { state.asking = item; return render(); }
+  startOrFinish(item);
+}
+
+function startOrFinish(item) {
+  if (item.holdMinutes) {
+    item.holdUntil = Date.now() + item.holdMinutes * 60000;
+  } else {
+    item.state = "done";
+  }
+  render();
+}
+
+function reopen(item) { item.state = "open"; item.holdUntil = null; render(); }
+function markNotDone(item) { item.state = "missed"; render(); }
+function remove(item) { state.items = state.items.filter((i) => i !== item); render(); }
+
+/* ---------------------------------------------------------------------- */
+/* Screens                                                                 */
+/* ---------------------------------------------------------------------- */
+
+function todayScreen() {
+  const screen = el("div");
+  screen.appendChild(el("div", { class: "pagehead" }, [
+    el("h2", { class: "title", text: "Today" }),
+    el("button", { class: "round", text: "+", onclick: () => { state.picking = true; render(); } }),
+  ]));
+
+  if (!state.noticeDismissed) screen.appendChild(noticeCard());
+
+  const sections = [
+    ["now", "Now"], ["upcoming", "Later today"], ["undated", "Anytime"],
+    ["done", "Done"], ["missed", "Not done"],
+  ];
+  let any = false;
+  for (const [key, label] of sections) {
+    const rows = state.items.filter((i) => (i.state === "missed" ? "missed" : sectionOf(i)) === key);
+    if (!rows.length) continue;
+    any = true;
+    screen.appendChild(el("div", { class: "section-label", text: label }));
+    rows.forEach((item) => screen.appendChild(itemRow(item)));
+  }
+
+  if (!any) {
+    screen.appendChild(el("div", { class: "empty" }, [
+      el("div", { class: "mark", text: "✓" }),
+      el("h3", { text: "Nothing scheduled" }),
+      el("p", { text: "Add your first item and it will show up here and on your lock screen." }),
+      el("button", { class: "pill", text: "New item", onclick: () => { state.picking = true; render(); } }),
+    ]));
+  }
+  return screen;
+}
+
+function noticeCard() {
+  if (state.lockScreenSummary) {
+    return el("div", { class: "notice good" }, [
+      el("h3", {}, ["🔒 Today is on your lock screen",
+        el("button", { class: "x", text: "✕", onclick: () => { state.noticeDismissed = true; render(); } })]),
+      el("p", { text: "The widget cannot work on this install, so the day is posted as a notification instead. Look for it with your notifications at the foot of the lock screen." }),
+      el("div", { class: "row" }, [
+        el("button", { class: "pill quiet", text: "Details", onclick: () => { state.showingReport = true; render(); } }),
+        el("button", { class: "pill", text: "See the lock screen", onclick: () => { state.showingLock = true; render(); } }),
+      ]),
+    ]);
+  }
+  return el("div", { class: "notice" }, [
+    el("h3", {}, ["▦ The widget has no profile of its own",
+      el("button", { class: "x", text: "✕", onclick: () => { state.noticeDismissed = true; render(); } })]),
+    el("p", { text: "iOS registers an app extension only when it carries its own provisioning profile, and this one carries none. So there is no Daybook in the widget gallery and no lock-screen card. This cannot be fixed from inside the app." }),
+    el("div", { class: "row" }, [
+      el("button", { class: "pill quiet", text: "Details", onclick: () => { state.showingReport = true; render(); } }),
+      el("button", { class: "pill", text: "Use the lock screen instead",
+        onclick: () => { state.lockScreenSummary = true; render(); } }),
+    ]),
+  ]);
+}
+
+function itemRow(item) {
+  const sub = el("div", { class: "row-sub", "data-sub": String(item.id) });
+  sub.innerHTML = subtitleOf(item);
+
+  const actions = el("div", { class: "row-actions" });
+  if (item.state === "open") {
+    actions.appendChild(el("button", { class: "mini", text: "not done",
+      onclick: (e) => { e.stopPropagation(); markNotDone(item); } }));
+  } else {
+    actions.appendChild(el("button", { class: "mini", text: "undo",
+      onclick: (e) => { e.stopPropagation(); reopen(item); } }));
+  }
+  actions.appendChild(el("button", { class: "mini danger", text: "delete",
+    onclick: (e) => { e.stopPropagation(); remove(item); } }));
+
+  return el("div", {
+    class: "row-item" + (item.state === "done" ? " is-done" : ""),
+    onclick: () => { state.editing = { item, isNew: false }; render(); },
+  }, [
+    el("button", {
+      class: "circle" + (item.state === "done" ? " done" : ""),
+      title: "Done",
+      onclick: (e) => { e.stopPropagation(); item.state === "done" ? reopen(item) : finish(item); },
+    }),
+    el("div", { class: "row-main" }, [el("div", { class: "row-title", text: item.title }), sub]),
+    actions,
+  ]);
+}
+
+function itemsScreen() {
+  const screen = el("div");
+  screen.appendChild(el("div", { class: "pagehead" }, [el("h2", { class: "title", text: "Items" })]));
+  for (const key of Object.keys(PRESETS)) {
+    const rows = state.items.filter((i) => i.preset === key);
+    if (!rows.length) continue;
+    screen.appendChild(el("div", { class: "section-label", text: PRESETS[key].name }));
+    rows.forEach((item) => screen.appendChild(itemRow(item)));
+  }
+  return screen;
+}
+
+function reviewScreen() {
+  const done = finished().length;
+  const total = state.items.length;
+  const screen = el("div", { class: "grouped" });
+  screen.appendChild(el("div", { class: "pagehead" }, [el("h2", { class: "title", text: "Review" })]));
+  const g = el("div", { class: "group" });
+  g.appendChild(el("h4", { text: "This week" }));
+  g.appendChild(statRow("Finished", String(done)));
+  g.appendChild(statRow("Still open", String(outstanding().length)));
+  g.appendChild(statRow("Completion", total ? Math.round((done / total) * 100) + "%" : "—"));
+  screen.appendChild(g);
+
+  const answers = state.items.filter((i) => i.answer);
+  if (answers.length) {
+    const a = el("div", { class: "group" });
+    a.appendChild(el("h4", { text: "Recorded answers" }));
+    answers.forEach((i) => a.appendChild(statRow(i.title, i.answer)));
+    screen.appendChild(a);
+  }
+  return screen;
+}
+
+const statRow = (label, value) =>
+  el("div", { class: "field" }, [el("label", { text: label }), el("span", { class: "value", text: value })]);
+
+function settingsScreen() {
+  const screen = el("div", { class: "grouped" });
+  screen.appendChild(el("div", { class: "pagehead" }, [el("h2", { class: "title", text: "Settings" })]));
+
+  const lock = el("div", { class: "group" });
+  lock.appendChild(el("h4", { text: "On the lock screen" }));
+  lock.appendChild(toggleRow("Keep today on the lock screen", state.lockScreenSummary, (on) => {
+    state.lockScreenSummary = on; render();
+  }));
+  if (state.lockScreenSummary) {
+    lock.appendChild(statRow("On the lock screen now", outstanding().length ? "yes ✓" : "nothing to show"));
+    lock.appendChild(statRow("iOS allows it on the lock screen", "yes ✓"));
+    lock.appendChild(el("div", { class: "field" }, [
+      el("button", { class: "pill quiet", text: "Open the lock screen",
+        onclick: () => { state.showingLock = true; render(); } }),
+    ]));
+  }
+  lock.appendChild(el("div", { class: "group-foot", text: "Holds the day as one standing notification. Needs no widget and no shared container, so it works where the lock-screen card cannot." }));
+  screen.appendChild(lock);
+
+  const perms = el("div", { class: "group" });
+  perms.appendChild(el("h4", { text: "Permissions" }));
+  perms.appendChild(statRow("Notifications", "allowed ✓"));
+  perms.appendChild(statRow("Alarms", "allowed ✓"));
+  screen.appendChild(perms);
+
+  const data = el("div", { class: "group" });
+  data.appendChild(el("h4", { text: "Your data" }));
+  data.appendChild(el("div", { class: "field" }, [el("label", { text: "Export a backup" }), el("span", { class: "value", text: "›" })]));
+  data.appendChild(el("div", { class: "field" }, [el("label", { text: "Restore from a file" }), el("span", { class: "value", text: "›" })]));
+  data.appendChild(el("div", { class: "group-foot", text: "There is no account and no server. Everything stays on the phone." }));
+  screen.appendChild(data);
+
+  const diag = el("div", { class: "group" });
+  diag.appendChild(el("h4", { text: "Diagnostics" }));
+  diag.appendChild(statRow("This build", "● Graphite"));
+  diag.appendChild(el("div", { class: "field" }, [
+    el("button", { class: "pill quiet", text: "Copy this report",
+      onclick: () => { state.showingReport = true; render(); } }),
+  ]));
+  screen.appendChild(diag);
+  return screen;
+}
+
+function toggleRow(label, on, onChange) {
+  const sw = el("button", { class: "switch", role: "switch", "aria-checked": String(on) });
+  sw.addEventListener("click", () => onChange(!on));
+  return el("div", { class: "field" }, [el("label", { text: label }), sw]);
+}
+
+/* ---------------------------------------------------------------------- */
+/* The editor: three things in the open, everything else in four drawers.  */
+/* ---------------------------------------------------------------------- */
+
+function editorSheet() {
+  const { item, isNew } = state.editing;
+  const sheet = el("div", { class: "sheet" });
+
+  sheet.appendChild(el("div", { class: "navbar" }, [
+    el("button", { text: "Cancel", onclick: () => {
+      if (isNew) state.items = state.items.filter((i) => i !== item);
+      state.editing = null; render();
+    } }),
+    el("div", { class: "mid", text: isNew ? "New item" : "Edit" }),
+    el("button", { text: "Save", onclick: () => { state.editing = null; render(); } }),
+  ]));
+
+  const basics = el("div", { class: "group" });
+  basics.appendChild(el("h4", { text: PRESETS[item.preset].glyph + "  " + PRESETS[item.preset].name }));
+  basics.appendChild(textRow("Title", item.title, (v) => { item.title = v; }));
+
+  // When it happens, where it shows, how loud. The three questions anyone
+  // actually answers when they write something down.
+  if (item.preset === "relativeTimer") {
+    basics.appendChild(numberRow("Counts down for", item.minutes, "min", (v) => { item.minutes = v; render(); }));
+  } else {
+    basics.appendChild(timeRow("Time", item.time, (v) => { item.time = v || null; render(); }));
+  }
+  if (item.preset === "recurringTask" || item.preset === "routine") {
+    basics.appendChild(selectRow("Repeats", item.repeat,
+      [["daily", "Every day"], ["weekdays", "Weekdays"], ["every2", "Every 2 days"], ["once", "Once"]],
+      (v) => { item.repeat = v; render(); }));
+  }
+  basics.appendChild(toggleRow("Show on lock screen", item.lock, (on) => { item.lock = on; render(); }));
+  basics.appendChild(toggleRow("Show on home widget", item.home, (on) => { item.home = on; render(); }));
+  basics.appendChild(selectRow("Alert", item.alert,
+    [["none", "Display only"], ["standard", "Standard"], ["urgent", "Breaks through"], ["alarm", "Alarm"]],
+    (v) => { item.alert = v; render(); }));
+  if (item.preset === "task") {
+    basics.appendChild(selectRow("Answer when done", item.response,
+      [["none", "Nothing"], ["number", "A number"], ["text", "Words"]],
+      (v) => { item.response = v; render(); }));
+  }
+  sheet.appendChild(basics);
+
+  sheet.appendChild(drawer("Timing", [
+    toggleRow("Run a timer on Done", !!item.holdMinutes, (on) => { item.holdMinutes = on ? 2 : null; render(); }),
+    item.holdMinutes ? numberRow("For", item.holdMinutes, "min", (v) => { item.holdMinutes = v; render(); }) : null,
+    item.holdMinutes ? el("div", { class: "group-foot", text: "Done starts the clock instead of stopping it. The item stays on screen counting down and finishes by itself." }) : null,
+    selectRow("Disappears when", "done", [["done", "Marked done"], ["window", "Its window ends"], ["never", "Never, by hand"]], () => {}),
+  ]));
+
+  sheet.appendChild(drawer("Alerts", [
+    selectRow("Remind me before", "none", [["none", "Not at all"], ["10", "10 minutes"], ["60", "An hour"]], () => {}),
+    toggleRow("Keep nagging", false, () => {}),
+    toggleRow("Allow snooze", item.preset === "relativeTimer", () => {}),
+    toggleRow("Ignore quiet hours", false, () => {}),
+  ]));
+
+  sheet.appendChild(drawer("Where it appears", [
+    selectRow("Appears", "0", [["0", "At the time"], ["1800", "30 min before"], ["86400", "A day before"]], () => {}),
+  ]));
+
+  sheet.appendChild(drawer("Other", [
+    toggleRow("Mandatory", false, () => {}),
+    el("div", { class: "group-foot", text: "A preset only fills these in. Change any of them and the item behaves that way, whatever it was created as." }),
+  ]));
+
+  if (!isNew) {
+    const danger = el("div", { class: "group" });
+    danger.appendChild(el("div", { class: "field" }, [
+      el("button", { class: "pill quiet", text: "Delete this item",
+        onclick: () => { remove(item); state.editing = null; render(); } }),
+    ]));
+    sheet.appendChild(danger);
+  }
+  sheet.appendChild(el("div", { style: "height:24px" }));
+  return sheet;
+}
+
+function drawer(title, fields) {
+  const d = el("details", { class: "group drawer" });
+  if (state.openDrawers.has(title)) d.setAttribute("open", "");
+  d.addEventListener("toggle", () => {
+    if (d.open) state.openDrawers.add(title);
+    else state.openDrawers.delete(title);
+  });
+  d.appendChild(el("summary", { text: title }));
+  fields.filter(Boolean).forEach((f) => d.appendChild(f));
+  return d;
+}
+
+function textRow(label, value, onInput) {
+  const input = el("input", { type: "text", value: value || "", placeholder: "What is it?" });
+  input.addEventListener("input", () => onInput(input.value));
+  return el("div", { class: "field" }, [input]);
+}
+
+function timeRow(label, value, onInput) {
+  const input = el("input", { type: "time", value: value || "" });
+  input.addEventListener("change", () => onInput(input.value));
+  return el("div", { class: "field" }, [el("label", { text: label }), input]);
+}
+
+function numberRow(label, value, unit, onInput) {
+  const input = el("input", { type: "number", min: "1", max: "600", value: String(value) });
+  input.addEventListener("change", () => onInput(Math.max(1, Number(input.value) || 1)));
+  return el("div", { class: "field" }, [el("label", { text: label }),
+    el("span", {}, [input, el("span", { class: "value", text: " " + unit })])]);
+}
+
+function selectRow(label, value, options, onChange) {
+  const sel = el("select", {});
+  options.forEach(([v, t]) => {
+    const o = el("option", { value: v, text: t });
+    if (v === value) o.selected = true;
+    sel.appendChild(o);
+  });
+  sel.addEventListener("change", () => onChange(sel.value));
+  return el("div", { class: "field" }, [el("label", { text: label }), sel]);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Overlays                                                                */
+/* ---------------------------------------------------------------------- */
+
+function presetSheet() {
+  const sheet = el("div", { class: "sheet plain" });
+  sheet.appendChild(el("div", { class: "navbar" }, [
+    el("button", { text: "Cancel", onclick: () => { state.picking = false; render(); } }),
+    el("div", { class: "mid", text: "What is it?" }),
+    el("button", { text: " " , disabled: "true" }),
+  ]));
+  for (const [key, p] of Object.entries(PRESETS)) {
+    sheet.appendChild(el("div", { class: "preset", onclick: () => {
+      const item = makeItem(key, "");
+      state.items.push(item);
+      state.picking = false;
+      state.editing = { item, isNew: true };
+      render();
+    } }, [
+      el("div", { class: "glyph", text: p.glyph }),
+      el("div", {}, [el("b", { text: p.name }), el("span", { text: p.caption })]),
+    ]));
+  }
+  return sheet;
+}
+
+function answerDialog() {
+  const item = state.asking;
+  const input = el("input", {
+    type: item.response === "number" ? "number" : "text",
+    step: "0.1",
+    placeholder: item.response === "number" ? "78.1" : "…",
+  });
+  setTimeout(() => input.focus(), 10);
+  const save = () => {
+    item.answer = input.value.trim() || null;
+    state.asking = null;
+    startOrFinish(item);
+  };
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") save(); });
+  return el("div", { class: "dialog" }, [
+    el("h3", { text: item.response === "number" ? "What is the number?" : "What would you like to record?" }),
+    el("p", { text: item.title }),
+    input,
+    el("div", { class: "row" }, [
+      el("button", { text: "Cancel", onclick: () => { state.asking = null; render(); } }),
+      el("button", { text: "Save", onclick: save }),
+    ]),
+  ]);
+}
+
+function lockScreen() {
+  const rows = outstanding();
+  const done = finished().length;
+  const body = rows.slice(0, 6)
+    .map((i) => (i.time ? i.time + "  " : "") + i.title)
+    .join("\n") + (rows.length > 6 ? `\n+${rows.length - 6} more` : "");
+
+  const note = state.lockScreenSummary && rows.length
+    ? el("div", { class: "note" }, [
+        el("div", { class: "app" }, [el("span", { text: "DAYBOOK" }), el("span", { text: "now" })]),
+        el("div", { class: "headline", text: `Today — ${done} of ${done + rows.length} done` }),
+        el("pre", { text: body }),
+        el("div", { class: "hint", text: "Press and hold for a Done button — no need to unlock." }),
+      ])
+    : el("div", { class: "none", text: state.lockScreenSummary
+        ? "Nothing outstanding, so nothing is posted."
+        : "The lock-screen summary is switched off." });
+
+  return el("div", { class: "lock" }, [
+    el("div", { class: "clock" }, [
+      el("div", { class: "date", text: "Monday 5 October" }),
+      el("div", { class: "time", text: "9:41" }),
+    ]),
+    el("div", { class: "spacer" }),
+    note,
+    el("button", { class: "close", text: "Unlock", onclick: () => { state.showingLock = false; render(); } }),
+  ]);
+}
+
+function reportSheet() {
+  const report = `Daybook — Graphite (#3f3f46)
+
+notifications:      authorized
+alerts held by iOS: 0
+live activities on: yes
+card running:       yes
+
+widget extension:   yes
+  signed:           yes
+  nested under app: yes
+  same team as app: NO
+app bundle id:      com.tomereinan.daybook.6MU6V36SDH
+widget bundle id:   com.tomereinan.daybook.6MU6V36SDH.widgets
+app profile:        6MU6V36SDH.com.tomereinan…, 6d left
+widget profile:     none — this bundle carries no profile
+
+shared container:   NO
+  opening:          group.com.tomereinan.daybook
+  signed with:      none
+
+lock-screen summary:${state.lockScreenSummary ? "on" : "off"}
+  showing now:      ${state.lockScreenSummary && outstanding().length ? "yes" : "NO"}
+iOS allows it on:
+  lock screen:      enabled
+  notif. centre:    enabled
+  banners:          enabled
+
+today:              ${state.items.length} items
+  on lock screen:   ${state.items.filter((i) => i.lock).length}
+  on home widget:   ${state.items.filter((i) => i.home).length}`;
+
+  const sheet = el("div", { class: "sheet" });
+  sheet.appendChild(el("div", { class: "navbar" }, [
+    el("button", { text: " ", disabled: "true" }),
+    el("div", { class: "mid", text: "What this install is" }),
+    el("button", { text: "Done", onclick: () => { state.showingReport = false; render(); } }),
+  ]));
+  const g = el("div", { class: "group" });
+  g.appendChild(el("h4", { text: "Everything the app can tell" }));
+  g.appendChild(el("pre", { class: "report", text: report }));
+  sheet.appendChild(g);
+  return sheet;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Render                                                                  */
+/* ---------------------------------------------------------------------- */
+
+const TABS = [["today", "☀", "Today"], ["items", "▤", "Items"], ["review", "▥", "Review"], ["settings", "⚙", "Settings"]];
+
+function render() {
+  const screen = document.getElementById("screen");
+  screen.innerHTML = "";
+  screen.className = "screen" + (state.tab === "settings" || state.tab === "review" ? " grouped" : "");
+  screen.appendChild(
+    state.tab === "today" ? todayScreen()
+    : state.tab === "items" ? itemsScreen()
+    : state.tab === "review" ? reviewScreen()
+    : settingsScreen()
+  );
+
+  const bar = document.getElementById("tabbar");
+  bar.innerHTML = "";
+  for (const [key, glyph, label] of TABS) {
+    bar.appendChild(el("button", {
+      "aria-selected": String(state.tab === key),
+      onclick: () => { state.tab = key; render(); },
+    }, [el("span", { class: "glyph", text: glyph }), el("span", { text: label })]));
+  }
+
+  const overlay = document.getElementById("overlay");
+  overlay.innerHTML = "";
+  if (state.showingLock) overlay.appendChild(lockScreen());
+  else if (state.asking) overlay.appendChild(el("div", { class: "dialog-backdrop" }, [answerDialog()]));
+  else if (state.editing) overlay.appendChild(el("div", { class: "sheet-backdrop" }, [editorSheet()]));
+  else if (state.picking) overlay.appendChild(el("div", { class: "sheet-backdrop" }, [presetSheet()]));
+  else if (state.showingReport) overlay.appendChild(el("div", { class: "sheet-backdrop" }, [reportSheet()]));
+}
+
+// A running hold has to tick, the same way it does on the phone — but only
+// the line that changes. Rebuilding the screen every second would take the
+// focus out of whatever was being typed into and shut every open drawer.
+setInterval(() => {
+  const running = state.items.filter((i) => i.holdUntil);
+  if (!running.length) return;
+  const elapsed = running.filter((i) => i.holdUntil <= Date.now());
+  if (elapsed.length) {
+    elapsed.forEach((i) => { i.holdUntil = null; i.state = "done"; });
+    return render();
+  }
+  running.forEach((item) => {
+    const sub = document.querySelector(`[data-sub="${item.id}"]`);
+    if (sub) sub.innerHTML = subtitleOf(item);
+  });
+}, 1000);
+
+render();
+</script>
+</body>
+</html>
